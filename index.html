@@ -1293,7 +1293,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
           <option value="1.0" data-i18n="callinNormal">Normal rate</option>
         </select></div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <input type="checkbox" id="ruf-sv-base" onchange="saveSettings();renderAll()" style="width:auto;margin:0">
+        <input type="checkbox" id="ruf-sv-base" checked onchange="saveSettings();renderAll()" style="width:auto;margin:0">
         <label for="ruf-sv-base" style="font-size:11px;color:#888;cursor:pointer" data-i18n="setRufSVBase">Include standby pay in social insurance base
           <span class="tip" data-i18n-title="tipRufSVBase" title="In some contracts standby pay is included in the SV calculation base, in others it is not. Ask your HR or payroll office.">ℹ</span></label>
       </div>
@@ -1961,7 +1961,7 @@ function calcEarnedSupplements(year,month){
   var s=getSettings();
   var rules=getActiveKVRules();
   var base=getBaseForMonth(year,month);
-  var hourly=base/173.33;
+  var hourly=kvHourly(base);
   var holH=0; // includes both type='holiday' shifts AND call-ins on public holidays
   var middleDays=0,lateDays=0;
   var middleH=0,lateH=0;
@@ -2011,6 +2011,27 @@ function calcEarnedSupplements(year,month){
   };
 }
 
+// Hourly rate. medaustron_rt payslips (May-Oct 2026): Stundensatz = Gehalt/173, rounded to cents (4776.66 -> 27.61).
+function kvHourly(base){
+  var r=getActiveKVRules();
+  var h=base/(r.hourlyDivisor||173.33);
+  return r.roundHourly?Math.round(h*100)/100:h;
+}
+// §68 Abs 2 EStG: Ueberstundenzuschlag LSt-free up to 50% of Grundlohn for the first 10 OT hours, max EUR 120/month
+// (2026 temporary rule: first 15 hours, max EUR 200 - secondary source). Payslips 'UStd. Zuschl. 100 % (§ 68/2)' show
+// exactly 50% of the Zuschlag as '§ 68 frei'.
+function ovtLStFree(year,suppl,hours){
+  var capH=(year===2026)?15:10, capE=(year===2026)?200:120;
+  var share=hours>0?Math.min(hours,capH)/hours:0;
+  return Math.min(0.5*suppl*share,capE);
+}
+// LSt-taxable part of the deferred holiday supplement. Legacy KVs: fully LSt-free (unverified). medaustron_rt: §68 Abs 2.
+function holSupplLStTaxable(sp,year){
+  var x=sp.holExtraSuppl||0, r=getActiveKVRules();
+  if(r.holSupplLStMode==='ot68_2') return x-ovtLStFree(year,x,sp.holH||0);
+  return 0;
+}
+
 // Compute night hours (8%) for a given month — paid SAME month.
 // nightAllowancePct comes from the active KV template (0.08 for healthcare/RT, 0 for office KVs).
 function calcNightAllowance(year,month){
@@ -2018,7 +2039,7 @@ function calcNightAllowance(year,month){
   var rules=getActiveKVRules();
   var nightPct=rules.nightAllowancePct!=null?rules.nightAllowancePct:0.08;
   var base=getBaseForMonth(year,month);
-  var hourly=base/173.33;
+  var hourly=kvHourly(base);
   var nightH=0,lateNightH=0;
   var pfx=monthKey(year,month);
   Object.keys(shifts).forEach(function(k){
@@ -2035,7 +2056,7 @@ function calcSalary(year,month){
   var s=getSettings();
   var rules=getActiveKVRules();
   var base=getBaseForMonth(year,month);
-  var hourly=base/173.33;
+  var hourly=kvHourly(base);
   var leaveH=0,rufH=0,rufWH=0,callinH=0,callinHolH=0;
   var pfx=monthKey(year,month);
   Object.keys(shifts).forEach(function(k){
@@ -2092,10 +2113,12 @@ function calcSalary(year,month){
     + (s.rufSVBase?rufPay:0)
     + s.hazard;                                      // Gefahrenzulage: SV-taxable, LSt-free (§68) - verified Oct 2026 payslip
   var lstTaxable = base
+    + (rules.nightLStFree===false?(night.shiftA+night.lateNightA):0) // medaustron_rt 'Schichtzulage 8%' is LSt-TAXABLE (May 2026 payslip)
     // night pay EXCLUDED — §68(1) Nachtzulage tax-free for qualifying KVs
     + prevSuppl.middleP + prevSuppl.lateP
     + sameMonthMiddleP + sameMonthLateP
     + (prevSuppl.holExtraBase||0)   // base pay for holiday hours — taxable
+    + holSupplLStTaxable(prevSuppl,year) // holiday supplement: legacy fully LSt-free; medaustron_rt §68 Abs 2 = 50% free
     // holExtraSuppl EXCLUDED — §68(1) Feiertagszuschlag supplement tax-free
     // sameMonthHolSuppl EXCLUDED — also §68(1) tax-free
     + leavePay + callinP
@@ -2107,7 +2130,7 @@ function calcSalary(year,month){
   // NOT sv(lstTaxable) — the SV deducted for LSt must match what was actually paid
   var annualLSTBase = lstTaxable*12 - svM.total*12;
   var lst = calcLohnsteuerAnnual(annualLSTBase) / 12;
-  var gross = svTaxable+rufPay-br; // rufPay excluded from svTaxable if !rufSVBase, still in gross
+  var gross = svTaxable+(s.rufSVBase?0:rufPay)-br; // rufPay already inside svTaxable when rufSVBase
   var net   = gross-svM.total-lst;
 
   return {
@@ -2506,7 +2529,7 @@ function renderOT(){
   var balEl=document.getElementById('ot-balance');
   if(balEl){
     if(otType==='paidout'){
-      var hourly=getBaseForMonth(currentYear,currentMonth)/173.33;
+      var hourly=kvHourly(getBaseForMonth(currentYear,currentMonth));
       balEl.textContent=accrued.toFixed(1)+'h → '+fmt(accrued*hourly*1.5)+' gross (150%)';
       balEl.className='rv';
     } else {
@@ -2562,7 +2585,7 @@ function renderTaxCalc(){
   var pendler=parseFloat(document.getElementById('tc-pendler').value)||0;
   var fambonus=parseFloat(document.getElementById('tc-fambonus').value)||0;
   var s=getSettings();
-  var hourly=s.base/173.33;
+  var hourly=kvHourly(s.base);
   var holPayM=hourly*2*holhM;
 
   var monthlyGross=annual/12+suppl+oncallM+holPayM;
@@ -3179,7 +3202,7 @@ function loadData(){
       if(c.urlaubDays)document.getElementById('urlaub-days').value=c.urlaubDays;
       if(c.showEmployerCosts)document.getElementById('show-employer-costs').checked=c.showEmployerCosts;
       if(c.brRate!=null)document.getElementById('br-rate').value=c.brRate;
-      if(c.rufSVBase)document.getElementById('ruf-sv-base').checked=c.rufSVBase;
+      if(c.rufSVBase!==undefined)document.getElementById('ruf-sv-base').checked=!!c.rufSVBase;
       if(c.salaryModel)document.getElementById('salary-model').value=c.salaryModel;
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
     }
@@ -3487,7 +3510,7 @@ function renderMarginal(){
   var s=getSettings();
   // Compute taxable base directly — avoids full calcSalary shift-scan
   var base=getBaseForMonth(currentYear,currentMonth);
-  var hourly=base/173.33;
+  var hourly=kvHourly(base);
   // Previous month deferred supplements
   var prevM=currentMonth-1<0?11:currentMonth-1;
   var prevY=currentMonth-1<0?currentYear-1:currentYear;
@@ -3495,8 +3518,9 @@ function renderMarginal(){
   // Current month night allowance
   var nightA=calcNightAllowance(currentYear,currentMonth);
   // §68: night allowance in SV base but NOT in LSt base
-  var svTaxable=base+nightA.shiftA+nightA.lateNightA+prevS.middleP+prevS.lateP+(prevS.holExtraBase||0)+(prevS.holExtraSuppl||0);
-  var lstTaxableBase=base+prevS.middleP+prevS.lateP+(prevS.holExtraBase||0); // holExtraSuppl excluded (§68 Feiertagszuschlag 100% supplement tax-free)
+  var kvr=getActiveKVRules();
+  var svTaxable=base+nightA.shiftA+nightA.lateNightA+prevS.middleP+prevS.lateP+(prevS.holExtraBase||0)+(prevS.holExtraSuppl||0)+s.hazard;
+  var lstTaxableBase=base+(kvr.nightLStFree===false?(nightA.shiftA+nightA.lateNightA):0)+prevS.middleP+prevS.lateP+(prevS.holExtraBase||0)+holSupplLStTaxable(prevS,currentYear);
 
   var extraGross=0, extraLabel='', isNightPay=false;
   if(type==='normal_night'){
@@ -3524,8 +3548,9 @@ function renderMarginal(){
   }
   var isRuf=(type==='ruf_weekday'||type==='ruf_wknd');
   // For SV: add to svTaxable. For LSt: only add if not night pay (§68 exempt)
-  var svTaxableWith=svTaxable+(isRuf?0:extraGross);
-  var lstTaxableWith=lstTaxableBase+(isRuf||isNightPay?0:extraGross);
+  var rufOut=isRuf&&!s.rufSVBase; // standby outside SV/LSt base only if the toggle is off
+  var svTaxableWith=svTaxable+(rufOut?0:extraGross);
+  var lstTaxableWith=lstTaxableBase+(rufOut||(isNightPay&&kvr.nightLStFree!==false)?0:extraGross);
   var marginalSV=calcSVMonthly(svTaxableWith,s.wbfRate).total-calcSVMonthly(svTaxable,s.wbfRate).total;
   var marginalLSt=calcMonthlyLSt(lstTaxableWith,s.wbfRate)-calcMonthlyLSt(lstTaxableBase,s.wbfRate);
   var marginalTax=marginalSV+marginalLSt;
@@ -3730,7 +3755,7 @@ function _doUpdateDuration(){
   var s=getSettings();
   var h=calcHours(start,end,s.thresh);
   if(h.total<=0){pill.className='duration-pill';return;}
-  var hourly=getBaseForMonth(currentYear,currentMonth)/173.33; // cheaper than full calcSalary
+  var hourly=kvHourly(getBaseForMonth(currentYear,currentMonth)); // cheaper than full calcSalary
   var parts=[];
   parts.push(h.total.toFixed(1)+'h total');
   if(h.night>0&&(type==='normal'||type==='latenight'))
@@ -4114,7 +4139,7 @@ function resetSim(){
 function renderSim(){
   var r=calcSalary(currentYear,currentMonth);
   var s=getSettings();
-  var hourly=r.base/173.33;
+  var hourly=kvHourly(r.base);
 
   // Update baseline display
   var baseNetEl=document.getElementById('sim-base-net');
@@ -4159,6 +4184,7 @@ function renderSim(){
   }
   // For §68 night pay: SV applies but NOT LSt — net = gross - marginal SV only
   function margNetNight(nightGross){
+    if(getActiveKVRules().nightLStFree===false) return margNet(nightGross,nightGross);
     var sv=calcSVMonthly(r.taxable+nightGross, s.wbfRate).total - calcSVMonthly(r.taxable, s.wbfRate).total;
     return nightGross - sv;
   }
@@ -4214,7 +4240,8 @@ function renderSim(){
   var holGross      = hourly*8 * nHol;
   var holNet        = margNet(holGross, holGross);
   var holSupplGross = hourly*2*8 * nHol;
-  var holSupplNet   = supplNet(holSupplGross);
+  var holSupplFree  = getActiveKVRules().holSupplLStMode==='ot68_2'?ovtLStFree(currentYear,holSupplGross,8*nHol):0;
+  var holSupplNet   = margNet(holSupplGross, holSupplGross-holSupplFree);
 
   // ── Totals ──
   var thisMonthGrossExtra = lateNightGross + normalGross + holGross + rufGross;
@@ -5287,7 +5314,8 @@ function applyLang(lang){
 var KV_TEMPLATES={
   medaustron_rt:{name:'Krankenanstalten – Radiologietechnologie',middleS:35.50,lateS:50,thresh:20,rufRate:4.94,wbf:0.5,
     shifts:{early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']},
-    rules:{deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,hasRuf:true,hasLateNight:true,hasMiddle:true,hasCallin:true},
+    rules:{deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,hasRuf:true,hasLateNight:true,hasMiddle:true,hasCallin:true,
+      nightLStFree:false,holSupplLStMode:'ot68_2',hourlyDivisor:173,roundHourly:true},
     note:'Validated cent-for-cent against real Austrian hospital payslips (Radiologietechnologie). The reference template.'},
   // Healthcare
   gesundheit_kh:{name:'Krankenanstalten',middleS:40,lateS:55,thresh:20,rufRate:5.20,wbf:0.5,
@@ -5350,7 +5378,8 @@ var KV_PRESETS=KV_TEMPLATES;
 // template doesn't override. Mirrors the validated KH-Radiologietechnologie behavior, since that
 // is the engine's original, cent-verified baseline — picking a different template
 // only changes behavior where that template's rules explicitly differ.
-var DEFAULT_KV_RULES={deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0};
+var DEFAULT_KV_RULES={deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,
+  nightLStFree:true,holSupplLStMode:'full',hourlyDivisor:173.33,roundHourly:false};
 
 // Returns the structural rules for the currently selected KV template (Settings →
 // kv-preset), falling back to DEFAULT_KV_RULES if none is selected or recognized.
