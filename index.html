@@ -32,6 +32,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .lp-latenight{background:#d0c8f8;color:#26215c}
 .lp-holiday{background:#faeeda;color:#854f0b}
 .lp-leave  {background:#eaf3de;color:#3b6d11}
+.lp-sick  {background:#fbe6ea;color:#a32d4a}
 .lp-ruf    {background:#f1ede8;color:#5f5e5a}
 .lp-callin {background:#faece7;color:#993c1d}
 .week-bar{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
@@ -60,9 +61,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sp-latenight{background:#d0c8f8;color:#26215c}
 .sp-holiday{background:#faeeda;color:#854f0b}
 .sp-leave  {background:#eaf3de;color:#3b6d11}
+.sp-sick  {background:#fbe6ea;color:#a32d4a}
 .sp-ruf    {background:#f1ede8;color:#5f5e5a}
 .sp-callin {background:#faece7;color:#993c1d}
 .add-hint{font-size:9px;color:#ddd;display:block;margin-top:2px}
+.day-cell.free-cell{background-image:repeating-linear-gradient(45deg,rgba(128,128,128,.12) 0 4px,transparent 4px 8px)}
+.add-hint.free-hint{color:#999}
+body.dark .add-hint.free-hint{color:#777}
+.preset-btn.custom{position:relative}
+.cc-del{position:absolute;top:1px;right:3px;font-size:10px;color:#aaa;cursor:pointer;padding:0 2px;font-style:normal}
+.cc-del:hover{color:#c0392b}
+.cc-add{display:flex;gap:6px;margin:6px 0 8px}
+.cc-add input{flex:1;font-size:12px;padding:5px 8px;border:.5px solid #ddd;border-radius:6px}
+body.dark .cc-add input{background:#2a2a2e;color:#e2e2dc;border-color:#4a4a4e}
 .ot-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-left:3px;vertical-align:middle}
 .ot-warn{background:#ef9f27}.ot-over{background:#e24b4a}
 
@@ -201,6 +212,7 @@ body.dark .sp-late{background:#27233a;color:#9b8fd8}
 body.dark .sp-latenight{background:#1f1a35;color:#b0a4e8}
 body.dark .sp-holiday{background:#3d2e10;color:#c8943a}
 body.dark .sp-leave{background:#1e2e18;color:#7aaa4a}
+body.dark .sp-sick{background:#3a1e26;color:#e08aa0}
 body.dark .sp-ruf{background:#2e2c28;color:#9a9690}
 body.dark .sp-callin{background:#3a1e18;color:#e0826a}
 body.dark .lp-normal{background:#1e2d3d;color:#6fa8dc}
@@ -209,6 +221,7 @@ body.dark .lp-late{background:#27233a;color:#9b8fd8}
 body.dark .lp-latenight{background:#1f1a35;color:#b0a4e8}
 body.dark .lp-holiday{background:#3d2e10;color:#c8943a}
 body.dark .lp-leave{background:#1e2e18;color:#7aaa4a}
+body.dark .lp-sick{background:#3a1e26;color:#e08aa0}
 body.dark .lp-ruf{background:#2e2c28;color:#9a9690}
 body.dark .lp-callin{background:#3a1e18;color:#e0826a}
 body.dark .week-pill.wp-ok{background:#1e2e18;color:#7aaa4a;border-color:#3a5530}
@@ -633,6 +646,7 @@ body.dark .hm-none{background:#2a2a2e}
 .hm-latenight{background:#6c5fb5}
 .hm-holiday{background:#e24b4a}
 .hm-leave{background:#27ae60}
+.hm-sick{background:#e07a8f}
 .hm-ruf{background:#f0c040}
 .hm-callin{background:#e8854a}
 .hm-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:9px;color:#888;align-items:center}
@@ -695,6 +709,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <span class="lpill lp-latenight"><span data-i18n="legLateNight">Late+Night 14–22:30</span> <b style="color:#26215c" data-i18n="legNightOnly">+8% only</b></span>
     <span class="lpill lp-holiday"><span data-i18n="legHoliday">Public holiday</span> <b style="color:#854f0b">+200%</b></span>
     <span class="lpill lp-leave" data-i18n="legLeave">Urlaub</span>
+    <span class="lpill lp-sick" data-i18n="legSick">Sick</span>
     <span class="lpill lp-ruf" data-i18n="legOnCall">On-call</span>
     <span class="lpill lp-callin" data-i18n="legCallin">Rufeinsatz</span>
     <span style="font-size:10px;color:#aaa;margin-left:2px"><span data-i18n="otLabel">OT</span>: <span style="color:#ef9f27">●</span>&gt;48h <span style="color:#e24b4a">●</span>&gt;60h</span>
@@ -758,6 +773,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="rrow"><span class="rl" data-i18n="rlLateNightSuppl">Late+Night 8% supplement (this month)</span><span class="rv" id="r-latenightA">€ 0,00</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlHolidayExtra">Public holiday extra (200%, prev month)</span><span class="rv" id="r-hol">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlAnnualLeave">Annual leave (Urlaub)</span><span class="rv" id="r-leave">—</span></div>
+      <div class="rrow"><span class="rl" data-i18n="rlSickDays">Sick days (salary continues)</span><span class="rv" id="r-sick">0 d</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlRufStandby">Rufbereitschaft standby</span><span class="rv" id="r-ruf">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlRufCallin">Rufeinsatz call-in</span><span class="rv" id="r-callin">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlHazard">Hazard allowance (tax-free)</span><span class="rv pos" id="r-hazard">€ 230,43</span></div>
@@ -1200,6 +1216,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       </div>
     </div>
     <hr class="divider">
+    <div class="panel-section">
+      <div class="panel-label" data-i18n="lblFreeDays">Fixed days off (part-time)</div>
+      <p style="font-size:10px;color:#aaa;margin-bottom:8px;line-height:1.5" data-i18n="freeDaysIntro">Marks these weekdays as free on the calendar and skips them when applying patterns or templates. Pay is not scaled: enter your actual monthly gross as base salary.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px"><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-1" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowMon">Mon</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-2" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowTue">Tue</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-3" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowWed">Wed</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-4" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowThu">Thu</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-5" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowFri">Fri</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-6" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowSat">Sat</span></label><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="free-day-0" style="width:auto;margin:0" onchange="saveSettings();renderAll()"><span data-i18n="dowSun">Sun</span></label></div>
+    </div>
     <div class="panel-section">
       <div class="panel-label" data-i18n="lblKVPreset">🏛 Kollektivvertrag (KV) preset</div>
       <p style="font-size:10px;color:#aaa;margin-bottom:8px;line-height:1.5" data-i18n="kvIntro">Select your collective agreement to auto-fill typical supplement amounts, night threshold, and standby rates. You can still edit everything manually afterwards.</p>
@@ -1698,6 +1719,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <option value="latenight" data-i18n="optLateNight">🌙 Late + Night 8%</option>
       <option value="holiday" data-i18n="optHoliday">🏖 Public holiday worked</option>
       <option value="leave" data-i18n="optLeave">🏝 Annual leave</option>
+      <option value="sick" data-i18n="optSick">🤒 Sick leave</option>
       <option value="ruf" data-i18n="optRuf">📟 On-call standby (Ruf)</option>
       <option value="callin" data-i18n="optCallin">🚨 Call-in (Rufeinsatz)</option>
     </select>
@@ -1717,6 +1739,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <label data-i18n="modalNote">Note <span style="font-weight:400;color:#bbb">(optional — shown on calendar)</span></label>
     <input type="text" id="m-note" placeholder="e.g. covering for Mayer, verbal OT agreed…" maxlength="60" style="font-size:12px" oninput="_markModalDirty()" data-i18n-placeholder="modalNotePlaceholder">
   </div>
+  <div class="cc-add"><input type="text" id="cc-name" maxlength="20" placeholder="Card name (e.g. Day 08–16)" data-i18n-placeholder="ccPlaceholder"><button class="mbtn" type="button" onclick="addCustomCard()" data-i18n="ccSave">+ Save as card</button></div>
   <div class="pattern-box">
     <p data-i18n="modalApplyPattern">Apply this shift pattern to:</p>
     <div class="pattern-btns">
@@ -1978,7 +2001,7 @@ function calcEarnedSupplements(year,month){
     } else if(sh.type==='middle'){
       var h=calcHours(sh.start,sh.end,s.thresh,rules); middleH+=h.paid; middleDays++;
     } else if(sh.type==='late'){
-      var h=calcHours(sh.start,sh.end,s.thresh,rules); lateH+=h.paid; lateDays++;
+      var h=calcHours(supplStart(sh.start,rules.lateSupplFrom),sh.end,s.thresh,rules); lateH+=h.paid; lateDays++;
     } else if(sh.type==='callin'&&isHol(k)){
       var h=calcHours(sh.start,sh.end,s.thresh,rules); holH+=h.paid;
     }
@@ -2011,6 +2034,8 @@ function calcEarnedSupplements(year,month){
   };
 }
 
+// Late supplement counts only from a fixed clock time (employer: from 14:00, although staff stamp in from 13:30).
+function supplStart(start,from){return(from&&start>='06:00'&&start<from)?from:start;}
 // Hourly rate. medaustron_rt payslips (May-Oct 2026): Stundensatz = Gehalt/173, rounded to cents (4776.66 -> 27.61).
 function kvHourly(base){
   var r=getActiveKVRules();
@@ -2312,6 +2337,7 @@ function renderReport(){
   document.getElementById('r-latenightA').textContent=r.lateNightA>0?fmt(r.lateNightA)+' ('+r.lateNightH.toFixed(1)+'h)':'€ 0,00';
   document.getElementById('r-hol').textContent=fmt(r.holExtra)+(r.holExtra>0?' (200% total, prev month)':'');
   document.getElementById('r-leave').textContent=fmt(r.leavePay);
+  var _rs=document.getElementById('r-sick');if(_rs)_rs.textContent=countSick(currentYear,currentMonth)+' d';
   document.getElementById('r-ruf').textContent=fmt(r.rufPay);
   document.getElementById('r-callin').textContent=fmt(r.callinP);
   document.getElementById('r-br').textContent='− '+fmt(r.br);
@@ -2492,7 +2518,7 @@ function getWeekHoursForMonth(year,month){
   for(var d=1;d<=days;d++){
     var k=dateKey(year,month,d);
     var sh=shifts[k];
-    if(!sh||sh.type==='ruf'||sh.type==='leave') continue;
+    if(!sh||sh.type==='ruf'||sh.type==='leave'||sh.type==='sick') continue;
     var h=calcHours(sh.start,sh.end,s.thresh);
     var date=new Date(year,month,d);
     var tmp=new Date(date);tmp.setHours(0,0,0,0);
@@ -2744,6 +2770,39 @@ function renderTaxCalc(){
 }
 
 // ═══ CALENDAR ═══
+// ═══ FIXED FREE DAYS / SICK COUNT ═══
+function getFreeDays(){var r=[];for(var i=0;i<7;i++){var el=document.getElementById('free-day-'+i);if(el&&el.checked)r.push(i);}return r;}
+function restoreFreeDays(a){for(var i=0;i<7;i++){var el=document.getElementById('free-day-'+i);if(el)el.checked=a.indexOf(i)>=0;}}
+function countSick(y,m){var p=monthKey(y,m),n=0;Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===p&&shifts[k].type==='sick')n++;});return n;}
+
+// ═══ CUSTOM SHIFT CARDS (manual quick presets) ═══
+var customCards=[]; // [{id,name,type,start,end}] - persisted in sp_custom_cards
+var CARD_TYPES=['normal','middle','late','latenight','holiday','leave','sick','ruf','callin'];
+function sanitizeCards(a){
+  if(!Array.isArray(a)) return [];
+  return a.filter(function(c){
+    return c&&typeof c.name==='string'&&c.name&&/^c\d+$/.test(String(c.id))&&CARD_TYPES.indexOf(c.type)>=0&&/^\d\d:\d\d$/.test(String(c.start))&&/^\d\d:\d\d$/.test(String(c.end));
+  }).map(function(c){return {id:String(c.id),name:c.name.substring(0,20),type:c.type,start:c.start,end:c.end};});
+}
+function loadCustomCards(){try{var r=localStorage.getItem('sp_custom_cards');if(r)customCards=sanitizeCards(JSON.parse(r));}catch(e){customCards=[];}}
+function saveCustomCards(){try{localStorage.setItem('sp_custom_cards',JSON.stringify(customCards));}catch(e){}}
+function _ccEsc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+function _refreshCards(){try{renderModalPresets(getActiveKVRules(),getKVShifts(),getSettings());}catch(e){}}
+function addCustomCard(){
+  var nameEl=document.getElementById('cc-name');
+  var name=((nameEl&&nameEl.value)||'').trim();
+  if(!name){if(nameEl)nameEl.focus();return;}
+  var c={id:'c'+Date.now(),name:name.substring(0,20),type:document.getElementById('m-type').value,start:document.getElementById('m-start').value,end:document.getElementById('m-end').value};
+  customCards=sanitizeCards(customCards.concat([c]));
+  if(nameEl)nameEl.value='';
+  saveCustomCards();_refreshCards();
+}
+function deleteCustomCard(id,ev){
+  if(ev&&ev.stopPropagation)ev.stopPropagation();
+  customCards=customCards.filter(function(c){return c.id!==id;});
+  saveCustomCards();_refreshCards();
+}
+
 function renderCalendar(){
   document.getElementById('month-label').textContent=MONTH_NAMES[currentMonth]+' '+currentYear;
   var today=new Date();
@@ -2755,6 +2814,7 @@ function renderCalendar(){
   var clearBtn=document.getElementById('search-clear');
   if(clearBtn)clearBtn.style.display=searchQ?'':'none';
   var azgViolations=getAZGViolations();
+  var _fd=getFreeDays();
   var grid=document.getElementById('cal-grid');
   grid.innerHTML='';
   var firstDow=(new Date(currentYear,currentMonth,1).getDay()+6)%7;
@@ -2767,12 +2827,12 @@ function renderCalendar(){
     var sh=shifts[k];
     var isToday=(today.getFullYear()===currentYear&&today.getMonth()===currentMonth&&today.getDate()===d);
     var cell=document.createElement('div');
-    cell.className='day-cell'+(weekend?' wknd-cell':'')+(isToday?' today-cell':'')+(sh?' has-shift':'');
+    cell.className='day-cell'+(weekend?' wknd-cell':'')+(isToday?' today-cell':'')+(sh?' has-shift':'')+(_fd.indexOf(new Date(currentYear,currentMonth,d).getDay())>=0?' free-cell':'');
     cell.dataset.key=k;
     // Search filter: dim cells that don't match
     if(searchQ&&sh){
       var haystack=(sh.type+' '+(sh.note||'')).toLowerCase();
-      var typeLabel={normal:'early früh',middle:'middle mittel',late:'late spät',latenight:'latenight nacht',holiday:'holiday feiertag',leave:'leave urlaub',ruf:'ruf bereitschaft',callin:'callin einsatz'}[sh.type]||'';
+      var typeLabel={normal:'early früh',middle:'middle mittel',late:'late spät',latenight:'latenight nacht',holiday:'holiday feiertag',leave:'leave urlaub',sick:'sick krank',ruf:'ruf bereitschaft',callin:'callin einsatz'}[sh.type]||'';
       var matches=(haystack+' '+typeLabel).includes(searchQ);
       cell.style.opacity=matches?'1':'0.25';
     } else {
@@ -2800,7 +2860,7 @@ function renderCalendar(){
     if(sh){
       var pill=document.createElement('span');
       pill.className='shift-pill sp-'+sh.type;
-      var labels={normal:'Shift',middle:'Middle',late:'Late',latenight:'Late 8%',holiday:'Holiday',leave:'Urlaub',ruf:'On-call',callin:'Rufeinsatz'};
+      var labels={normal:'Shift',middle:'Middle',late:'Late',latenight:'Late 8%',holiday:'Holiday',leave:'Urlaub',sick:'Krank',ruf:'On-call',callin:'Rufeinsatz'};
       pill.textContent=(labels[sh.type]||sh.type)+' '+sh.start+'–'+sh.end;
       cell.appendChild(pill);
       if(sh.note){var noteEl=document.createElement('span');noteEl.className='shift-note';noteEl.textContent=sh.note;cell.appendChild(noteEl);}
@@ -2810,6 +2870,8 @@ function renderCalendar(){
         azgDot.title='⚠ Only '+azgViolations[k].restH+'h rest before this shift (AZG §12 requires 11h min)';
         num.appendChild(azgDot);
       }
+    } else if(_fd.indexOf(new Date(currentYear,currentMonth,d).getDay())>=0){
+      var fh=document.createElement('span');fh.className='add-hint free-hint';fh.textContent=getLang()==='de'?'frei':'free';cell.appendChild(fh);
     } else if(!weekend){
       var hint=document.createElement('span');hint.className='add-hint';hint.textContent='+ add';cell.appendChild(hint);
     }
@@ -2969,15 +3031,15 @@ function renderCompare(){
 // ═══ MODAL ═══
 var _modalDirty=false;
 // Returns the active KV template's shift times, falling back to the reference-template defaults.
+var DEFAULT_SHIFT_TIMES={early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']};
 function getKVShifts(){
   var kvEl=document.getElementById('kv-preset');
   var key=kvEl?kvEl.value:'';
   var tpl=key?KV_TEMPLATES[key]:null;
-  return (tpl&&tpl.shifts)?tpl.shifts:({
-    early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],
-    night:['22:00','06:00'],long:['07:00','19:00'],
-    oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']
-  });
+  var out={};
+  for(var k in DEFAULT_SHIFT_TIMES) out[k]=DEFAULT_SHIFT_TIMES[k];
+  if(tpl&&tpl.shifts) for(var k2 in tpl.shifts) out[k2]=tpl.shifts[k2];
+  return out;
 }
 
 // Build the preset button grid from the active KV template.
@@ -3019,8 +3081,12 @@ function renderModalPresets(rules, kvSh, s){
   }
   if(hasCallin) btns.push(btn('callin','00:00','01:00','&#128680;','Rufeinsatz',lang==='de'?'Zeit setzen \u2193':'set time \u2193'));
   btns.push(btn('leave',kvSh.early[0],kvSh.early[1],'&#127958;',lang==='de'?'Urlaub':'Leave',lang==='de'?'Urlaubstag':'day off'));
+  btns.push(btn('sick',kvSh.early[0],kvSh.early[1],'&#129298;',lang==='de'?'Krank':'Sick',lang==='de'?'Krankenstand':'sick day'));
   if(holMode!=='none') btns.push(btn('holiday',kvSh.holiday[0],kvSh.holiday[1],'&#127881;',lang==='de'?'Feiertag':'Holiday',holLabel+' '+(lang==='de'?'gearbeitet':'worked')));
 
+  customCards.forEach(function(c){
+    btns.push('<button class="preset-btn custom" onclick="applyPreset(\''+c.type+'\',\''+c.start+'\',\''+c.end+'\',this)">'+_ccEsc(c.name)+'<br><span>'+c.start+'\u2013'+c.end+'</span><span class="cc-del" title="Delete" onclick="deleteCustomCard(\''+c.id+'\',event)">\u2715</span></button>');
+  });
   grid.innerHTML=btns.join('');
 }
 
@@ -3055,7 +3121,7 @@ function openModal(k){
   var kvShifts=getKVShifts();
   var s2=getSettings();
   // Render preset buttons and type options for active KV
-  renderModalPresets(kvRules, kvShifts, s2);
+  try{renderModalPresets(kvRules, kvShifts, s2);}catch(e){try{renderModalPresets(DEFAULT_KV_RULES, DEFAULT_SHIFT_TIMES, s2);}catch(e2){}}
   updateModalTypeOptions(kvRules);
   // Late+Night 8% additionally hidden after April (months May–Dec) per historical rule
   var _month=parseInt(parts[1])-1;
@@ -3109,15 +3175,16 @@ function applyPattern(mode){
   if(note) sd.note=note;
   var base=new Date(editingDate+'T12:00:00');
   var targetDow=base.getDay();
+  var fd=getFreeDays();
   if(mode==='week'){
     var days=daysInMonth(currentYear,currentMonth);
     for(var d=1;d<=days;d++){if(new Date(currentYear,currentMonth,d).getDay()===targetDow)shifts[dateKey(currentYear,currentMonth,d)]=Object.assign({},sd);}
   } else if(mode==='monFri'){
     var mon=new Date(base);mon.setDate(base.getDate()-((base.getDay()+6)%7));
-    for(var i=0;i<5;i++){var day=new Date(mon);day.setDate(mon.getDate()+i);if(day.getMonth()===currentMonth)shifts[dateKey(day.getFullYear(),day.getMonth(),day.getDate())]=Object.assign({},sd);}
+    for(var i=0;i<5;i++){var day=new Date(mon);day.setDate(mon.getDate()+i);if(day.getMonth()===currentMonth&&fd.indexOf(day.getDay())<0)shifts[dateKey(day.getFullYear(),day.getMonth(),day.getDate())]=Object.assign({},sd);}
   } else if(mode==='allWeekdays'){
     var days2=daysInMonth(currentYear,currentMonth);
-    for(var d2=1;d2<=days2;d2++){var dw=new Date(currentYear,currentMonth,d2).getDay();if(dw>=1&&dw<=5)shifts[dateKey(currentYear,currentMonth,d2)]=Object.assign({},sd);}
+    for(var d2=1;d2<=days2;d2++){var dw=new Date(currentYear,currentMonth,d2).getDay();if(dw>=1&&dw<=5&&fd.indexOf(dw)<0)shifts[dateKey(currentYear,currentMonth,d2)]=Object.assign({},sd);}
   }
   saveData();closeModal(true);renderAll();
 }
@@ -3178,7 +3245,7 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value}));}catch(e){}}
+function saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
 function loadData(){
   try{
     var s=localStorage.getItem('sp_shifts'),a=localStorage.getItem('sp_actuals'),cfg=localStorage.getItem('sp_settings');
@@ -3205,6 +3272,8 @@ function loadData(){
       if(c.rufSVBase!==undefined)document.getElementById('ruf-sv-base').checked=!!c.rufSVBase;
       if(c.salaryModel)document.getElementById('salary-model').value=c.salaryModel;
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
+      if(c.kvPreset&&KV_TEMPLATES[c.kvPreset]){document.getElementById('kv-preset').value=c.kvPreset;showKVNote();}
+      if(Array.isArray(c.freeDays))restoreFreeDays(c.freeDays);
     }
     var pat=sessionStorage.getItem('sp_sync_pat');
     if(pat)document.getElementById('sync-pat').value=pat;
@@ -3221,7 +3290,7 @@ function loadData(){
 function clearMonth(){if(!confirm('Clear '+MONTH_NAMES[currentMonth]+' '+currentYear+'?'))return;var pfx=monthKey(currentYear,currentMonth);Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===pfx)delete shifts[k];});saveData();renderAll();}
 function clearAll(){
   if(!confirm('Clear ALL data? This includes shifts, actuals, OT log, grade history, and templates.'))return;
-  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];
+  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();
   saveData();saveGradeHistory();saveTemplates();
   try{localStorage.setItem('sp_ot','{}');}catch(e){}
   renderAll();renderGradeHistory();renderTemplates();
@@ -3418,7 +3487,7 @@ async function syncFromRepo(){
 
 // ═══ LOCAL BACKUP ═══
 function exportJSON(){
-  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates};
+  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards};
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -3449,6 +3518,7 @@ function importJSON(input){
       shifts=parsed.shifts;actuals=parsed.actuals||{};otData=parsed.otData||{};
       gradeHistory=parsed.gradeHistory||[];
       shiftTemplates=parsed.shiftTemplates||[];
+      if(Array.isArray(parsed.customCards)){customCards=sanitizeCards(parsed.customCards);saveCustomCards();}
       saveData();saveGradeHistory();saveTemplates();
       try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
       renderAll();renderGradeHistory();renderTemplates();
@@ -3614,7 +3684,7 @@ function renderUrlaubTracker(){
 
 // ═══ ICAL EXPORT ═══
 function exportICal(){
-  var typeLabels={normal:'Early shift',middle:'Middle shift',late:'Late shift',latenight:'Late shift (8%)',holiday:'Holiday shift',leave:'Urlaub',ruf:'Rufbereitschaft',callin:'Rufeinsatz'};
+  var typeLabels={normal:'Early shift',middle:'Middle shift',late:'Late shift',latenight:'Late shift (8%)',holiday:'Holiday shift',leave:'Urlaub',sick:'Krankenstand',ruf:'Rufbereitschaft',callin:'Rufeinsatz'};
   var s2=getSettings(); // hoisted — same settings for all events
   var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Paychecker Austria//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Paychecker Shifts '+currentYear];
   var keys=Object.keys(shifts).filter(function(k){return k.substring(0,4)===String(currentYear);});
@@ -3818,7 +3888,7 @@ function lpStart(e,k){
     var sh=shifts[k]; if(!sh)return;
     var pop=document.getElementById('lp-popover');
     var lbl=document.getElementById('lp-label');
-    var labels={normal:'Early',middle:'Middle',late:'Late',latenight:'Late+Night',holiday:'Holiday',leave:'Leave',ruf:'Ruf',callin:'Call-in'};
+    var labels={normal:'Early',middle:'Middle',late:'Late',latenight:'Late+Night',holiday:'Holiday',leave:'Leave',sick:'Sick',ruf:'Ruf',callin:'Call-in'};
     lbl.textContent=(labels[sh.type]||sh.type)+' on '+k.split('-')[2]+'.';
     var cell=e.target.closest('.day-cell')||e.target;
     var rect=cell.getBoundingClientRect();
@@ -3942,7 +4012,7 @@ function exportXLSX(){
   // ── Sheet 2: Shifts detail ────────────────────────────────────────────────
   var shiftRows=[['Datum','Wochentag','Typ','Start','Ende','Stunden','Nacht-h','Notiz']];
   var DOW_DE=['So','Mo','Di','Mi','Do','Fr','Sa'];
-  var typeDE={normal:'Frühdienst',middle:'Mitteldienst',late:'Spätdienst',latenight:'Spät+Nacht',holiday:'Feiertag',leave:'Urlaub',ruf:'Rufbereitschaft',callin:'Rufeinsatz'};
+  var typeDE={normal:'Frühdienst',middle:'Mitteldienst',late:'Spätdienst',latenight:'Spät+Nacht',holiday:'Feiertag',leave:'Urlaub',sick:'Krankenstand',ruf:'Rufbereitschaft',callin:'Rufeinsatz'};
   Object.keys(shifts).filter(function(k){return k.substring(0,4)===String(exportYear);})
     .sort().forEach(function(k){
       var sh=shifts[k];
@@ -4046,6 +4116,7 @@ function applyTemplate(idx){
     var day=new Date(monday);day.setDate(monday.getDate()+d);
     if(day.getMonth()!==currentMonth)continue; // skip days outside viewed month
     var k=monthKey(day.getFullYear(),day.getMonth())+'-'+pad(day.getDate());
+    if(getFreeDays().indexOf(day.getDay())>=0)continue;
     if(shifts[k]){skipped.push(day.getDate()+'.');continue;}
     shifts[k]={type:tpl.type,start:tpl.start,end:tpl.end};
     if(tpl.note)shifts[k].note=tpl.note;
@@ -4063,7 +4134,7 @@ function renderTemplates(){
     el.innerHTML='<div style="font-size:11px;color:#aaa;padding:4px 0">No templates yet. Open a shift modal, then save as a template above.</div>';
     return;
   }
-  var typeLabels={normal:'Early',middle:'Middle',late:'Late',latenight:'Late+Night',holiday:'Holiday',leave:'Leave',ruf:'Ruf',callin:'Call-in'};
+  var typeLabels={normal:'Early',middle:'Middle',late:'Late',latenight:'Late+Night',holiday:'Holiday',leave:'Leave',sick:'Sick',ruf:'Ruf',callin:'Call-in'};
   el.innerHTML=shiftTemplates.map(function(t,i){
     var desc=(typeLabels[t.type]||t.type)+' '+t.start+'–'+t.end+(t.note?' · '+t.note:'');
     return '<div class="tpl-row">'+
@@ -4671,6 +4742,10 @@ var I18N={
   en:{
     appTitle:'Paychecker Austria', appSub:'Austrian salary & shift calculator · click any day to add a shift',
     discNote:'Estimates only \u2014 not payroll, tax or legal advice.', discLink:'Full disclaimer',
+    optSick:'\ud83e\udd12 Sick leave', legSick:'Sick', rlSickDays:'Sick days (salary continues)', lblFreeDays:'Fixed days off (part-time)',
+    freeDaysIntro:'Marks these weekdays as free on the calendar and skips them when applying patterns or templates. Pay is not scaled: enter your actual monthly gross as base salary.',
+    dowMon:'Mon', dowTue:'Tue', dowWed:'Wed', dowThu:'Thu', dowFri:'Fri', dowSat:'Sat', dowSun:'Sun',
+    ccPlaceholder:'Card name (e.g. Day 08\u201316)', ccSave:'+ Save as card',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
     legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
@@ -4958,6 +5033,10 @@ var I18N={
   de:{
     appTitle:'Paychecker Austria', appSub:'Österreichischer Gehalts- & Schichtrechner · Tag klicken, Schicht eintragen',
     discNote:'Nur Sch\u00e4tzwerte \u2014 keine Lohnverrechnung, Steuer- oder Rechtsberatung.', discLink:'Vollst\u00e4ndiger Haftungsausschluss',
+    optSick:'\ud83e\udd12 Krankenstand', legSick:'Krank', rlSickDays:'Krankenstand (Entgeltfortzahlung)', lblFreeDays:'Fixe freie Tage (Teilzeit)',
+    freeDaysIntro:'Markiert diese Wochentage im Kalender als frei und \u00fcberspringt sie bei Mustern und Vorlagen. Das Gehalt wird nicht skaliert: Trage dein tats\u00e4chliches Monatsbrutto als Grundgehalt ein.',
+    dowMon:'Mo', dowTue:'Di', dowWed:'Mi', dowThu:'Do', dowFri:'Fr', dowSat:'Sa', dowSun:'So',
+    ccPlaceholder:'Kartenname (z. B. Tag 08\u201316)', ccSave:'+ Als Karte speichern',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
     legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
@@ -5315,7 +5394,7 @@ var KV_TEMPLATES={
   medaustron_rt:{name:'Krankenanstalten – Radiologietechnologie',middleS:35.50,lateS:50,thresh:20,rufRate:4.94,wbf:0.5,
     shifts:{early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']},
     rules:{deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,hasRuf:true,hasLateNight:true,hasMiddle:true,hasCallin:true,
-      nightLStFree:false,holSupplLStMode:'ot68_2',hourlyDivisor:173,roundHourly:true},
+      nightLStFree:false,holSupplLStMode:'ot68_2',hourlyDivisor:173,roundHourly:true,lateSupplFrom:'14:00'},
     note:'Validated cent-for-cent against real Austrian hospital payslips (Radiologietechnologie). The reference template.'},
   // Healthcare
   gesundheit_kh:{name:'Krankenanstalten',middleS:40,lateS:55,thresh:20,rufRate:5.20,wbf:0.5,
@@ -5398,10 +5477,19 @@ function getActiveKVRules(){
   return merged;
 }
 
+// Shows the 'KV applied' note for the current selection without touching any input values.
+function showKVNote(){
+  var key=document.getElementById('kv-preset').value,note=document.getElementById('kv-applied');
+  if(!note)return;
+  var kv=key?KV_TEMPLATES[key]:null;
+  if(!kv){note.style.display='none';return;}
+  note.textContent=(key==='medaustron_rt'?'\u2713 ':'\u26a0 ')+kv.name+' applied \u2014 '+kv.note;
+  note.style.display='block';
+}
 function applyKVPreset(){
   var key=document.getElementById('kv-preset').value;
   var note=document.getElementById('kv-applied');
-  if(!key){if(note)note.style.display='none';return;}
+  if(!key){if(note)note.style.display='none';saveSettings();renderAll();return;}
   var kv=KV_TEMPLATES[key];if(!kv)return;
   document.getElementById('middle-suppl').value=kv.middleS.toFixed(2);
   document.getElementById('late-suppl').value=kv.lateS.toFixed(2);
@@ -5609,7 +5697,7 @@ function renderAll(){
     _renderYearTimer=setTimeout(function(){yearTabYear=currentYear;renderYear();},200);
   }
 }
-applyLang();loadData();loadTemplates();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
+applyLang();loadData();loadTemplates();loadCustomCards();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
 </script>
 <!-- Storage warning banner -->
 <div id="storage-warn" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 16px;text-align:center;z-index:500">⚠️ Storage approaching limit (4MB) — export a JSON backup and consider clearing old years.</div>
