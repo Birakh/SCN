@@ -68,10 +68,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .day-cell.free-cell{background-image:repeating-linear-gradient(45deg,rgba(128,128,128,.12) 0 4px,transparent 4px 8px)}
 .add-hint.free-hint{color:#999}
 body.dark .add-hint.free-hint{color:#777}
-.preset-btn.custom{position:relative}
+.preset-btn.custom,.preset-btn.hideable{position:relative}
 .cc-del{position:absolute;top:1px;right:3px;font-size:10px;color:#aaa;cursor:pointer;padding:0 2px;font-style:normal}
 .cc-del:hover{color:#c0392b}
 .cc-add{display:flex;gap:6px;margin:6px 0 8px}
+.fb-fields{display:flex;flex-direction:column;gap:6px}
+.fb-fields input[type=text],.fb-fields input[type=email],.fb-fields textarea{font-size:12px;padding:6px 8px;border:.5px solid #ddd;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box}
+body.dark .fb-fields input,body.dark .fb-fields textarea{background:#2a2a2e;color:#e2e2dc;border-color:#4a4a4e}
 .cc-add input{flex:1;font-size:12px;padding:5px 8px;border:.5px solid #ddd;border-radius:6px}
 body.dark .cc-add input{background:#2a2a2e;color:#e2e2dc;border-color:#4a4a4e}
 .ot-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-left:3px;vertical-align:middle}
@@ -683,7 +686,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <div>
       <div class="app-title" data-i18n="appTitle">Paychecker Austria</div>
       <div class="app-sub" data-i18n="appSub">Austria · click any day to add or edit a shift</div>
-      <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a></div>
+      <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a> &middot; <a href="#" onclick="openImpressum();return false;" data-i18n="impLink">Impressum</a> &middot; <a href="#" id="fb-link" style="display:none" onclick="openFeedback();return false;" data-i18n="fbLink">Feedback</a></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="month-nav">
@@ -1227,7 +1230,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <select class="kv-select" id="kv-preset" onchange="applyKVPreset()">
         <option value="" data-i18n="kvSelectSector">— Select your sector —</option>
         <optgroup label="✓ Verified (validated against real payslips)" data-i18n-label="kvGroupVerified">
-          <option value="medaustron_rt">Krankenanstalten – Radiologietechnologie ✓</option>
+          <option value="gesundheit_rt">Krankenanstalten – Radiologietechnologie ✓</option>
         </optgroup>
         <optgroup label="Healthcare &amp; Social" data-i18n-label="kvGroupHealth">
           <option value="gesundheit_kh">Krankenanstalten (hospitals) — KAKuG</option>
@@ -1565,6 +1568,30 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 
 
 <!-- ═══ ONBOARDING TUTORIAL ═══ -->
+<div class="disc-overlay" id="feedback-overlay" role="dialog" aria-modal="true" aria-labelledby="fb-title" onclick="closeFeedback()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="fb-title" data-i18n="fbTitle">Feedback / contact</h2>
+    <div class="disc-body"><p data-i18n="fbNote">Bugs, wrong numbers, ideas? Please send anonymised figures only &ndash; no payslips, no names, no personal data.</p></div>
+    <div class="fb-fields">
+      <input type="text" id="fb-name" maxlength="80" placeholder="Name (optional)" data-i18n-placeholder="fbName">
+      <input type="email" id="fb-email" maxlength="120" placeholder="Your email (optional, for a reply)" data-i18n-placeholder="fbEmail">
+      <textarea id="fb-msg" maxlength="3000" rows="5" placeholder="Your message" data-i18n-placeholder="fbMsg"></textarea>
+      <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
+      <div id="fb-status" style="font-size:11px;min-height:16px"></div>
+      <button class="mbtn primary" type="button" id="fb-send" onclick="sendFeedback()" data-i18n="fbSend">Send</button>
+      <button class="mbtn" type="button" onclick="closeFeedback()" data-i18n="impClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="disc-overlay" id="impressum-overlay" role="dialog" aria-modal="true" aria-labelledby="imp-title" onclick="closeImpressum()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="imp-title">Impressum &middot; Offenlegung</h2>
+    <div class="disc-body" id="imp-body"></div>
+    <button class="mbtn primary" onclick="closeImpressum()" data-i18n="impClose">Close</button>
+  </div>
+</div>
+
 <div class="disc-overlay" id="disclaimer-overlay" role="dialog" aria-modal="true" aria-labelledby="disc-title">
   <div class="disc-box">
     <h2 id="disc-title">Disclaimer · Haftungsausschluss</h2>
@@ -1623,6 +1650,13 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ1">1. Your monthly gross salary (€)</label>
       <input type="number" id="wiz-salary" placeholder="e.g. 3200.00" step="0.01" min="0" style="width:100%;font-size:14px;padding:7px 10px;border:.5px solid #ccc;border-radius:7px">
       <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="wizQ1Hint">Find this on your payslip (Bruttobezug). You can change it later.</div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQKV">Your sector / collective agreement (optional)</label>
+      <select id="wiz-kv" onchange="wizKVChange()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
+        <option value="" data-i18n="wizKVNone">&mdash; Skip / not listed &mdash;</option>
+      </select>
+      <div id="wiz-kv-info" style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="wizKVHint">Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.</div>
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ2">2. Do you receive bonus months?</label>
@@ -2036,7 +2070,7 @@ function calcEarnedSupplements(year,month){
 
 // Late supplement counts only from a fixed clock time (employer: from 14:00, although staff stamp in from 13:30).
 function supplStart(start,from){return(from&&start>='06:00'&&start<from)?from:start;}
-// Hourly rate. medaustron_rt payslips (May-Oct 2026): Stundensatz = Gehalt/173, rounded to cents (4776.66 -> 27.61).
+// Hourly rate. gesundheit_rt payslips (May-Oct 2026): Stundensatz = Gehalt/173, rounded to cents (4776.66 -> 27.61).
 function kvHourly(base){
   var r=getActiveKVRules();
   var h=base/(r.hourlyDivisor||173.33);
@@ -2050,7 +2084,7 @@ function ovtLStFree(year,suppl,hours){
   var share=hours>0?Math.min(hours,capH)/hours:0;
   return Math.min(0.5*suppl*share,capE);
 }
-// LSt-taxable part of the deferred holiday supplement. Legacy KVs: fully LSt-free (unverified). medaustron_rt: §68 Abs 2.
+// LSt-taxable part of the deferred holiday supplement. Legacy KVs: fully LSt-free (unverified). gesundheit_rt: §68 Abs 2.
 function holSupplLStTaxable(sp,year){
   var x=sp.holExtraSuppl||0, r=getActiveKVRules();
   if(r.holSupplLStMode==='ot68_2') return x-ovtLStFree(year,x,sp.holH||0);
@@ -2138,12 +2172,12 @@ function calcSalary(year,month){
     + (s.rufSVBase?rufPay:0)
     + s.hazard;                                      // Gefahrenzulage: SV-taxable, LSt-free (§68) - verified Oct 2026 payslip
   var lstTaxable = base
-    + (rules.nightLStFree===false?(night.shiftA+night.lateNightA):0) // medaustron_rt 'Schichtzulage 8%' is LSt-TAXABLE (May 2026 payslip)
+    + (rules.nightLStFree===false?(night.shiftA+night.lateNightA):0) // gesundheit_rt 'Schichtzulage 8%' is LSt-TAXABLE (May 2026 payslip)
     // night pay EXCLUDED — §68(1) Nachtzulage tax-free for qualifying KVs
     + prevSuppl.middleP + prevSuppl.lateP
     + sameMonthMiddleP + sameMonthLateP
     + (prevSuppl.holExtraBase||0)   // base pay for holiday hours — taxable
-    + holSupplLStTaxable(prevSuppl,year) // holiday supplement: legacy fully LSt-free; medaustron_rt §68 Abs 2 = 50% free
+    + holSupplLStTaxable(prevSuppl,year) // holiday supplement: legacy fully LSt-free; gesundheit_rt §68 Abs 2 = 50% free
     // holExtraSuppl EXCLUDED — §68(1) Feiertagszuschlag supplement tax-free
     // sameMonthHolSuppl EXCLUDED — also §68(1) tax-free
     + leavePay + callinP
@@ -2304,7 +2338,7 @@ function renderReport(){
       badgeEl.innerHTML='<span class="kv-badge-none">⚠ No KV selected — tap to configure</span>';
       return;
     }
-    var verified=(key==='medaustron_rt');
+    var verified=(key==='gesundheit_rt');
     badgeEl.innerHTML=verified
       ?'<span class="kv-badge-verified">✓ '+tpl.name+' — validated</span>'
       :'<span class="kv-badge-unverified">⚠ '+tpl.name+' — estimate, verify your payslip</span>';
@@ -2775,6 +2809,15 @@ function getFreeDays(){var r=[];for(var i=0;i<7;i++){var el=document.getElementB
 function restoreFreeDays(a){for(var i=0;i<7;i++){var el=document.getElementById('free-day-'+i);if(el)el.checked=a.indexOf(i)>=0;}}
 function countSick(y,m){var p=monthKey(y,m),n=0;Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===p&&shifts[k].type==='sick')n++;});return n;}
 
+// ═══ HIDEABLE BUILT-IN CARDS ═══
+var hiddenCards=[]; // keys of built-in quick cards the user hid - persisted in sp_hidden_cards
+var CARD_KEYS=['early','middle','late','latenight','night','long','ruf1','ruf2','callin','leave','sick','holiday'];
+function sanitizeHidden(a){return Array.isArray(a)?a.filter(function(k){return CARD_KEYS.indexOf(k)>=0;}):[];}
+function loadHiddenCards(){try{var r=localStorage.getItem('sp_hidden_cards');if(r)hiddenCards=sanitizeHidden(JSON.parse(r));}catch(e){hiddenCards=[];}}
+function saveHiddenCards(){try{localStorage.setItem('sp_hidden_cards',JSON.stringify(hiddenCards));}catch(e){}}
+function hideCard(key,ev){if(ev&&ev.stopPropagation)ev.stopPropagation();if(hiddenCards.indexOf(key)<0)hiddenCards.push(key);saveHiddenCards();_refreshCards();}
+function showAllCards(){hiddenCards=[];saveHiddenCards();_refreshCards();}
+
 // ═══ CUSTOM SHIFT CARDS (manual quick presets) ═══
 var customCards=[]; // [{id,name,type,start,end}] - persisted in sp_custom_cards
 var CARD_TYPES=['normal','middle','late','latenight','holiday','leave','sick','ruf','callin'];
@@ -3062,31 +3105,33 @@ function renderModalPresets(rules, kvSh, s){
   var lateLabel=s&&s.lateS>0?(lang==='de'?'+\u20ac'+s.lateS.toFixed(2)+' Zuschl.':'+\u20ac'+s.lateS.toFixed(2)+' suppl.'):'';
   var holLabel=holMode==='none'?'':(holMode==='150_same'?'150%':'200%');
 
-  function btn(type,start,end,icon,label,sub){
-    return '<button class="preset-btn" onclick="applyPreset(\''+type+'\',\''+start+'\',\''+end+'\',this)">'+
-      icon+' '+label+'<br><span>'+sub+'</span></button>';
+  function btn(key,type,start,end,icon,label,sub){
+    if(hiddenCards.indexOf(key)>=0) return '';
+    return '<button class="preset-btn hideable" onclick="applyPreset(\''+type+'\',\''+start+'\',\''+end+'\',this)">'+
+      icon+' '+label+'<br><span>'+sub+'</span><span class="cc-del" title="'+(lang==='de'?'Ausblenden':'Hide')+'" onclick="hideCard(\''+key+'\',event)">\u2715</span></button>';
   }
-
   var btns=[];
   // Always shown
-  btns.push(btn('normal',kvSh.early[0],kvSh.early[1],'&#9728;',lang==='de'?'Fr\u00fch':'Early',tr('early')));
-  if(hasMiddle) btns.push(btn('middle',kvSh.middle[0],kvSh.middle[1],'&#127780;',lang==='de'?'Mittel':'Middle',tr('middle')+(midLabel?' '+midLabel:'')));
-  btns.push(btn('late',kvSh.late[0],kvSh.late[1],'&#127769;',lang==='de'?'Sp\u00e4t':'Late',tr('late')+(lateLabel?' '+lateLabel:'')));
-  if(hasLateNight) btns.push(btn('latenight',kvSh.late[0],kvSh.late[1],'&#127769;','8%',tr('late')+' 8%'));
-  btns.push(btn('normal',kvSh.night[0],kvSh.night[1],'&#127761;',lang==='de'?'Nacht':'Night',tr('night')));
-  btns.push(btn('normal',kvSh.long[0],kvSh.long[1],'&#9203;',lang==='de'?'Lang':'Long',tr('long')));
+  btns.push(btn('early','normal',kvSh.early[0],kvSh.early[1],'&#9728;',lang==='de'?'Fr\u00fch':'Early',tr('early')));
+  if(hasMiddle) btns.push(btn('middle','middle',kvSh.middle[0],kvSh.middle[1],'&#127780;',lang==='de'?'Mittel':'Middle',tr('middle')+(midLabel?' '+midLabel:'')));
+  btns.push(btn('late','late',kvSh.late[0],kvSh.late[1],'&#127769;',lang==='de'?'Sp\u00e4t':'Late',tr('late')+(lateLabel?' '+lateLabel:'')));
+  if(hasLateNight) btns.push(btn('latenight','latenight',kvSh.late[0],kvSh.late[1],'&#127769;','8%',tr('late')+' 8%'));
+  btns.push(btn('night','normal',kvSh.night[0],kvSh.night[1],'&#127761;',lang==='de'?'Nacht':'Night',tr('night')));
+  btns.push(btn('long','normal',kvSh.long[0],kvSh.long[1],'&#9203;',lang==='de'?'Lang':'Long',tr('long')));
   if(hasRuf){
-    btns.push(btn('ruf',kvSh.oncall1[0],kvSh.oncall1[1],'&#128241;',lang==='de'?'Ruf 1':'On-call 1',tr('oncall1')));
-    btns.push(btn('ruf',kvSh.oncall2[0],kvSh.oncall2[1],'&#128241;',lang==='de'?'Ruf 2':'On-call 2',tr('oncall2')));
+    btns.push(btn('ruf1','ruf',kvSh.oncall1[0],kvSh.oncall1[1],'&#128241;',lang==='de'?'Ruf 1':'On-call 1',tr('oncall1')));
+    btns.push(btn('ruf2','ruf',kvSh.oncall2[0],kvSh.oncall2[1],'&#128241;',lang==='de'?'Ruf 2':'On-call 2',tr('oncall2')));
   }
-  if(hasCallin) btns.push(btn('callin','00:00','01:00','&#128680;','Rufeinsatz',lang==='de'?'Zeit setzen \u2193':'set time \u2193'));
-  btns.push(btn('leave',kvSh.early[0],kvSh.early[1],'&#127958;',lang==='de'?'Urlaub':'Leave',lang==='de'?'Urlaubstag':'day off'));
-  btns.push(btn('sick',kvSh.early[0],kvSh.early[1],'&#129298;',lang==='de'?'Krank':'Sick',lang==='de'?'Krankenstand':'sick day'));
-  if(holMode!=='none') btns.push(btn('holiday',kvSh.holiday[0],kvSh.holiday[1],'&#127881;',lang==='de'?'Feiertag':'Holiday',holLabel+' '+(lang==='de'?'gearbeitet':'worked')));
+  if(hasCallin) btns.push(btn('callin','callin','00:00','01:00','&#128680;','Rufeinsatz',lang==='de'?'Zeit setzen \u2193':'set time \u2193'));
+  btns.push(btn('leave','leave',kvSh.early[0],kvSh.early[1],'&#127958;',lang==='de'?'Urlaub':'Leave',lang==='de'?'Urlaubstag':'day off'));
+  btns.push(btn('sick','sick',kvSh.early[0],kvSh.early[1],'&#129298;',lang==='de'?'Krank':'Sick',lang==='de'?'Krankenstand':'sick day'));
+  if(holMode!=='none') btns.push(btn('holiday','holiday',kvSh.holiday[0],kvSh.holiday[1],'&#127881;',lang==='de'?'Feiertag':'Holiday',holLabel+' '+(lang==='de'?'gearbeitet':'worked')));
 
   customCards.forEach(function(c){
     btns.push('<button class="preset-btn custom" onclick="applyPreset(\''+c.type+'\',\''+c.start+'\',\''+c.end+'\',this)">'+_ccEsc(c.name)+'<br><span>'+c.start+'\u2013'+c.end+'</span><span class="cc-del" title="Delete" onclick="deleteCustomCard(\''+c.id+'\',event)">\u2715</span></button>');
   });
+  btns=btns.filter(function(b){return b;});
+  if(hiddenCards.length) btns.push('<button class="preset-btn" style="grid-column:1/-1" onclick="showAllCards()">\u21ba '+(lang==='de'?'Standardkarten wieder anzeigen':'Show default cards again')+' ('+hiddenCards.length+')</button>');
   grid.innerHTML=btns.join('');
 }
 
@@ -3290,7 +3335,7 @@ function loadData(){
 function clearMonth(){if(!confirm('Clear '+MONTH_NAMES[currentMonth]+' '+currentYear+'?'))return;var pfx=monthKey(currentYear,currentMonth);Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===pfx)delete shifts[k];});saveData();renderAll();}
 function clearAll(){
   if(!confirm('Clear ALL data? This includes shifts, actuals, OT log, grade history, and templates.'))return;
-  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();
+  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();hiddenCards=[];saveHiddenCards();
   saveData();saveGradeHistory();saveTemplates();
   try{localStorage.setItem('sp_ot','{}');}catch(e){}
   renderAll();renderGradeHistory();renderTemplates();
@@ -3487,7 +3532,7 @@ async function syncFromRepo(){
 
 // ═══ LOCAL BACKUP ═══
 function exportJSON(){
-  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards};
+  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards};
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -3519,6 +3564,7 @@ function importJSON(input){
       gradeHistory=parsed.gradeHistory||[];
       shiftTemplates=parsed.shiftTemplates||[];
       if(Array.isArray(parsed.customCards)){customCards=sanitizeCards(parsed.customCards);saveCustomCards();}
+      if(Array.isArray(parsed.hiddenCards)){hiddenCards=sanitizeHidden(parsed.hiddenCards);saveHiddenCards();}
       saveData();saveGradeHistory();saveTemplates();
       try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
       renderAll();renderGradeHistory();renderTemplates();
@@ -4429,6 +4475,25 @@ function toggleAdv(){
 }
 
 // ═══ FIRST-RUN WIZARD ═══
+function fillWizKV(){
+  var sel=document.getElementById('wiz-kv');
+  if(!sel||sel.options.length>1) return;
+  Object.keys(KV_TEMPLATES).forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;o.textContent=(k==='gesundheit_rt'?'\u2713 ':'\u26a0 ')+KV_TEMPLATES[k].name;
+    sel.appendChild(o);
+  });
+}
+function wizKVChange(){
+  var key=document.getElementById('wiz-kv').value,info=document.getElementById('wiz-kv-info');
+  if(!info) return;
+  var lang=getLang(),de=lang==='de';
+  if(!key||!KV_TEMPLATES[key]){info.textContent=I18N[lang].wizKVHint;return;}
+  var head=key==='gesundheit_rt'
+    ?(de?'\u2713 Anhand echter Gehaltsabrechnungen gepr\u00fcft. ':'\u2713 Verified against real payslips. ')
+    :(de?'\u26a0 Ungepr\u00fcfte Sch\u00e4tzung \u2013 mit deiner Gehaltsabrechnung vergleichen. ':'\u26a0 Unverified estimate \u2013 compare with your payslip. ');
+  info.textContent=head+KV_TEMPLATES[key].note;
+}
 function wizSupplChange(){
   var val=document.getElementById('wiz-suppl').value;
   var block=document.getElementById('wiz-suppl-fields');
@@ -4441,6 +4506,8 @@ function finishWizard(){
   var model=document.getElementById('wiz-model').value;
   var hasShifts=document.getElementById('wiz-shifts').value==='yes';
   var supplAnswer=document.getElementById('wiz-suppl').value;
+  var wizKV=document.getElementById('wiz-kv');
+  if(wizKV&&wizKV.value&&KV_TEMPLATES[wizKV.value]){document.getElementById('kv-preset').value=wizKV.value;applyKVPreset();}
 
   // Apply wizard values
   document.getElementById('grade').value=salary.toFixed(2);
@@ -4482,6 +4549,68 @@ function finishWizard(){
   }
 }
 
+// ═══ FEEDBACK FORM (Web3Forms; static site has no backend) ═══
+function initContact(){var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
+function openFeedback(){
+  if(!WEB3FORMS_KEY) return;
+  var st=document.getElementById('fb-status');if(st)st.textContent='';
+  document.getElementById('feedback-overlay').classList.add('open');
+}
+function closeFeedback(){var el=document.getElementById('feedback-overlay');if(el)el.classList.remove('open');}
+function sendFeedback(){
+  var st=document.getElementById('fb-status'),btn=document.getElementById('fb-send'),T=I18N[getLang()];
+  if(document.getElementById('fb-bot').checked) return; // honeypot
+  var msg=(document.getElementById('fb-msg').value||'').trim();
+  if(msg.length<5){st.style.color='#c0392b';st.textContent=T.fbShort;return;}
+  if(!WEB3FORMS_KEY) return;
+  var body={access_key:WEB3FORMS_KEY,subject:'Paychecker Austria feedback',from_name:'Paychecker Austria',message:msg};
+  var nm=(document.getElementById('fb-name').value||'').trim(),em=(document.getElementById('fb-email').value||'').trim();
+  if(nm) body.name=nm;
+  if(em) body.email=em;
+  btn.disabled=true;st.style.color='';st.textContent=T.fbSending;
+  fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&j.success){st.style.color='#27ae60';st.textContent=T.fbOk;document.getElementById('fb-msg').value='';}
+      else{throw new Error('rejected');}
+    })
+    .catch(function(){st.style.color='#c0392b';st.textContent=T.fbErr;})
+    .then(function(){btn.disabled=false;});
+}
+
+// ═══ IMPRESSUM / OFFENLEGUNG (Austria) ═══
+// FILL IN before publishing: operator name, postal address, e-mail. Shown only in the Impressum dialog.
+var IMPRESSUM={name:'Anis Bi',street:'',city:'Wiener Neustadt',email:'innocontenthub@gmail.com'}; // street = FULL postal address (needed: donation link => ECG applies)
+var WEB3FORMS_KEY=''; // Web3Forms access key (public by design) - enables the feedback form
+function openImpressum(){
+  var b=document.getElementById('imp-body');
+  if(!b) return;
+  b.textContent='';
+  function impRow(label,text){
+    var p=document.createElement('p');
+    var s=document.createElement('b');s.textContent=label;
+    p.appendChild(s);p.appendChild(document.createElement('br'));
+    p.appendChild(document.createTextNode(text));
+    b.appendChild(p);
+  }
+  impRow('Medieninhaber & Diensteanbieter / Media owner & service provider',[IMPRESSUM.name,[IMPRESSUM.street,IMPRESSUM.city].filter(Boolean).join(', ')].filter(Boolean).join(', ')||'\u2014');
+  impRow('Kontakt / Contact',IMPRESSUM.email+(WEB3FORMS_KEY?' \u00b7 Feedback-Formular / feedback form':''));
+  impRow('Zweck / Purpose','Kostenloser Gehalts- und Schichtrechner (Sch\u00e4tzwerte, keine Beratung). / Free salary and shift estimator (estimates, not advice).');
+  impRow('Datenschutz','Diese Seite \u00fcbermittelt deine Eingaben nicht an den Betreiber. Die Daten werden in deinem Browser (localStorage) auf deinem Ger\u00e4t gespeichert. Die optionale GitHub-Synchronisation \u00fcbertr\u00e4gt verschl\u00fcsselte Daten nur dann an dein eigenes Repository, wenn du sie aktivierst. Die Seite l\u00e4dt ein Skript (SheetJS) von cdnjs.cloudflare.com, und der Hosting-Anbieter kann technische Verbindungsdaten (z. B. IP-Adresse) verarbeiten.');
+  impRow('Privacy','This page does not send your entries to the operator. Data is stored in your browser (localStorage) on your device. Optional GitHub sync transfers encrypted data to your own repository only if you enable it. The page loads one script (SheetJS) from cdnjs.cloudflare.com, and the hosting provider may process technical connection data (e.g. IP address).');
+  if(WEB3FORMS_KEY){
+    impRow('Feedback-Formular / Feedback form','Bei Nutzung des Feedback-Formulars werden deine Nachricht und die von dir eingegebenen Kontaktdaten \u00fcber den Dienst Web3Forms an den Betreiber \u00fcbermittelt. / If you use the feedback form, your message and any contact details you enter are sent to the operator via the service Web3Forms.');
+  }
+  if(!IMPRESSUM.name||!IMPRESSUM.street||!IMPRESSUM.city||!IMPRESSUM.email||!WEB3FORMS_KEY){
+    var w=document.createElement('p');w.style.color='#c0392b';w.textContent='Impressum incomplete: street address and/or contact form key missing (operator must fill in).';b.appendChild(w);
+  }
+  document.getElementById('impressum-overlay').classList.add('open');
+}
+function closeImpressum(){
+  var el=document.getElementById('impressum-overlay');
+  if(el) el.classList.remove('open');
+}
+
 // ═══ DISCLAIMER ═══
 function checkDisclaimer(){
   var acked=false;
@@ -4503,6 +4632,7 @@ function ackDisclaimer(){
 
 function checkWizard(){
   if(!localStorage.getItem('sp_wizard_done')&&!localStorage.getItem('sp_settings')){
+    fillWizKV();
     document.getElementById('wizard-overlay').classList.add('open');
   }
 }
@@ -4746,6 +4876,9 @@ var I18N={
     freeDaysIntro:'Marks these weekdays as free on the calendar and skips them when applying patterns or templates. Pay is not scaled: enter your actual monthly gross as base salary.',
     dowMon:'Mon', dowTue:'Tue', dowWed:'Wed', dowThu:'Thu', dowFri:'Fri', dowSat:'Sat', dowSun:'Sun',
     ccPlaceholder:'Card name (e.g. Day 08\u201316)', ccSave:'+ Save as card',
+    wizQKV:'Your sector / collective agreement (optional)', wizKVNone:'\u2014 Skip / not listed \u2014', wizKVHint:'Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.',
+    impLink:'Impressum', impClose:'Close',
+    fbLink:'Feedback', fbTitle:'Feedback / contact', fbNote:'Bugs, wrong numbers, ideas? Please send anonymised figures only \u2013 no payslips, no names, no personal data.', fbName:'Name (optional)', fbEmail:'Your email (optional, for a reply)', fbMsg:'Your message', fbSend:'Send', fbSending:'Sending\u2026', fbOk:'Thank you \u2013 message sent.', fbErr:'Sending failed. Please try again later or write to the email in the Impressum.', fbShort:'Please write a few words.',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
     legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
@@ -5037,6 +5170,9 @@ var I18N={
     freeDaysIntro:'Markiert diese Wochentage im Kalender als frei und \u00fcberspringt sie bei Mustern und Vorlagen. Das Gehalt wird nicht skaliert: Trage dein tats\u00e4chliches Monatsbrutto als Grundgehalt ein.',
     dowMon:'Mo', dowTue:'Di', dowWed:'Mi', dowThu:'Do', dowFri:'Fr', dowSat:'Sa', dowSun:'So',
     ccPlaceholder:'Kartenname (z. B. Tag 08\u201316)', ccSave:'+ Als Karte speichern',
+    wizQKV:'Deine Branche / dein Kollektivvertrag (optional)', wizKVNone:'\u2014 \u00dcberspringen / nicht aufgelistet \u2014', wizKVHint:'F\u00fcllt typische Dienstzeiten und Regeln vor. Nur eine Branche ist mit echten Gehaltsabrechnungen gepr\u00fcft, die anderen sind Sch\u00e4tzungen. \u00c4nderbar in den Einstellungen.',
+    impLink:'Impressum', impClose:'Schlie\u00dfen',
+    fbLink:'Feedback', fbTitle:'Feedback / Kontakt', fbNote:'Fehler, falsche Zahlen, Ideen? Bitte nur anonymisierte Werte senden \u2013 keine Gehaltsabrechnungen, keine Namen, keine pers\u00f6nlichen Daten.', fbName:'Name (optional)', fbEmail:'Deine E-Mail (optional, f\u00fcr eine Antwort)', fbMsg:'Deine Nachricht', fbSend:'Senden', fbSending:'Wird gesendet\u2026', fbOk:'Danke \u2013 Nachricht gesendet.', fbErr:'Senden fehlgeschlagen. Bitte sp\u00e4ter erneut versuchen oder an die E-Mail im Impressum schreiben.', fbShort:'Bitte schreibe ein paar Worte.',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
     legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
@@ -5373,7 +5509,7 @@ function applyLang(lang){
 //      this KV: whether supplements are paid same-month or deferred to next month, whether
 //      a holiday worked pays 200% (deferred) vs some other split, whether there's an unpaid
 //      break to deduct, and whether shift-based night/late-night tax-free §68 logic applies
-//      at all. Only 'medaustron_rt' (KH Radiologietechnologie) has been validated cent-for-cent against a real payslip
+//      at all. Only 'gesundheit_rt' (KH Radiologietechnologie) has been validated cent-for-cent against a real payslip
 //      (see calcSalary/calcEarnedSupplements comments). All others are best-effort estimates
 //      from public KV text and should be treated as approximations — verify against your own
 //      Abrechnung and use the feedback link if something's off.
@@ -5391,7 +5527,7 @@ function applyLang(lang){
 //   callinNormalRate   num   — multiplier applied to call-in hours on a normal day
 //                              (1.0 = normal full rate, standard for KH shift workers)
 var KV_TEMPLATES={
-  medaustron_rt:{name:'Krankenanstalten – Radiologietechnologie',middleS:35.50,lateS:50,thresh:20,rufRate:4.94,wbf:0.5,
+  gesundheit_rt:{name:'Krankenanstalten – Radiologietechnologie',middleS:35.50,lateS:50,thresh:20,rufRate:4.94,wbf:0.5,
     shifts:{early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']},
     rules:{deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,hasRuf:true,hasLateNight:true,hasMiddle:true,hasCallin:true,
       nightLStFree:false,holSupplLStMode:'ot68_2',hourlyDivisor:173,roundHourly:true,lateSupplFrom:'14:00'},
@@ -5483,7 +5619,7 @@ function showKVNote(){
   if(!note)return;
   var kv=key?KV_TEMPLATES[key]:null;
   if(!kv){note.style.display='none';return;}
-  note.textContent=(key==='medaustron_rt'?'\u2713 ':'\u26a0 ')+kv.name+' applied \u2014 '+kv.note;
+  note.textContent=(key==='gesundheit_rt'?'\u2713 ':'\u26a0 ')+kv.name+' applied \u2014 '+kv.note;
   note.style.display='block';
 }
 function applyKVPreset(){
@@ -5497,7 +5633,7 @@ function applyKVPreset(){
   document.getElementById('ruf-rate').value=kv.rufRate.toFixed(2); // always set, incl. 0
   // wbf-rate intentionally not touched: WBF depends on Bundesland, not on KV
   if(note){
-    var verified=key==='medaustron_rt';
+    var verified=key==='gesundheit_rt';
     note.textContent=(verified?'✓ ':'⚠ ')+kv.name+' applied — '+kv.note;
     note.style.display='block';
   }
@@ -5697,7 +5833,7 @@ function renderAll(){
     _renderYearTimer=setTimeout(function(){yearTabYear=currentYear;renderYear();},200);
   }
 }
-applyLang();loadData();loadTemplates();loadCustomCards();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
+applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();initContact();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
 </script>
 <!-- Storage warning banner -->
 <div id="storage-warn" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 16px;text-align:center;z-index:500">⚠️ Storage approaching limit (4MB) — export a JSON backup and consider clearing old years.</div>
