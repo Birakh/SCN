@@ -72,6 +72,9 @@ body.dark .add-hint.free-hint{color:#777}
 .cc-del{position:absolute;top:1px;right:3px;font-size:10px;color:#aaa;cursor:pointer;padding:0 2px;font-style:normal}
 .cc-del:hover{color:#c0392b}
 .cc-add{display:flex;gap:6px;margin:6px 0 8px}
+body.dark #corr-input{background:#2a2a2e;color:#e2e2dc;border-color:#4a4a4e}
+.rates-banner{font-size:10.5px;margin-top:3px;padding:3px 8px;border-radius:6px;background:#fff4d6;color:#7a5a00;line-height:1.4}
+body.dark .rates-banner{background:#3a3220;color:#e0c070}
 .fb-fields{display:flex;flex-direction:column;gap:6px}
 .fb-fields input[type=text],.fb-fields input[type=email],.fb-fields textarea{font-size:12px;padding:6px 8px;border:.5px solid #ddd;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box}
 body.dark .fb-fields input,body.dark .fb-fields textarea{background:#2a2a2e;color:#e2e2dc;border-color:#4a4a4e}
@@ -687,6 +690,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="app-title" data-i18n="appTitle">Paychecker Austria</div>
       <div class="app-sub" data-i18n="appSub">Austria · click any day to add or edit a shift</div>
       <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a> &middot; <a href="#" onclick="openImpressum();return false;" data-i18n="impLink">Impressum</a> &middot; <a href="#" id="fb-link" style="display:none" onclick="openFeedback();return false;" data-i18n="fbLink">Feedback</a></div>
+      <div id="rates-banner" class="rates-banner" style="display:none"></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="month-nav">
@@ -751,7 +755,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
   <!-- ── REPORT ── -->
   <div class="rpanel" id="tab-report">
     <div class="backup-banner" id="backup-banner" onclick="showTab('settings',null)" title="Go to Settings → Backup">
-      ⏰ No backup in 30+ days — tap to export or sync
+      <span id="backup-banner-text">⏰ No backup in 30+ days — tap to export or sync</span>
     </div>
     <div class="net-box">
       <div class="net-label">Estimated net payout</div>
@@ -777,6 +781,9 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="rrow"><span class="rl" data-i18n="rlHolidayExtra">Public holiday extra (200%, prev month)</span><span class="rv" id="r-hol">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlAnnualLeave">Annual leave (Urlaub)</span><span class="rv" id="r-leave">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlSickDays">Sick days (salary continues)</span><span class="rv" id="r-sick">0 d</span></div>
+      <div class="rrow"><span class="rl" data-i18n="rlCorr">Prior-month correction (gross, +/&minus;)</span><span class="rv"><input type="number" step="0.01" id="corr-input" placeholder="0.00" oninput="setCorrection(this.value)" style="width:90px;text-align:right;font-size:12px;padding:2px 6px;border:.5px solid #ddd;border-radius:5px"></span></div>
+      <div class="rrow" id="r-corr-row" style="display:none"><span class="rl" data-i18n="rlCorrNet">&nbsp;&nbsp;&rarr; net effect (after SV and tax)</span><span class="rv" id="r-corr-net">&mdash;</span></div>
+      <div style="font-size:10px;color:#aaa;line-height:1.4;margin:-2px 0 6px" data-i18n="corrHint">Retro lines on your payslip (e.g. &quot;09*Ausfallsentgelt&quot;): SV is charged this month, tax at your marginal rate.</div>
       <div class="rrow"><span class="rl" data-i18n="rlRufStandby">Rufbereitschaft standby</span><span class="rv" id="r-ruf">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlRufCallin">Rufeinsatz call-in</span><span class="rv" id="r-callin">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlHazard">Hazard allowance (tax-free)</span><span class="rv pos" id="r-hazard">€ 230,43</span></div>
@@ -812,6 +819,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="rrow"><span class="rl" data-i18n="rlUVEmployer">UV Unfallversicherung (employer)</span><span class="rv" style="color:#aaa">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlLStProgressive">Lohnsteuer (progressive brackets)</span><span class="rv neg" id="r-lst">—</span></div>
       <div class="rrow total-row"><span class="rl">Net payout</span><span class="rv info" id="r-net">—</span></div>
+      <div style="text-align:right;font-size:11px;margin-top:4px"><a href="#" onclick="openExplain();return false;" data-i18n="exLink">How is this calculated?</a></div>
     </div>
     <div id="r-employer-section" style="display:none">
       <div class="employer-box">
@@ -905,15 +913,16 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     </div>
 
     <div class="payslip-box">
-      <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:8px">🧾 Payslip comparison — enter your actual values</div>
+      <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:4px" data-i18n="pscTitle">🧾 Payslip comparison &mdash; enter your actual values</div>
+      <div style="font-size:10px;color:#aaa;line-height:1.5;margin-bottom:8px" data-i18n="pscHint">Use &quot;Summe Bez&uuml;ge&quot; (before the works-council levy) as gross, the monthly part only &ndash; no Sonderzahlung. Retro lines (&quot;NN*&quot;) belong in the correction field above.</div>
       <div class="psc-grid">
-        <div class="psc-field"><label>Actual gross (€)</label><input type="number" id="psc-gross" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
-        <div class="psc-field"><label>Actual SV total (€)</label><input type="number" id="psc-sv" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
-        <div class="psc-field"><label>Actual Lohnsteuer (€)</label><input type="number" id="psc-lst" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
-        <div class="psc-field"><label>Actual net (€)</label><input type="number" id="psc-net" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
+        <div class="psc-field"><label data-i18n="pscGross">Actual gross (€)</label><input type="number" id="psc-gross" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
+        <div class="psc-field"><label data-i18n="pscSV">Actual SV total (€)</label><input type="number" id="psc-sv" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
+        <div class="psc-field"><label data-i18n="pscLST">Actual Lohnsteuer (€)</label><input type="number" id="psc-lst" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
+        <div class="psc-field"><label data-i18n="pscNet">Actual net (€)</label><input type="number" id="psc-net" placeholder="—" step="0.01" oninput="renderPayslipComp()"></div>
       </div>
       <div id="psc-result"></div>
-      <button class="mbtn" style="width:100%;margin-top:6px;font-size:11px" onclick="clearPayslipComp()">Clear</button>
+      <button class="mbtn" style="width:100%;margin-top:6px;font-size:11px" onclick="clearPayslipComp()" data-i18n="pscClear">Clear</button>
     </div>
 
     <p style="font-size:10px;color:#bbb;margin-top:10px;line-height:1.5">Middle shift supplement €35.50 and late shift €50 are taxable. Late+Night (8% only) earns night hours with no fixed supplement. Rufbereitschaft standby may be partially SV-exempt — confirm with HR. Max 10 on-call days/month (AZG §20a).</p>
@@ -1568,6 +1577,14 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 
 
 <!-- ═══ ONBOARDING TUTORIAL ═══ -->
+<div class="disc-overlay" id="explain-overlay" role="dialog" aria-modal="true" aria-labelledby="ex-title" onclick="closeExplain()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="ex-title" data-i18n="exTitle">How is this calculated?</h2>
+    <div class="disc-body" id="ex-body"></div>
+    <button class="mbtn primary" onclick="closeExplain()" data-i18n="impClose">Close</button>
+  </div>
+</div>
+
 <div class="disc-overlay" id="feedback-overlay" role="dialog" aria-modal="true" aria-labelledby="fb-title" onclick="closeFeedback()">
   <div class="disc-box" onclick="event.stopPropagation()">
     <h2 id="fb-title" data-i18n="fbTitle">Feedback / contact</h2>
@@ -1576,6 +1593,9 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <input type="text" id="fb-name" maxlength="80" placeholder="Name (optional)" data-i18n-placeholder="fbName">
       <input type="email" id="fb-email" maxlength="120" placeholder="Your email (optional, for a reply)" data-i18n-placeholder="fbEmail">
       <textarea id="fb-msg" maxlength="3000" rows="5" placeholder="Your message" data-i18n-placeholder="fbMsg"></textarea>
+      <label style="font-size:11px;display:flex;gap:6px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="fb-diag" checked style="width:auto;margin-top:2px"><span data-i18n="fbDiag">Include technical info (app version, sector, year, browser &ndash; no amounts)</span></label>
+      <details style="font-size:10px"><summary data-i18n="fbWhat">What is included?</summary><pre id="fb-diag-pre" style="white-space:pre-wrap;font-size:10px;margin:4px 0 0"></pre></details>
+      <button class="mbtn" type="button" onclick="copyDiagnostics()" data-i18n="fbCopy">Copy technical info</button>
       <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
       <div id="fb-status" style="font-size:11px;min-height:16px"></div>
       <button class="mbtn primary" type="button" id="fb-send" onclick="sendFeedback()" data-i18n="fbSend">Send</button>
@@ -1932,7 +1952,7 @@ function calcLohnsteuerAnnual(annualTaxableAfterSV, pendler, fambonus){
     }
   });
   // Absetzbeträge: ANAB (€612) abolished 2026; only Verkehrsabsetzbetrag (VAB) €496 remains
-  tax=Math.max(0,tax-496);
+  tax=Math.max(0,tax-VAB);
   // Familienbonus Plus reduces LSt directly, floor at €0
   tax=Math.max(0,tax-(fambonus||0));
   return tax;
@@ -1946,6 +1966,34 @@ function avRate(monthlyGross){
   for(var i=0;i<SV_AV_BRACKETS.length;i++){ if(monthlyGross<=SV_AV_BRACKETS[i].upTo) return SV_AV_BRACKETS[i].rate; }
   return SV_AV;
 }
+// ═══ RATES BY YEAR ═══
+// status 'official' = in force. 'provisional' = announced, final publication pending.
+// 2026: SV per sozialversicherung.gv.at; tariff per EStG. 2027: tariff per Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026, +2.2666%),
+// SV values per OeGK announcement (HBGL 7,410; AV brackets 0.5/1.5/2.5%; BGBl pending). Unchanged by law: KV 3.87, PV 10.25, AV 2.95 (top), AK 0.5.
+// To add a year: append an entry, set status, run the replay/unit tests.
+var APP_VERSION='1.0.0';
+var RATES_VERIFIED='2026-10-30';
+var RATES={
+  2026:{status:'official',hbgl:6930,avFull:0.0295,
+    avBr:[{upTo:2225,rate:0},{upTo:2427,rate:0.01},{upTo:2630,rate:0.02}],
+    brackets:[[0,13539,0],[13539,21992,0.2],[21992,36458,0.3],[36458,70365,0.4],[70365,104859,0.48],[104859,1000000,0.5],[1000000,Infinity,0.55]],
+    vab:496,ovt:{hours:15,cap:200}},
+  2027:{status:'provisional',hbgl:7410,avFull:0.0295,
+    avBr:[{upTo:2327,rate:0.005},{upTo:2539,rate:0.015},{upTo:2751,rate:0.025}],
+    brackets:[[0,13846,0],[13846,22491,0.2],[22491,37285,0.3],[37285,71960,0.4],[71960,107236,0.48],[107236,1000000,0.5],[1000000,Infinity,0.55]],
+    vab:508,ovt:{hours:10,cap:120}}
+};
+var VAB=496, OVT={hours:15,cap:200}, RATES_YEAR=2026, RATES_REQ=2026;
+function useRates(y){
+  var ys=Object.keys(RATES).map(Number).sort();
+  var key=RATES[y]?y:(y<ys[0]?ys[0]:ys[ys.length-1]);
+  var R=RATES[key];
+  RATES_YEAR=key; RATES_REQ=y;
+  BRACKETS=R.brackets.map(function(b){return {from:b[0],to:b[1],rate:b[2]};});
+  SV_AV_BRACKETS=R.avBr; SV_AV=R.avFull; SV_CAP_MONTHLY=R.hbgl; VAB=R.vab; OVT=R.ovt;
+}
+useRates(new Date().getFullYear());
+
 // SV_WBF is now configurable via wbf-rate setting (default 0.5%)
 function calcSVMonthly(monthlyGross, wbfRate){
   var wbf=wbfRate!=null?wbfRate:SV_WBF; // allow override; default = NÖ 0.5%
@@ -2080,7 +2128,7 @@ function kvHourly(base){
 // (2026 temporary rule: first 15 hours, max EUR 200 - secondary source). Payslips 'UStd. Zuschl. 100 % (§ 68/2)' show
 // exactly 50% of the Zuschlag as '§ 68 frei'.
 function ovtLStFree(year,suppl,hours){
-  var capH=(year===2026)?15:10, capE=(year===2026)?200:120;
+  var capH=OVT.hours, capE=OVT.cap;
   var share=hours>0?Math.min(hours,capH)/hours:0;
   return Math.min(0.5*suppl*share,capE);
 }
@@ -2112,6 +2160,12 @@ function calcNightAllowance(year,month){
 }
 
 function calcSalary(year,month){
+  var _prevY=RATES_REQ;
+  useRates(year);
+  try{ return _calcSalary(year,month); }
+  finally{ useRates(_prevY); }
+}
+function _calcSalary(year,month){
   var s=getSettings();
   var rules=getActiveKVRules();
   var base=getBaseForMonth(year,month);
@@ -2189,8 +2243,14 @@ function calcSalary(year,month){
   // NOT sv(lstTaxable) — the SV deducted for LSt must match what was actually paid
   var annualLSTBase = lstTaxable*12 - svM.total*12;
   var lst = calcLohnsteuerAnnual(annualLSTBase) / 12;
-  var gross = svTaxable+(s.rufSVBase?0:rufPay)-br; // rufPay already inside svTaxable when rufSVBase
-  var net   = gross-svM.total-lst;
+  var corr=getCorrection(year,month);
+  var corrSV=0,corrTax=0;
+  if(corr){
+    corrSV=calcSVMonthly(svTaxable+corr,s.wbfRate).total-svM.total;   // SV in the month paid
+    corrTax=(corr-corrSV)*marginalRate(annualLSTBase);                 // tax at the marginal rate ('Differenz aus Vormonaten')
+  }
+  var gross = svTaxable+(s.rufSVBase?0:rufPay)-br+corr; // rufPay already inside svTaxable when rufSVBase
+  var net   = gross-svM.total-corrSV-lst-corrTax;
 
   return {
     base,
@@ -2202,6 +2262,7 @@ function calcSalary(year,month){
     // Current month base pays:
     leavePay, rufPay, callinP,
     taxable,lstTaxable,br,gross,svM,lst,net,hazard:s.hazard,
+    corr,corrSV,corrTax,svAll:svM.total+corrSV,lstAll:lst+corrTax,
     // Hours for display:
     nightH:night.nightH, lateNightH:night.lateNightH, leaveH,
     rufH:rufH+rufWH, rufH_raw:rufH, rufWH:rufWH, callinH, callinHolH,
@@ -2372,6 +2433,8 @@ function renderReport(){
   document.getElementById('r-hol').textContent=fmt(r.holExtra)+(r.holExtra>0?' (200% total, prev month)':'');
   document.getElementById('r-leave').textContent=fmt(r.leavePay);
   var _rs=document.getElementById('r-sick');if(_rs)_rs.textContent=countSick(currentYear,currentMonth)+' d';
+  var _crow=document.getElementById('r-corr-row'),_cn=document.getElementById('r-corr-net');
+  if(_crow){_crow.style.display=r.corr?'':'none';if(_cn)_cn.textContent=r.corr?fmt(r.corr-r.corrSV-r.corrTax):'';}
   document.getElementById('r-ruf').textContent=fmt(r.rufPay);
   document.getElementById('r-callin').textContent=fmt(r.callinP);
   document.getElementById('r-br').textContent='− '+fmt(r.br);
@@ -2808,6 +2871,34 @@ function renderTaxCalc(){
 function getFreeDays(){var r=[];for(var i=0;i<7;i++){var el=document.getElementById('free-day-'+i);if(el&&el.checked)r.push(i);}return r;}
 function restoreFreeDays(a){for(var i=0;i<7;i++){var el=document.getElementById('free-day-'+i);if(el)el.checked=a.indexOf(i)>=0;}}
 function countSick(y,m){var p=monthKey(y,m),n=0;Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===p&&shifts[k].type==='sick')n++;});return n;}
+
+// ═══ PRIOR-MONTH CORRECTIONS (retro lines on the payslip, e.g. '09*Ausfallsentgelt') ═══
+// 'YYYY-MM' -> gross amount (+/-). SV is charged in the month paid; tax at the marginal rate (matches 4 real payslips).
+var corrections={};
+function sanitizeCorrections(o){
+  var out={};
+  if(o&&typeof o==='object'){Object.keys(o).forEach(function(k){var v=parseFloat(o[k]);if(/^\d{4}-\d{2}$/.test(k)&&isFinite(v)&&v!==0&&Math.abs(v)<100000)out[k]=Math.round(v*100)/100;});}
+  return out;
+}
+function loadCorrections(){try{var r=localStorage.getItem('sp_corrections');if(r)corrections=sanitizeCorrections(JSON.parse(r));}catch(e){corrections={};}}
+function saveCorrections(){try{localStorage.setItem('sp_corrections',JSON.stringify(corrections));}catch(e){}}
+function getCorrection(y,m){return corrections[monthKey(y,m)]||0;}
+function setCorrection(val){
+  var v=parseFloat(val),k=monthKey(currentYear,currentMonth);
+  if(isFinite(v)&&v!==0)corrections[k]=Math.round(v*100)/100;else delete corrections[k];
+  saveCorrections();renderAll();
+}
+function syncCorrInput(){
+  var el=document.getElementById('corr-input');
+  if(!el||document.activeElement===el) return;
+  var v=getCorrection(currentYear,currentMonth);
+  el.value=v?v.toFixed(2):'';
+}
+function marginalRate(annualBase){
+  var a=annualBase-132;
+  for(var i=BRACKETS.length-1;i>=0;i--){if(a>BRACKETS[i].from)return BRACKETS[i].rate;}
+  return 0;
+}
 
 // ═══ HIDEABLE BUILT-IN CARDS ═══
 var hiddenCards=[]; // keys of built-in quick cards the user hid - persisted in sp_hidden_cards
@@ -3334,8 +3425,14 @@ function loadData(){
 }
 function clearMonth(){if(!confirm('Clear '+MONTH_NAMES[currentMonth]+' '+currentYear+'?'))return;var pfx=monthKey(currentYear,currentMonth);Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===pfx)delete shifts[k];});saveData();renderAll();}
 function clearAll(){
-  if(!confirm('Clear ALL data? This includes shifts, actuals, OT log, grade history, and templates.'))return;
-  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();hiddenCards=[];saveHiddenCards();
+  var _n=Object.keys(shifts).length,_age=backupAgeDays(),_de=getLang()==='de';
+  if(_n>0&&(_age===null||_age>1)){
+    if(confirm(_de?('Du hast '+_n+' Eintr\u00e4ge und kein aktuelles Backup.\n\nOK = jetzt Backup herunterladen, Abbrechen = ohne Backup fortfahren'):('You have '+_n+' entries and no recent backup.\n\nOK = download a backup now, Cancel = continue without a backup'))){
+      try{exportJSON();}catch(e){}
+    }
+  }
+  if(!confirm(_de?'ALLE Daten l\u00f6schen? Das umfasst Schichten, Ist-Werte, \u00dcberstunden, Gradverlauf, Vorlagen und eigene Karten.':'Clear ALL data? This includes shifts, actuals, OT log, grade history, templates and custom cards.'))return;
+  shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();hiddenCards=[];saveHiddenCards();corrections={};saveCorrections();
   saveData();saveGradeHistory();saveTemplates();
   try{localStorage.setItem('sp_ot','{}');}catch(e){}
   renderAll();renderGradeHistory();renderTemplates();
@@ -3532,7 +3629,7 @@ async function syncFromRepo(){
 
 // ═══ LOCAL BACKUP ═══
 function exportJSON(){
-  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards};
+  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards,corrections:corrections};
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -3565,6 +3662,7 @@ function importJSON(input){
       shiftTemplates=parsed.shiftTemplates||[];
       if(Array.isArray(parsed.customCards)){customCards=sanitizeCards(parsed.customCards);saveCustomCards();}
       if(Array.isArray(parsed.hiddenCards)){hiddenCards=sanitizeHidden(parsed.hiddenCards);saveHiddenCards();}
+      if(parsed.corrections){corrections=sanitizeCorrections(parsed.corrections);saveCorrections();}
       saveData();saveGradeHistory();saveTemplates();
       try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
       renderAll();renderGradeHistory();renderTemplates();
@@ -3911,15 +4009,24 @@ function openCheatSheet(){document.getElementById('cs-overlay').classList.add('o
 function closeCheatSheet(){document.getElementById('cs-overlay').classList.remove('open');}
 
 // ═══ BACKUP REMINDER ═══
+// Days since the last JSON export or repo push; null = never.
+function backupAgeDays(){
+  var pushed=null,exported=null;
+  try{pushed=localStorage.getItem('sp_pushed');exported=localStorage.getItem('sp_last_export');}catch(e){}
+  var last=null;
+  if(pushed){var p=new Date(pushed.split(' \u00b7 ')[0]);if(!isNaN(p.getTime()))last=p;}
+  if(exported){var d=new Date(exported);if(!isNaN(d.getTime())&&(!last||d>last))last=d;}
+  return last?Math.floor((Date.now()-last.getTime())/86400000):null;
+}
 function checkBackupReminder(){
   var banner=document.getElementById('backup-banner');
   if(!banner)return;
-  var pushed=localStorage.getItem('sp_pushed');
-  var exported=localStorage.getItem('sp_last_export');
-  var last=null;
-  if(pushed)last=new Date(pushed.split(' · ')[0]);
-  if(exported){var d=new Date(exported);if(!last||d>last)last=d;}
-  if(!last||(Date.now()-last.getTime())>30*24*60*60*1000){
+  var n=Object.keys(shifts).length,age=backupAgeDays(),de=getLang()==='de';
+  if(n>0&&(age===null||age>30)){
+    var tx=document.getElementById('backup-banner-text');
+    if(tx)tx.textContent=de
+      ?('\u23f0 '+(age===null?'Noch kein Backup':'Letztes Backup vor '+age+' Tagen')+' \u2013 tippen zum Exportieren oder Synchronisieren')
+      :('\u23f0 '+(age===null?'No backup yet':'Last backup '+age+' days ago')+' \u2013 tap to export or sync');
     banner.classList.add('show');
   } else {
     banner.classList.remove('show');
@@ -4095,7 +4202,7 @@ function exportXLSX(){
     ['104.859 – 1.000.000','50%'],
     ['>1.000.000','55%'],
     ['',''],
-    ['Verkehrsabsetzbetrag (VAB)','€ 496'],
+    ['Verkehrsabsetzbetrag (VAB)','€ '+VAB],
     ['Werbungskostenpauschale','€ 132'],
     ['SZ Freibetrag (§67)','€ 620'],
     ['SZ Pauschalsteuer','6%'],
@@ -4549,11 +4656,127 @@ function finishWizard(){
   }
 }
 
+// ═══ HOW IS THIS CALCULATED? (generated from the live rate tables and the selected sector's rules) ═══
+function openExplain(){
+  var b=document.getElementById('ex-body');
+  if(!b) return;
+  useRates(currentYear);
+  var rules=getActiveKVRules(),s=getSettings(),R=RATES[RATES_YEAR];
+  var kvEl=document.getElementById('kv-preset'),kvKey=kvEl?kvEl.value:'',kv=kvKey?KV_TEMPLATES[kvKey]:null;
+  function nf(x){return x.toLocaleString('de-DE',{maximumFractionDigits:2});} // same style as the amounts elsewhere in the app
+  function pct(x){var v=Math.round(x*10000)/100;return getLang()==='de'?String(v).replace('.',',')+' %':v+'%';}
+  var wbfP=Math.round(s.wbfRate*10000)/100;
+  function sec(title,lines){
+    var d=document.createElement('details');d.style.margin='0 0 8px';
+    var sm=document.createElement('summary');sm.style.cssText='cursor:pointer;font-weight:600;font-size:12px';sm.textContent=title;d.appendChild(sm);
+    var ul=document.createElement('ul');ul.style.cssText='margin:6px 0 0 16px;padding:0;font-size:11.5px;line-height:1.55';
+    lines.forEach(function(x){var li=document.createElement('li');li.textContent=x;ul.appendChild(li);});
+    d.appendChild(ul);b.appendChild(d);
+  }
+  b.textContent='';
+  var hourly=rules.hourlyDivisor||173.33;
+  var nightTxt=rules.nightLStFree===false
+    ?bi('taxable for income tax in this sector (verified on a payslip)','lohnsteuerpflichtig in dieser Branche (an einer Abrechnung gepr\u00fcft)')
+    :bi('treated as income-tax-free (\u00a7 68; assumed, unverified for this sector)','als lohnsteuerfrei behandelt (\u00a7 68; angenommen, f\u00fcr diese Branche ungepr\u00fcft)');
+  var holTxt=rules.holSupplLStMode==='ot68_2'
+    ?bi('only 50% of the surcharge is income-tax-free (\u00a7 68 Abs 2, up to '+OVT.hours+' hours and \u20ac'+OVT.cap+' per month)','nur 50 % des Zuschlags sind lohnsteuerfrei (\u00a7 68 Abs 2, bis '+OVT.hours+' Stunden und \u20ac'+OVT.cap+' pro Monat)')
+    :bi('treated as fully income-tax-free (\u00a7 68; assumed, unverified for this sector)','als voll lohnsteuerfrei behandelt (\u00a7 68; angenommen, f\u00fcr diese Branche ungepr\u00fcft)');
+  sec(bi('Overview','\u00dcberblick'),[
+    bi('Net = gross pay \u2212 social insurance (SV) \u2212 income tax (Lohnsteuer) \u2212 works-council levy.','Netto = Bez\u00fcge \u2212 Sozialversicherung (SV) \u2212 Lohnsteuer \u2212 Betriebsratsumlage.'),
+    bi('The app adds the pay components of the month, then deducts SV and tax the way an Austrian payroll does.','Die App addiert die Bez\u00fcge des Monats und zieht SV und Steuer wie eine \u00f6sterreichische Lohnverrechnung ab.'),
+    kv?bi('Sector: '+kv.name+(kvKey==='gesundheit_rt'?' (verified against real payslips)':' (unverified estimate)'),'Branche: '+kv.name+(kvKey==='gesundheit_rt'?' (an echten Abrechnungen gepr\u00fcft)':' (ungepr\u00fcfte Sch\u00e4tzung)')):bi('No sector selected: general default rules are used.','Keine Branche gew\u00e4hlt: es gelten allgemeine Standardregeln.')
+  ]);
+  var comp=[
+    bi('Base salary from the grade or salary you entered.','Grundgehalt aus der eingegebenen Einstufung bzw. dem Gehalt.'),
+    bi('Hourly rate = salary \u00f7 '+hourly+(rules.roundHourly?', rounded to cents':'')+'.','Stundensatz = Gehalt \u00f7 '+hourly+(rules.roundHourly?', auf Cent gerundet':'')+'.'),
+    bi('Middle and late supplements: flat monthly amount \u00f7 8 = hourly rate (rounded to cents) \u00d7 paid hours; '+(rules.deferSupplements?'paid in the month after the shifts.':'paid in the same month.'),'Mittel- und Sp\u00e4tzulage: monatlicher Pauschalbetrag \u00f7 8 = Stundensatz (auf Cent gerundet) \u00d7 bezahlte Stunden; '+(rules.deferSupplements?'Auszahlung im Folgemonat.':'Auszahlung im selben Monat.')),
+    bi('Paid hours = shift length minus an unpaid break of '+rules.breakDeductionMin+' min for shifts of 6 h or more.','Bezahlte Stunden = Dienstl\u00e4nge minus unbezahlte Pause von '+rules.breakDeductionMin+' Min. bei Diensten ab 6 Stunden.')
+  ];
+  if(rules.lateSupplFrom) comp.push(bi('The late supplement counts only from '+rules.lateSupplFrom+' (employer rule), even if you clock in earlier.','Die Sp\u00e4tzulage z\u00e4hlt erst ab '+rules.lateSupplFrom+' (Regel des Arbeitgebers), auch wenn du fr\u00fcher stempelst.'));
+  comp=comp.concat([
+    bi('Night allowance: '+Math.round(rules.nightAllowancePct*100)+'% of the hourly rate \u00d7 night hours (between your night threshold and 06:00), paid in the same month; subject to SV; '+nightTxt+'.','Nachtzulage: '+Math.round(rules.nightAllowancePct*100)+' % des Stundensatzes \u00d7 Nachtstunden (zwischen deiner Nachtgrenze und 06:00), im selben Monat; SV-pflichtig; '+nightTxt+'.'),
+    bi('Holiday work is paid double: a base part plus a surcharge, in the month after. Surcharge: '+holTxt+'.','Feiertagsarbeit wird doppelt bezahlt: Grundverg\u00fctung plus Zuschlag, im Folgemonat. Zuschlag: '+holTxt+'.'),
+    bi('Hazard allowance: subject to SV, income-tax-free (\u00a7 68 Abs 1). The monthly limit of \u20ac400 is not checked.','Gefahrenzulage: SV-pflichtig, lohnsteuerfrei (\u00a7 68 Abs 1). Die monatliche Grenze von \u20ac400 wird nicht gepr\u00fcft.'),
+    bi('Standby (Rufbereitschaft): rate \u00d7 hours; subject to SV and tax.','Rufbereitschaft: Satz \u00d7 Stunden; SV- und lohnsteuerpflichtig.'),
+    bi('Annual leave and sick days are already inside the monthly salary and add no extra pay (supplement averages for such days are not modelled).','Urlaub und Krankenstand sind im Monatsgehalt enthalten und bringen kein Extrageld (Zulagen-Durchschnitt f\u00fcr diese Tage wird nicht berechnet).'),
+    bi('Works-council levy: your rate \u00d7 base salary only.','Betriebsratsumlage: dein Satz \u00d7 nur das Grundgehalt.')
+  ]);
+  sec(bi('What is in the gross','Was im Brutto steckt'),comp);
+  var avl=R.avBr.map(function(x,i){var lo=i?R.avBr[i-1].upTo:0;return bi((i?'above \u20ac'+nf(lo):'up to \u20ac'+nf(x.upTo))+(i?' up to \u20ac'+nf(x.upTo):'')+': '+pct(x.rate),(i?'\u00fcber \u20ac'+nf(lo)+' bis \u20ac'+nf(x.upTo):'bis \u20ac'+nf(x.upTo))+': '+pct(x.rate));});
+  sec(bi('Social insurance (SV)','Sozialversicherung (SV)'),[
+    bi('Employee shares: health 3.87%, pension 10.25%, unemployment 2.95%, AK levy 0.5%, WBF '+wbfP+'% (your setting) \u2013 about 18.07% in total.','Dienstnehmeranteile: Kranken 3,87 %, Pension 10,25 %, Arbeitslosen 2,95 %, AK-Umlage 0,5 %, WBF '+String(wbfP).replace('.',',')+' % (deine Einstellung) \u2013 zusammen ca. 18,07 %.'),
+    bi('Contribution base is capped at \u20ac'+nf(SV_CAP_MONTHLY)+' per month.','Die Beitragsgrundlage ist mit \u20ac'+nf(SV_CAP_MONTHLY)+' pro Monat begrenzt.'),
+    bi('Unemployment share for low income (\u00a7 2a AMPFG), applied to the whole monthly base: '+avl.join('; ')+'; above that '+pct(R.avFull)+'.','Arbeitslosenanteil bei niedrigem Einkommen (\u00a7 2a AMPFG), auf die gesamte Monatsgrundlage: '+avl.join('; ')+'; dar\u00fcber '+pct(R.avFull)+'.'),
+    bi('Sonderzahlungen (13th/14th salary): health + pension + unemployment only (17.07%), no AK levy and no WBF.','Sonderzahlungen (13./14. Gehalt): nur Kranken + Pension + Arbeitslosen (17,07 %), keine AK-Umlage und kein WBF.')
+  ]);
+  var tl=BRACKETS.map(function(x){return '\u20ac '+nf(x.from)+(x.to===Infinity?'+':' \u2013 \u20ac '+nf(x.to))+': '+pct(x.rate);});
+  sec(bi('Income tax (Lohnsteuer)','Lohnsteuer'),[
+    bi('1. Tax base of the month = income-tax-taxable pay \u2212 the SV actually paid.','1. Steuerbasis des Monats = lohnsteuerpflichtige Bez\u00fcge \u2212 tats\u00e4chlich bezahlte SV.'),
+    bi('2. Multiply by 12, subtract the \u20ac132 allowance for work expenses.','2. Mal 12, abz\u00fcglich \u20ac132 Werbungskostenpauschale.'),
+    bi('3. Apply the tariff '+RATES_YEAR+': '+tl.join(' | ')+'.','3. Tarif '+RATES_YEAR+' anwenden: '+tl.join(' | ')+'.'),
+    bi('4. Subtract the commuter tax credit (Verkehrsabsetzbetrag) of \u20ac'+VAB+', divide by 12.','4. Verkehrsabsetzbetrag von \u20ac'+VAB+' abziehen, durch 12 teilen.'),
+    bi('Sonderzahlung (\u00a7 67): SV is deducted first, the first \u20ac620 stay tax-free, the rest is taxed at 6%.','Sonderzahlung (\u00a7 67): zuerst wird die SV abgezogen, die ersten \u20ac620 bleiben steuerfrei, der Rest wird mit 6 % besteuert.')
+  ]);
+  sec(bi('Prior-month correction','Korrektur Vormonat'),[
+    bi('Retro lines on a payslip ("NN*") are entered as a gross amount. SV on them is charged in the month paid; the tax is booked at your marginal rate on the amount after SV (shown on the payslip as "Differenz aus Vormonaten").','Nachverrechnete Zeilen ("NN*") werden als Bruttobetrag erfasst. Die SV darauf f\u00e4llt im Auszahlungsmonat an; die Steuer wird mit dem Grenzsteuersatz auf den Betrag nach SV verbucht (auf der Abrechnung "Differenz aus Vormonaten").')
+  ]);
+  sec(bi('Not modelled','Nicht berechnet'),[
+    bi('Commuter allowance and family bonus in the monthly estimate, the \u20ac400 limit for hazard allowances, part-time pay scaling, and special SV rules (apprentices, older workers).','Pendlerpauschale und Familienbonus in der Monatssch\u00e4tzung, die \u20ac400-Grenze f\u00fcr Gefahrenzulagen, Teilzeit-Skalierung des Gehalts sowie besondere SV-Regeln (Lehrlinge, \u00e4ltere Arbeitnehmer).'),
+    bi('Results are estimates. Only one sector is verified against real payslips.','Die Ergebnisse sind Sch\u00e4tzungen. Nur eine Branche ist mit echten Abrechnungen gepr\u00fcft.')
+  ]);
+  sec(bi('Rates and sources','Werte und Quellen'),[
+    bi('Rates for '+RATES_YEAR+': '+R.status+(RATES[currentYear]?'':' (no table for '+currentYear+', nearest year used)')+'. Last verified: '+RATES_VERIFIED+'.','Werte f\u00fcr '+RATES_YEAR+': '+(R.status==='official'?'offiziell':'vorl\u00e4ufig')+(RATES[currentYear]?'':' (keine Tabelle f\u00fcr '+currentYear+', n\u00e4chstes Jahr verwendet)')+'. Zuletzt gepr\u00fcft: '+RATES_VERIFIED+'.'),
+    bi('Sources: sozialversicherung.gv.at (SV values), EStG \u00a7\u00a7 66\u201368 (tax), Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026) for the 2027 tariff.','Quellen: sozialversicherung.gv.at (SV-Werte), EStG \u00a7\u00a7 66\u201368 (Steuer), Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026) f\u00fcr den Tarif 2027.'),
+    bi('This is an information tool, not tax advice.','Dies ist ein Informationswerkzeug, keine Steuerberatung.')
+  ]);
+  document.getElementById('explain-overlay').classList.add('open');
+}
+function closeExplain(){var el=document.getElementById('explain-overlay');if(el)el.classList.remove('open');}
+
+// ═══ RATES BANNER ═══
+function updateRatesBanner(){
+  var el=document.getElementById('rates-banner');
+  if(!el) return;
+  var de=getLang()==='de',y=currentYear,txt='';
+  if(!RATES[y]){
+    txt=de?('\u26a0 F\u00fcr '+y+' sind noch keine Werte hinterlegt \u2013 es werden die '+RATES_YEAR+'-Werte verwendet. Bitte auf eine neue Version pr\u00fcfen.')
+          :('\u26a0 No rates for '+y+' in this version \u2013 using '+RATES_YEAR+' values. Please check for an update.');
+  } else if(RATES[y].status==='provisional'){
+    txt=de?('\u2139 Die Werte f\u00fcr '+y+' sind vorl\u00e4ufig (SV: angek\u00fcndigt, Kundmachung ausstehend; Tarif: BGBl. II 260/2026). Zahlen k\u00f6nnen sich \u00e4ndern.')
+          :('\u2139 The '+y+' values are provisional (SV: announced, official publication pending; tax tariff: BGBl. II 260/2026). Figures may change.');
+  }
+  el.textContent=txt;
+  el.style.display=txt?'':'none';
+}
+
 // ═══ FEEDBACK FORM (Web3Forms; static site has no backend) ═══
 function initContact(){var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
+// Technical info only: no salary, no shift contents, no personal data.
+function buildDiagnostics(){
+  var kv='(none)';
+  try{kv=document.getElementById('kv-preset').value||'(none)';}catch(e){}
+  var rs=RATES[RATES_YEAR]?RATES[RATES_YEAR].status:'?';
+  return [
+    'app: Paychecker Austria '+APP_VERSION,
+    'rates: '+RATES_YEAR+' ('+rs+'), viewing '+currentYear+', verified '+RATES_VERIFIED,
+    'sector: '+kv,
+    'language: '+getLang(),
+    'theme: '+(document.body.classList.contains('dark')?'dark':'light'),
+    'entries: '+Object.keys(shifts).length+', custom cards: '+customCards.length+', hidden cards: '+hiddenCards.length,
+    'screen: '+(window.innerWidth||0)+'x'+(window.innerHeight||0),
+    'browser: '+(navigator.userAgent||'')
+  ].join('\n');
+}
+function copyDiagnostics(){
+  var txt=buildDiagnostics(),st=document.getElementById('fb-status'),T=I18N[getLang()];
+  function done(){if(st){st.style.color='#27ae60';st.textContent=T.fbCopied;}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){window.prompt('Copy:',txt);});}
+  else{window.prompt('Copy:',txt);}
+}
 function openFeedback(){
   if(!WEB3FORMS_KEY) return;
   var st=document.getElementById('fb-status');if(st)st.textContent='';
+  var pre=document.getElementById('fb-diag-pre');if(pre)pre.textContent=buildDiagnostics();
   document.getElementById('feedback-overlay').classList.add('open');
 }
 function closeFeedback(){var el=document.getElementById('feedback-overlay');if(el)el.classList.remove('open');}
@@ -4563,7 +4786,9 @@ function sendFeedback(){
   var msg=(document.getElementById('fb-msg').value||'').trim();
   if(msg.length<5){st.style.color='#c0392b';st.textContent=T.fbShort;return;}
   if(!WEB3FORMS_KEY) return;
-  var body={access_key:WEB3FORMS_KEY,subject:'Paychecker Austria feedback',from_name:'Paychecker Austria',message:msg};
+  var dg=document.getElementById('fb-diag');
+  var full=msg+((dg&&dg.checked)?'\n\n--- technical info (no personal data) ---\n'+buildDiagnostics():'');
+  var body={access_key:WEB3FORMS_KEY,subject:'Paychecker Austria feedback',from_name:'Paychecker Austria',message:full};
   var nm=(document.getElementById('fb-name').value||'').trim(),em=(document.getElementById('fb-email').value||'').trim();
   if(nm) body.name=nm;
   if(em) body.email=em;
@@ -4658,40 +4883,130 @@ function checkOnboarding(){
 }
 
 // ═══ SIMPLE PAYSLIP COMPARISON ═══
+function bi(en,de){return getLang()==='de'?de:en;}
+var PSC_LAST=null; // last comparison result (used by the 'report this result' step)
+function _pf(id){var e=document.getElementById(id);return e?parseFloat(e.value):NaN;}
+function applyPscCorrection(v){setCorrection(String(Math.round(v*100)/100));renderPayslipComp();}
+// Sanity checks on the payslip numbers themselves + likely causes of a mismatch. Returns [{lvl:'ok'|'warn'|'info',html}]
+function pscChecks(r,aGross,aSV,aLSt,aNet,dg,dsv,dl,dn){
+  var out=[],s=getSettings();
+  // 1. deductions add up
+  if(!isNaN(aGross)&&!isNaN(aSV)&&!isNaN(aLSt)&&!isNaN(aNet)){
+    var other=aGross-aSV-aLSt-aNet;
+    if(Math.abs(other-r.br)<=0.5) out.push({lvl:'ok',html:bi('Deductions add up (other deductions '+fmt(other)+', e.g. works-council levy).','Abz\u00fcge stimmen (sonstige Abz\u00fcge '+fmt(other)+', z. B. Betriebsratsumlage).')});
+    else out.push({lvl:'warn',html:bi('Gross \u2212 SV \u2212 tax \u2212 net leaves '+fmt(other)+' of other deductions; the estimate assumes '+fmt(r.br)+' (works-council levy). Check the levy rate or other deductions (advances, dues).','Brutto \u2212 SV \u2212 Steuer \u2212 Netto ergibt '+fmt(other)+' sonstige Abz\u00fcge; die Sch\u00e4tzung nimmt '+fmt(r.br)+' (Betriebsratsumlage) an. Umlagesatz oder andere Abz\u00fcge (Vorschuss, Beitr\u00e4ge) pr\u00fcfen.')});
+  }
+  // 2. SV follows the standard rates for this gross
+  if(!isNaN(aGross)&&!isNaN(aSV)&&aGross>0){
+    var expSV=calcSVMonthly(aGross,s.wbfRate).total;
+    if(Math.abs(aSV-expSV)<=1.5) out.push({lvl:'ok',html:bi('SV follows the standard rates for this gross ('+(aSV/aGross*100).toFixed(2)+'%).','SV entspricht den Standards\u00e4tzen f\u00fcr dieses Brutto ('+(aSV/aGross*100).toFixed(2)+' %).')});
+    else out.push({lvl:'warn',html:bi('SV is '+(aSV/aGross*100).toFixed(2)+'% of gross; the standard rates would give '+(expSV/aGross*100).toFixed(2)+'%. Is a Sonderzahlung inside this payslip, or does your WBF rate / an age or apprentice rule differ?','SV betr\u00e4gt '+(aSV/aGross*100).toFixed(2)+' % vom Brutto; die Standards\u00e4tze ergeben '+(expSV/aGross*100).toFixed(2)+' %. Ist eine Sonderzahlung enthalten, oder weicht dein WBF-Satz bzw. eine Alters-/Lehrlingsregel ab?')});
+  }
+  // 3. tax plausibility + implied LSt-free amount
+  if(!isNaN(aGross)&&!isNaN(aSV)&&!isNaN(aLSt)){
+    var annual=(aGross-aSV)*12,lstMax=calcLohnsteuerAnnual(annual)/12;
+    if(aLSt>lstMax+1) out.push({lvl:'warn',html:bi('Tax is higher than possible for this gross ('+fmt(lstMax)+' max). Do the amounts include a Sonderzahlung or retro lines?','Die Steuer ist h\u00f6her als f\u00fcr dieses Brutto m\u00f6glich (max. '+fmt(lstMax)+'). Sind Sonderzahlung oder Nachverrechnungen enthalten?')});
+    else{
+      var m=marginalRate(annual),est=r.taxable-r.lstTaxable;
+      if(m>0&&lstMax-aLSt>1){
+        var implied=(lstMax-aLSt)/m;
+        out.push({lvl:Math.abs(implied-est)>20?'warn':'info',html:bi('Your tax implies about '+fmt(implied)+' of tax-free pay (\u00a7 68 etc.); the estimate assumes '+fmt(est)+'.','Deine Steuer entspricht ca. '+fmt(implied)+' steuerfreiem Entgelt (\u00a7 68 u. a.); die Sch\u00e4tzung nimmt '+fmt(est)+' an.')});
+      }
+    }
+  }
+  // 4. likely causes of a mismatch
+  function _ab(x){return isNaN(x)?0:Math.abs(x);}
+  if(_ab(dn)>1||_ab(dg)>1||_ab(dsv)>1||_ab(dl)>1){
+    var cause=null;
+    if(!isNaN(aNet)&&!isNaN(dg)&&dg>1&&!getCorrection(currentYear,currentMonth)){
+      var k=monthKey(currentYear,currentMonth),old=corrections[k];
+      corrections[k]=Math.round(dg*100)/100;var sim=calcSalary(currentYear,currentMonth);
+      if(old===undefined)delete corrections[k];else corrections[k]=old;
+      if(Math.abs(sim.net-aNet)<=1.5){
+        cause={lvl:'info',html:bi('A prior-month correction of '+fmt(dg)+' reproduces your net \u2013 typical for retro lines ("NN*" on the payslip). ','Eine Korrektur Vormonat von '+fmt(dg)+' ergibt dein Netto \u2013 typisch f\u00fcr Nachverrechnungen ("NN*" auf der Abrechnung). ')+
+          '<button type="button" class="mbtn" style="font-size:11px;padding:2px 8px" onclick="applyPscCorrection('+Math.round(dg*100)/100+')">'+bi('Apply','\u00dcbernehmen')+'</button>'};
+      }
+    }
+    if(!cause){
+      if(!isNaN(dg)&&Math.abs(dg)>1) cause={lvl:'warn',html:bi('Gross differs by '+fmt(dg)+': check your shift entries and last month\u2019s supplements (middle/late/holiday hours are paid a month later).','Brutto weicht um '+fmt(dg)+' ab: Dienste und die Zuschl\u00e4ge des Vormonats pr\u00fcfen (Mittel-/Sp\u00e4t-/Feiertagsstunden werden einen Monat sp\u00e4ter bezahlt).')};
+      else if(!isNaN(dl)&&Math.abs(dl)>1) cause={lvl:'warn',html:bi('Same gross but different tax: see the tax-free pay above. Commuter allowance and family bonus are not part of the monthly estimate.','Gleiches Brutto, andere Steuer: siehe steuerfreies Entgelt oben. Pendlerpauschale und Familienbonus sind nicht Teil der Monatssch\u00e4tzung.')};
+      else if(!isNaN(dsv)&&Math.abs(dsv)>1) cause={lvl:'warn',html:bi('Same gross but different SV: check the WBF rate (federal state), low-income AV brackets, age rules, or a Sonderzahlung in this payslip.','Gleiches Brutto, andere SV: WBF-Satz (Bundesland), AV-Staffelung, Altersregeln oder eine Sonderzahlung in dieser Abrechnung pr\u00fcfen.')};
+    }
+    if(cause) out.push(cause);
+  }
+  return out;
+}
+// ═══ VERIFY MY SECTOR: anonymised report of a payslip comparison ═══
+function pscReportBlock(){
+  if(!PSC_LAST) return '';
+  var kvEl=document.getElementById('kv-preset'),key=kvEl?kvEl.value:'';
+  var msg;
+  if(!key) msg=bi('No sector selected \u2013 pick one in Settings so your result can help verify it.','Keine Branche gew\u00e4hlt \u2013 w\u00e4hle sie in den Einstellungen, damit dein Ergebnis zur Pr\u00fcfung beitr\u00e4gt.');
+  else if(key!=='gesundheit_rt') msg=bi('\u26a0 This sector is an unverified estimate. If you compare a real payslip and report the result, it helps verify it.','\u26a0 Diese Branche ist eine ungepr\u00fcfte Sch\u00e4tzung. Wenn du eine echte Abrechnung vergleichst und das Ergebnis meldest, hilft das bei der Pr\u00fcfung.');
+  else msg=bi('\u2713 This sector is verified. Reporting a mismatch helps find edge cases.','\u2713 Diese Branche ist gepr\u00fcft. Eine gemeldete Abweichung hilft, Sonderf\u00e4lle zu finden.');
+  return '<div style="margin-top:8px;padding-top:6px;border-top:.5px solid rgba(0,0,0,.08);font-size:11px;line-height:1.5">'+msg+
+    ' <button type="button" class="mbtn" style="font-size:11px;padding:2px 8px;margin-top:4px" onclick="reportPscResult()">'+bi('Report this result (anonymised)','Ergebnis melden (anonymisiert)')+'</button>'+
+    '<div style="font-size:10px;color:#aaa">'+bi('Sends only the sector, the rates year and the differences \u2013 no amounts from your payslip.','Sendet nur Branche, Tarifjahr und die Differenzen \u2013 keine Betr\u00e4ge aus deiner Abrechnung.')+'</div></div>';
+}
+function pscReportText(){
+  var p=PSC_LAST,kvEl=document.getElementById('kv-preset'),key=(kvEl&&kvEl.value)||'(none)';
+  function d(x,have){return have?(x>=0?'+':'')+x.toFixed(2):'n/a';}
+  return ['Sector verification report',
+    'sector: '+key+(KV_TEMPLATES[key]?' ('+KV_TEMPLATES[key].name+')':''),
+    'rates: '+RATES_YEAR+' ('+RATES[RATES_YEAR].status+')',
+    'verdict: '+(p.match?'MATCH (all within EUR 1)':'MISMATCH'),
+    'differences (payslip minus estimate, EUR): gross '+d(p.dg,p.have.g)+', SV '+d(p.dsv,p.have.sv)+', tax '+d(p.dl,p.have.lst)+', net '+d(p.dn,p.have.net),
+    'prior-month correction used: '+(getCorrection(currentYear,currentMonth)?'yes':'no'),
+    'checks: '+(p.checks.length?p.checks.join(','):'none'),
+    '','Notes (optional): '].join('\n');
+}
+function reportPscResult(){
+  if(!PSC_LAST) return;
+  var text=pscReportText();
+  if(WEB3FORMS_KEY){
+    openFeedback();
+    var ta=document.getElementById('fb-msg');if(ta)ta.value=text;
+  } else if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){alert(bi('Copied. Please paste it into your message to the operator.','Kopiert. Bitte in deine Nachricht an den Betreiber einf\u00fcgen.'));},function(){window.prompt('Copy:',text);});
+  } else {
+    window.prompt('Copy:',text);
+  }
+}
+
 function renderPayslipComp(){
-  var r=calcSalary(currentYear,currentMonth);
   var el=document.getElementById('psc-result');
   if(!el)return;
-  var aGross=parseFloat(document.getElementById('psc-gross').value);
-  var aSV   =parseFloat(document.getElementById('psc-sv').value);
-  var aLSt  =parseFloat(document.getElementById('psc-lst').value);
-  var aNet  =parseFloat(document.getElementById('psc-net').value);
-  if(isNaN(aGross)&&isNaN(aSV)&&isNaN(aLSt)&&isNaN(aNet)){el.innerHTML='';return;}
-  var rows=[];
-  var totalOff=0;
+  var r=calcSalary(currentYear,currentMonth);
+  var aGross=_pf('psc-gross'),aSV=_pf('psc-sv'),aLSt=_pf('psc-lst'),aNet=_pf('psc-net');
+  if(isNaN(aGross)&&isNaN(aSV)&&isNaN(aLSt)&&isNaN(aNet)){el.innerHTML='';el.className='psc-result';PSC_LAST=null;return;}
+  var estGross=r.gross+r.br; // payslip 'Summe Bezuege' is before the works-council levy
+  var rows=[],totalOff=0;
   function pscRow(label,actual,est){
     if(isNaN(actual))return;
-    var diff=actual-est;
-    totalOff+=Math.abs(diff);
+    var diff=actual-est;totalOff+=Math.abs(diff);
     var ok=Math.abs(diff)<1;
     rows.push('<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:.5px solid rgba(0,0,0,.06)">'+
       '<span style="color:#555">'+label+'</span>'+
-      '<span>Payslip: <strong>'+fmt(actual)+'</strong> · Est: '+fmt(est)+
+      '<span>'+bi('Payslip','Abrechnung')+': <strong>'+fmt(actual)+'</strong> \u00b7 '+bi('Est','Sch\u00e4tz.')+': '+fmt(est)+
       ' <span style="font-weight:600;color:'+(ok?'#27ae60':diff>0?'#185fa5':'#c0392b')+'">'+
-      (ok?'✓':(diff>0?'+':'')+fmt(diff).replace('€ ','€'))+'</span></span></div>');
+      (ok?'\u2713':(diff>0?'+':'')+fmt(diff).replace('\u20ac ','\u20ac'))+'</span></span></div>');
   }
-  pscRow('Brutto',aGross,r.gross);
-  pscRow('Sozialversicherung',aSV,r.svM.total);
-  pscRow('Lohnsteuer',aLSt,r.lst);
-  pscRow('Netto',aNet,r.net);
+  pscRow(bi('Gross','Brutto'),aGross,estGross);
+  pscRow(bi('Social insurance','Sozialversicherung'),aSV,r.svAll);
+  pscRow(bi('Income tax','Lohnsteuer'),aLSt,r.lstAll);
+  pscRow(bi('Net','Netto'),aNet,r.net);
   var allMatch=totalOff<4;
+  var dg=aGross-estGross,dsv=aSV-r.svAll,dl=aLSt-r.lstAll,dn=aNet-r.net;
+  var checks=pscChecks(r,aGross,aSV,aLSt,aNet,dg,dsv,dl,dn);
+  PSC_LAST={match:allMatch,dg:dg,dsv:dsv,dl:dl,dn:dn,have:{g:!isNaN(aGross),sv:!isNaN(aSV),lst:!isNaN(aLSt),net:!isNaN(aNet)},checks:checks.map(function(c){return c.lvl;})};
   el.className='psc-result '+(allMatch?'psc-match':'psc-off');
+  var icons={ok:'\u2713',warn:'\u26a0',info:'\u2139'},cols={ok:'#27ae60',warn:'#c0392b',info:'#185fa5'};
   el.innerHTML=rows.join('')+
     '<div style="font-size:11px;font-weight:500;margin-top:6px;color:'+(allMatch?'#27ae60':'#c0392b')+'">'+
-    (allMatch?'✓ All values match the estimate (within €1).':
-     '⚠ Total discrepancy: '+fmt(totalOff)+'. Check your shift entries or supplement settings.')+
-    '</div>';
-  // Auto-fill actual-net for Report tab diff badge
+    (allMatch?bi('\u2713 All values match the estimate (within \u20ac1).','\u2713 Alle Werte stimmen mit der Sch\u00e4tzung \u00fcberein (innerhalb \u20ac1).'):
+     bi('\u26a0 Total discrepancy: '+fmt(totalOff)+'.','\u26a0 Gesamtabweichung: '+fmt(totalOff)+'.'))+'</div>'+
+    (checks.length?'<div style="margin-top:6px;font-size:11px;line-height:1.5">'+checks.map(function(c){return '<div style="padding:2px 0;color:'+cols[c.lvl]+'"><span>'+icons[c.lvl]+'</span> <span style="color:inherit">'+c.html+'</span></div>';}).join('')+'</div>':'');
+  el.innerHTML+=pscReportBlock();
   if(!isNaN(aNet)){document.getElementById('actual-net').value=aNet.toFixed(2);updateActualDiff();}
 }
 function clearPayslipComp(){
@@ -4879,6 +5194,10 @@ var I18N={
     wizQKV:'Your sector / collective agreement (optional)', wizKVNone:'\u2014 Skip / not listed \u2014', wizKVHint:'Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.',
     impLink:'Impressum', impClose:'Close',
     fbLink:'Feedback', fbTitle:'Feedback / contact', fbNote:'Bugs, wrong numbers, ideas? Please send anonymised figures only \u2013 no payslips, no names, no personal data.', fbName:'Name (optional)', fbEmail:'Your email (optional, for a reply)', fbMsg:'Your message', fbSend:'Send', fbSending:'Sending\u2026', fbOk:'Thank you \u2013 message sent.', fbErr:'Sending failed. Please try again later or write to the email in the Impressum.', fbShort:'Please write a few words.',
+    fbDiag:'Include technical info (app version, sector, year, browser \u2013 no amounts)', fbWhat:'What is included?', fbCopy:'Copy technical info', fbCopied:'Copied.',
+    rlCorr:'Prior-month correction (gross, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 net effect (after SV and tax)', corrHint:'Retro lines on your payslip (e.g. "09*Ausfallsentgelt"): SV is charged this month, tax at your marginal rate.',
+    pscTitle:'\ud83e\uddfe Payslip comparison \u2014 enter your actual values', pscHint:'Use "Summe Bez\u00fcge" (before the works-council levy) as gross, the monthly part only \u2013 no Sonderzahlung. Retro lines ("NN*") belong in the correction field above.', pscGross:'Actual gross (\u20ac)', pscSV:'Actual SV total (\u20ac)', pscLST:'Actual income tax (\u20ac)', pscNet:'Actual net (\u20ac)', pscClear:'Clear',
+    exLink:'How is this calculated?', exTitle:'How is this calculated?',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
     legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
@@ -5173,6 +5492,10 @@ var I18N={
     wizQKV:'Deine Branche / dein Kollektivvertrag (optional)', wizKVNone:'\u2014 \u00dcberspringen / nicht aufgelistet \u2014', wizKVHint:'F\u00fcllt typische Dienstzeiten und Regeln vor. Nur eine Branche ist mit echten Gehaltsabrechnungen gepr\u00fcft, die anderen sind Sch\u00e4tzungen. \u00c4nderbar in den Einstellungen.',
     impLink:'Impressum', impClose:'Schlie\u00dfen',
     fbLink:'Feedback', fbTitle:'Feedback / Kontakt', fbNote:'Fehler, falsche Zahlen, Ideen? Bitte nur anonymisierte Werte senden \u2013 keine Gehaltsabrechnungen, keine Namen, keine pers\u00f6nlichen Daten.', fbName:'Name (optional)', fbEmail:'Deine E-Mail (optional, f\u00fcr eine Antwort)', fbMsg:'Deine Nachricht', fbSend:'Senden', fbSending:'Wird gesendet\u2026', fbOk:'Danke \u2013 Nachricht gesendet.', fbErr:'Senden fehlgeschlagen. Bitte sp\u00e4ter erneut versuchen oder an die E-Mail im Impressum schreiben.', fbShort:'Bitte schreibe ein paar Worte.',
+    fbDiag:'Technische Infos mitsenden (App-Version, Branche, Jahr, Browser \u2013 keine Betr\u00e4ge)', fbWhat:'Was wird mitgesendet?', fbCopy:'Technische Infos kopieren', fbCopied:'Kopiert.',
+    rlCorr:'Korrektur Vormonat (brutto, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 Nettoeffekt (nach SV und Steuer)', corrHint:'Nachverrechnete Zeilen auf deiner Abrechnung (z. B. "09*Ausfallsentgelt"): SV wird in diesem Monat abgezogen, Lohnsteuer mit dem Grenzsteuersatz.',
+    pscTitle:'\ud83e\uddfe Abrechnungsvergleich \u2014 trage deine tats\u00e4chlichen Werte ein', pscHint:'Als Brutto "Summe Bez\u00fcge" (vor der Betriebsratsumlage) verwenden, nur den Monatsteil \u2013 ohne Sonderzahlung. Nachverrechnete Zeilen ("NN*") geh\u00f6ren ins Korrekturfeld oben.', pscGross:'Tats\u00e4chliches Brutto (\u20ac)', pscSV:'Tats\u00e4chliche SV gesamt (\u20ac)', pscLST:'Tats\u00e4chliche Lohnsteuer (\u20ac)', pscNet:'Tats\u00e4chliches Netto (\u20ac)', pscClear:'Leeren',
+    exLink:'Wie wird das berechnet?', exTitle:'Wie wird das berechnet?',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
     legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
@@ -5825,6 +6148,9 @@ function renderRaise(){
 // ═══ BOOT ═══
 var _renderYearTimer=null;
 function renderAll(){
+  useRates(currentYear);
+  updateRatesBanner();
+  syncCorrInput();
   renderCalendar();renderWeekBar();renderReport();
   // Keep year tab in sync if visible — debounced to avoid 12×calcSalary on rapid navigation
   var yearTab=document.getElementById('tab-year');
@@ -5833,7 +6159,7 @@ function renderAll(){
     _renderYearTimer=setTimeout(function(){yearTabYear=currentYear;renderYear();},200);
   }
 }
-applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();initContact();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
+applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();loadCorrections();initContact();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
 </script>
 <!-- Storage warning banner -->
 <div id="storage-warn" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 16px;text-align:center;z-index:500">⚠️ Storage approaching limit (4MB) — export a JSON backup and consider clearing old years.</div>
