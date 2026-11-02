@@ -24,6 +24,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .month-label{font-size:14px;font-weight:500;min-width:125px;text-align:center}
 .icon-btn{background:#fff;border:.5px solid #ccc;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px}
 .icon-btn:hover{background:#e8e8e0}
+#log-btn{position:relative}
+.new-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:#e24b4a}
 .legend{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
 .lpill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px}
 .lp-normal {background:#e6f1fb;color:#185fa5}
@@ -702,6 +704,8 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <button class="icon-btn" onclick="window.print()" data-i18n="print">🖨 Print</button>
       <button class="icon-btn" onclick="exportICal()" title="Export shifts to .ics for Google / Apple Calendar" data-i18n="icalBtn">📅 iCal</button>
       <button class="icon-btn" onclick="copyPrevMonth()" title="Copy previous month's shifts into this month" data-i18n="copyPrevBtn">📋 Copy prev</button>
+      <button class="icon-btn" id="help-btn" onclick="openHelp()" title="How it works" data-i18n-title="helpTip">❓</button>
+      <button class="icon-btn" id="log-btn" onclick="openChangelog()" title="What’s new" data-i18n-title="logTip">🆕<span class="new-dot" id="log-dot" style="display:none"></span></button>
       <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
       <button class="icon-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / Sprache wechseln">🌐 DE</button>
       <a href="https://buymeacoffee.com/anisbirakhm" target="_blank" rel="noopener"
@@ -786,7 +790,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div style="font-size:10px;color:#aaa;line-height:1.4;margin:-2px 0 6px" data-i18n="corrHint">Retro lines on your payslip (e.g. &quot;09*Ausfallsentgelt&quot;): SV is charged this month, tax at your marginal rate.</div>
       <div class="rrow"><span class="rl" data-i18n="rlRufStandby">Rufbereitschaft standby</span><span class="rv" id="r-ruf">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlRufCallin">Rufeinsatz call-in</span><span class="rv" id="r-callin">—</span></div>
-      <div class="rrow"><span class="rl" data-i18n="rlHazard">Hazard allowance (tax-free)</span><span class="rv pos" id="r-hazard">€ 230,43</span></div>
+      <div class="rrow"><span class="rl" data-i18n="rlHazard">Hazard allowance (income-tax-free)</span><span class="rv pos" id="r-hazard">€ 230,43</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlWorksCouncil">Works council (~0.3%)</span><span class="rv neg" id="r-br">—</span></div>
       <div class="rrow total-row"><span class="rl">Total gross</span><span class="rv" id="r-gross">—</span></div>
     </div>
@@ -813,9 +817,9 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <div id="r-sv-bar-note" style="font-size:9px;color:#aaa;margin-top:2px"></div>
       </div>
       <div class="rrow"><span class="rl">PV Pensionsversicherung (10.25%)</span><span class="rv neg" id="r-pv">—</span></div>
-      <div class="rrow"><span class="rl">AV Arbeitslosenversicherung (2.95%)</span><span class="rv neg" id="r-av">—</span></div>
+      <div class="rrow"><span class="rl">Arbeitslosenversicherung (AV)</span><span class="rv neg" id="r-av">—</span></div>
       <div class="rrow"><span class="rl">AK-Umlage (0.5%)</span><span class="rv neg" id="r-ak">—</span></div>
-      <div class="rrow"><span class="rl">Wohnbauförderung NÖ (0.5%)</span><span class="rv neg" id="r-wbf">—</span></div>
+      <div class="rrow"><span class="rl">Wohnbauförderung (WBF)</span><span class="rv neg" id="r-wbf">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlUVEmployer">UV Unfallversicherung (employer)</span><span class="rv" style="color:#aaa">—</span></div>
       <div class="rrow"><span class="rl" data-i18n="rlLStProgressive">Lohnsteuer (progressive brackets)</span><span class="rv neg" id="r-lst">—</span></div>
       <div class="rrow total-row"><span class="rl">Net payout</span><span class="rv info" id="r-net">—</span></div>
@@ -970,7 +974,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <input type="number" id="tc-holh" value="0" step="0.5" oninput="renderTaxCalc()">
       </div>
       <div class="tax-field">
-        <label>Hazard allowance/month (€, tax-free)</label>
+        <label>Hazard allowance/month (€, income-tax-free)</label>
         <input type="number" id="tc-hazard" value="230.43" step="0.01" oninput="renderTaxCalc()">
       </div>
     </div>
@@ -984,11 +988,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="rrow"><span class="rl">Monthly gross (taxable)</span><span class="rv" id="tc-mgross">—</span></div>
       <div class="rrow"><span class="rl">KV 3.87%</span><span class="rv neg" id="tc-kv">—</span></div>
       <div class="rrow"><span class="rl">PV 10.25%</span><span class="rv neg" id="tc-pv">—</span></div>
-      <div class="rrow"><span class="rl">AV 2.95%</span><span class="rv neg" id="tc-av">—</span></div>
+      <div class="rrow"><span class="rl">AV</span><span class="rv neg" id="tc-av">—</span></div>
       <div class="rrow"><span class="rl">AK-Umlage 0.5%</span><span class="rv neg" id="tc-ak">—</span></div>
       <div class="rrow"><span class="rl">Wohnbauförderung NÖ 0.5%</span><span class="rv neg" id="tc-wbf">—</span></div>
       <div class="rrow"><span class="rl">Lohnsteuer (progressive)</span><span class="rv neg" id="tc-lst">—</span></div>
-      <div class="rrow"><span class="rl">Hazard allowance (tax-free)</span><span class="rv pos" id="tc-haz">—</span></div>
+      <div class="rrow"><span class="rl">Hazard allowance (income-tax-free)</span><span class="rv pos" id="tc-haz">—</span></div>
       <div class="rrow total-row"><span class="rl">Monthly net</span><span class="rv info" id="tc-mnet">—</span></div>
 
       <div class="panel-label" style="margin-top:12px" data-i18n="lblAnnualTotals">Annual totals</div>
@@ -1197,7 +1201,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="setNightStartHint">Hours worked after this time qualify for the 8% night allowance.</div>
       </div>
       <div style="margin-bottom:8px">
-        <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setAllowance">Special allowance — Zulage (€/month, tax-free)
+        <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setAllowance">Special allowance — Zulage (€/month, income-tax-free, SV applies)
           <span class="tip" data-i18n-title="tipAllowance" title="Any recurring tax-free allowance from your employer, e.g. hazard pay (Erschwerniszulage). Find it on your payslip. Set to 0 if none.">ℹ</span></label>
         <input type="number" id="hazard-allow" value="0" step="0.01" min="0" onchange="saveSettings();renderAll()">
       </div>
@@ -1479,12 +1483,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:8px" data-i18n="simAddExtra">Add extra shifts</div>
     <div class="sim-slider-row">
       <label>🌙 <span data-i18n="simLateLabel">Late shifts (14:00–22:30 · 8h paid)</span><br>
-        <span style="color:#aaa;font-size:10px" id="sim-late-sub" data-i18n="simLateSub">+€50 supplement next month</span><br>
+        <span style="color:#aaa;font-size:10px" id="sim-late-sub" data-i18n="simLateSub">+€50 supplement next month</span></label><br>
         <label style="font-size:10px;color:#888;cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin-top:2px">
           <input type="checkbox" id="sim-night-pay" onchange="renderSim()" style="cursor:pointer">
-          <span data-i18n="simNightPayLabel">Also includes 2.5h night pay (§68, LSt-free)</span>
+          <span data-i18n="simNightPayLabel">Also includes 2.5h night pay</span>
         </label>
-      </label>
       <input type="range" id="sim-late" min="0" max="15" value="0" oninput="renderSim()">
       <div class="sim-count" id="sim-late-val">0</div>
     </div>
@@ -1577,6 +1580,22 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 
 
 <!-- ═══ ONBOARDING TUTORIAL ═══ -->
+<div class="disc-overlay" id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" onclick="closeHelp()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="help-title" data-i18n="helpTitle">How it works</h2>
+    <div class="disc-body" id="help-body"></div>
+    <button class="mbtn primary" onclick="closeHelp()" data-i18n="impClose">Close</button>
+  </div>
+</div>
+
+<div class="disc-overlay" id="changelog-overlay" role="dialog" aria-modal="true" aria-labelledby="log-title" onclick="closeChangelog()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="log-title" data-i18n="logTitle">What&rsquo;s new</h2>
+    <div class="disc-body" id="log-body"></div>
+    <button class="mbtn primary" onclick="closeChangelog()" data-i18n="impClose">Close</button>
+  </div>
+</div>
+
 <div class="disc-overlay" id="explain-overlay" role="dialog" aria-modal="true" aria-labelledby="ex-title" onclick="closeExplain()">
   <div class="disc-box" onclick="event.stopPropagation()">
     <h2 id="ex-title" data-i18n="exTitle">How is this calculated?</h2>
@@ -2094,20 +2113,24 @@ function calcEarnedSupplements(year,month){
   //   '150_same':  150% paid SAME month (handled in calcSalary, not here) — here we only
   //                carry holH for the deferred Feiertagszuschlag 50% supplement portion
   //   'none':      no special holiday-worked premium modeled
+  // Payroll units are hours to 2 decimals (47h11m -> 47.18 h); amount = units x rate, rounded to cents.
+  // Hours are minute-exact before that (pay per minute = hourly rate / 60). Verified on 4 payslips (rules.roundHourly sectors).
+  function _u(x){return rules.roundHourly?Math.round(x*100)/100:x;}
+  middleH=_u(middleH);lateH=_u(lateH);holH=_u(holH);
   var hMode=rules.holidayMode||'200_deferred';
-  var holBase   = hMode==='200_deferred' ? hourly*holH : (hMode==='150_same' ? 0 : 0);
-  var holSuppl  = hMode==='200_deferred' ? hourly*holH : (hMode==='150_same' ? hourly*0.5*holH : 0);
+  var holBase   = hMode==='200_deferred' ? _u(hourly*holH) : (hMode==='150_same' ? 0 : 0);
+  var holSuppl  = hMode==='200_deferred' ? _u(hourly*holH) : (hMode==='150_same' ? _u(hourly*0.5*holH) : 0);
   var holTotal  = holBase + holSuppl;
 
   // Middle/late supplement timing: deferSupplements=true → paid next month (here)
   //                                deferSupplements=false → paid same month (handled in calcSalary)
   var defer=rules.deferSupplements!==false;
   return {
-    middleP:  defer ? middleHourlyRate*middleH : 0,
-    lateP:    defer ? lateHourlyRate*lateH     : 0,
+    middleP:  defer ? _u(middleHourlyRate*middleH) : 0,
+    lateP:    defer ? _u(lateHourlyRate*lateH)     : 0,
     // Same-month values for when deferSupplements=false (read by calcSalary directly)
-    middlePSame:  defer ? 0 : middleHourlyRate*middleH,
-    latePSame:    defer ? 0 : lateHourlyRate*lateH,
+    middlePSame:  defer ? 0 : _u(middleHourlyRate*middleH),
+    latePSame:    defer ? 0 : _u(lateHourlyRate*lateH),
     holExtraBase: holBase,
     holExtraSuppl: holSuppl,
     holExtra: holTotal,
@@ -2156,7 +2179,9 @@ function calcNightAllowance(year,month){
     if(sh.type==='latenight') lateNightH+=h.night;
     else if(sh.type==='normal'||sh.type==='callin') nightH+=h.night;
   });
-  return {shiftA:hourly*nightPct*nightH, lateNightA:hourly*nightPct*lateNightH, nightH, lateNightH};
+  function _uN(x){return rules.roundHourly?Math.round(x*100)/100:x;}
+  nightH=_uN(nightH);lateNightH=_uN(lateNightH);
+  return {shiftA:_uN(hourly*nightPct*nightH), lateNightA:_uN(hourly*nightPct*lateNightH), nightH, lateNightH};
 }
 
 function calcSalary(year,month){
@@ -3982,7 +4007,7 @@ function _doUpdateDuration(){
     else parts.push(fmt(hourly*s.callinM*h.total)+' call-in pay');
   }
   if(type==='holiday')  parts.push(fmt(hourly*2*h.total)+' extra (paid next month)');
-  if(type==='leave')    parts.push('8h paid (standard day)');
+  if(type==='leave')    parts.push('in monthly salary (no extra pay)');
   pill.className='duration-pill show';
   pill.textContent=parts.join(' · ');
 }
@@ -4656,6 +4681,80 @@ function finishWizard(){
   }
 }
 
+// ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
+// To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
+var CHANGELOG=[
+  {v:'1.0.0',d:'2026-11',items:[
+    ['Rates by year: 2026 (official) and 2027 (provisional), with a warning for other years.','Werte pro Jahr: 2026 (offiziell) und 2027 (vorl\u00e4ufig), mit Hinweis bei anderen Jahren.'],
+    ['Staggered unemployment-insurance (AV) brackets for low income; Sonderzahlung SV corrected to 17.07% (no AK levy, no WBF).','Gestaffelte Arbeitslosenversicherung (AV) bei niedrigem Einkommen; SV der Sonderzahlung auf 17,07 % korrigiert (ohne AK-Umlage und WBF).'],
+    ['Verified rules for the hospital radiology sector: night allowance taxable, only 50% of the holiday surcharge tax-free, hourly rate = salary \u00f7 173, late supplement counted from 14:00.','Gepr\u00fcfte Regeln f\u00fcr die Radiologietechnologie im Krankenhaus: Nachtzulage lohnsteuerpflichtig, nur 50 % des Feiertagszuschlags steuerfrei, Stundensatz = Gehalt \u00f7 173, Sp\u00e4tzulage ab 14:00.'],
+    ['Standby pay, hazard allowance and works-council levy follow real payslips; fixed a double count of standby pay.','Rufbereitschaft, Gefahrenzulage und Betriebsratsumlage folgen echten Abrechnungen; doppelte Z\u00e4hlung der Rufbereitschaft behoben.'],
+    ['Supplement hours follow payroll rounding (hours to 2 decimals, amounts to cents).','Zulagenstunden folgen der Rundung der Lohnverrechnung (Stunden auf 2 Dezimalen, Betr\u00e4ge auf Cent).'],
+    ['New: prior-month correction, payslip comparison with checks and likely causes, anonymised "report this result", and "How is this calculated?".','Neu: Korrektur Vormonat, Abrechnungsvergleich mit Pr\u00fcfungen und m\u00f6glichen Ursachen, anonymisiertes "Ergebnis melden" und "Wie wird das berechnet?".'],
+    ['New: sick leave, fixed days off, custom and hideable shift cards, sector choice saved after reload, optional sector step in the first-run wizard.','Neu: Krankenstand, fixe freie Tage, eigene und ausblendbare Dienstkarten, gespeicherte Branchenwahl, optionaler Branchenschritt im Start-Assistenten.'],
+    ['New: backup reminder, feedback form with optional technical info, Impressum and disclaimer.','Neu: Backup-Erinnerung, Feedback-Formular mit optionalen technischen Infos, Impressum und Haftungsausschluss.']
+  ]}
+];
+function _buildSections(body,sections){
+  body.textContent='';
+  sections.forEach(function(sc,i){
+    var d=document.createElement('details');d.style.margin='0 0 8px';if(sc.open)d.open=true;
+    var sm=document.createElement('summary');sm.style.cssText='cursor:pointer;font-weight:600;font-size:12px';sm.textContent=sc.title;d.appendChild(sm);
+    var ul=document.createElement('ul');ul.style.cssText='margin:6px 0 0 16px;padding:0;font-size:11.5px;line-height:1.55';
+    sc.lines.forEach(function(x){var li=document.createElement('li');li.textContent=x;ul.appendChild(li);});
+    d.appendChild(ul);body.appendChild(d);
+  });
+}
+function openHelp(){
+  var b=document.getElementById('help-body');
+  if(!b) return;
+  _buildSections(b,[
+    {title:bi('1. Set up','1. Einrichten'),open:true,lines:[
+      bi('Pick your sector and enter your salary (first-run wizard, or Settings). The sector pre-fills typical shift times and rules.','W\u00e4hle deine Branche und trage dein Gehalt ein (Start-Assistent oder Einstellungen). Die Branche f\u00fcllt typische Dienstzeiten und Regeln vor.'),
+      bi('Only one sector is verified against real payslips; all others are estimates (marked \u26a0).','Nur eine Branche ist mit echten Abrechnungen gepr\u00fcft; alle anderen sind Sch\u00e4tzungen (mit \u26a0 markiert).'),
+      bi('Part-time: mark your fixed days off in Settings and enter your actual monthly gross as salary.','Teilzeit: fixe freie Tage in den Einstellungen markieren und das tats\u00e4chliche Monatsbrutto als Gehalt eintragen.')]},
+    {title:bi('2. Enter your shifts','2. Dienste eintragen'),lines:[
+      bi('Tap a day to open the shift dialog. Pick a card (early, middle, late, night, \u2026) or enter the times by hand.','Tippe auf einen Tag, um den Dienst-Dialog zu \u00f6ffnen. W\u00e4hle eine Karte (Fr\u00fch, Mittel, Sp\u00e4t, Nacht, \u2026) oder gib die Zeiten selbst ein.'),
+      bi('Save your own times as a card ("+ Save as card"); hide cards you never use with the \u2715 (they can be restored).','Speichere eigene Zeiten als Karte ("+ Als Karte speichern"); nicht ben\u00f6tigte Karten mit \u2715 ausblenden (wiederherstellbar).'),
+      bi('Patterns and "Copy prev" fill many days at once; sick leave and annual leave have their own types.','Muster und "Vormonat kopieren" f\u00fcllen viele Tage auf einmal; Krankenstand und Urlaub haben eigene Typen.')]},
+    {title:bi('3. Read the report','3. Bericht lesen'),lines:[
+      bi('The monthly report shows gross, social insurance, income tax and net.','Der Monatsbericht zeigt Brutto, Sozialversicherung, Lohnsteuer und Netto.'),
+      bi('In the verified sector, middle, late and holiday supplements are paid in the month after the shifts; night allowance is paid in the same month.','In der gepr\u00fcften Branche werden Mittel-, Sp\u00e4t- und Feiertagszulagen im Folgemonat bezahlt; die Nachtzulage im selben Monat.'),
+      bi('"How is this calculated?" under the net payout explains every step with the current rates.','"Wie wird das berechnet?" unter dem Nettobetrag erkl\u00e4rt jeden Schritt mit den aktuellen Werten.')]},
+    {title:bi('4. Compare with your payslip','4. Mit der Abrechnung vergleichen'),lines:[
+      bi('Enter the values from your payslip in the comparison box. The app shows the differences and the likely cause.','Trage die Werte deiner Abrechnung in den Vergleich ein. Die App zeigt die Differenzen und die wahrscheinliche Ursache.'),
+      bi('Retro lines ("NN*" on the payslip) go into the prior-month correction field.','Nachverrechnete Zeilen ("NN*") geh\u00f6ren ins Feld Korrektur Vormonat.'),
+      bi('You can report a result anonymously (sector, year and differences only) to help verify more sectors.','Du kannst ein Ergebnis anonym melden (nur Branche, Jahr und Differenzen), um weitere Branchen pr\u00fcfen zu helfen.')]},
+    {title:bi('5. Backup and privacy','5. Backup und Datenschutz'),lines:[
+      bi('Your data stays in this browser (no account, no tracking). Clearing browser data deletes it \u2013 export a JSON backup in Settings from time to time.','Deine Daten bleiben in diesem Browser (kein Konto, kein Tracking). Das L\u00f6schen der Browserdaten l\u00f6scht sie \u2013 exportiere ab und zu ein JSON-Backup in den Einstellungen.'),
+      bi('Optional: sync to your own GitHub repository (encrypted).','Optional: Synchronisation in dein eigenes GitHub-Repository (verschl\u00fcsselt).')]},
+    {title:bi('6. Good to know','6. Gut zu wissen'),lines:[
+      bi('Results are estimates, not payroll or tax advice.','Die Ergebnisse sind Sch\u00e4tzungen, keine Lohnverrechnung oder Steuerberatung.'),
+      bi('Language, dark mode and print are in the top bar. Questions or wrong numbers? Use Feedback.','Sprache, Dunkelmodus und Drucken findest du in der oberen Leiste. Fragen oder falsche Zahlen? Nutze Feedback.')]}
+  ]);
+  document.getElementById('help-overlay').classList.add('open');
+}
+function closeHelp(){var el=document.getElementById('help-overlay');if(el)el.classList.remove('open');}
+function openChangelog(){
+  var b=document.getElementById('log-body');
+  if(!b) return;
+  _buildSections(b,CHANGELOG.map(function(c,i){
+    return {title:'v'+c.v+' \u00b7 '+c.d,open:i===0,lines:c.items.map(function(x){return bi(x[0],x[1]);})};
+  }));
+  try{localStorage.setItem('sp_seen_version',APP_VERSION);}catch(e){}
+  var dot=document.getElementById('log-dot');if(dot)dot.style.display='none';
+  document.getElementById('changelog-overlay').classList.add('open');
+}
+function closeChangelog(){var el=document.getElementById('changelog-overlay');if(el)el.classList.remove('open');}
+// Red dot on the 'what is new' icon when the version changed since the user last looked. First-time users get no dot.
+function initChangelogDot(){
+  var seen=null;
+  try{seen=localStorage.getItem('sp_seen_version');}catch(e){}
+  var dot=document.getElementById('log-dot');
+  if(seen===null){try{localStorage.setItem('sp_seen_version',APP_VERSION);}catch(e){} if(dot)dot.style.display='none';}
+  else if(dot) dot.style.display=(seen!==APP_VERSION)?'':'none';
+}
+
 // ═══ HOW IS THIS CALCULATED? (generated from the live rate tables and the selected sector's rules) ═══
 function openExplain(){
   var b=document.getElementById('ex-body');
@@ -5198,6 +5297,7 @@ var I18N={
     rlCorr:'Prior-month correction (gross, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 net effect (after SV and tax)', corrHint:'Retro lines on your payslip (e.g. "09*Ausfallsentgelt"): SV is charged this month, tax at your marginal rate.',
     pscTitle:'\ud83e\uddfe Payslip comparison \u2014 enter your actual values', pscHint:'Use "Summe Bez\u00fcge" (before the works-council levy) as gross, the monthly part only \u2013 no Sonderzahlung. Retro lines ("NN*") belong in the correction field above.', pscGross:'Actual gross (\u20ac)', pscSV:'Actual SV total (\u20ac)', pscLST:'Actual income tax (\u20ac)', pscNet:'Actual net (\u20ac)', pscClear:'Clear',
     exLink:'How is this calculated?', exTitle:'How is this calculated?',
+    helpTip:'How it works', logTip:'What\u2019s new', helpTitle:'How it works', logTitle:'What\u2019s new',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
     legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
@@ -5217,7 +5317,7 @@ var I18N={
     lblData:'Data', lblMonthComparison:'Month comparison',
     simTitle:'What-if simulator', resetAll:'Reset all', simBaseline:'Current month baseline net',
     simBasedOnShifts:'based on shifts entered', simAddExtra:'Add extra shifts',
-    simLateLabel:'Late shifts (14:00–22:30 · 8h paid)', simLateSub:'+€50 supplement next month', simNightPayLabel:'Also includes 2.5h night pay (§68, LSt-free)',
+    simLateLabel:'Late shifts (14:00–22:30 · 8h paid)', simLateSub:'+€50 supplement next month', simNightPayLabel:'Also includes 2.5h night pay',
     simMiddleLabel:'Middle shifts (11:30–20:00 · 8h paid)', simMiddleSub:'+€35.50 supplement next month',
     simEarlyLabel:'Early shifts (07:00–15:30 · 8h paid)', simEarlySub:'no supplements · base pay only',
     simRufLabel:'Rufbereitschaft (4.5h weekday)', simRufSub:'standby pay, outside SV base',
@@ -5270,7 +5370,7 @@ var I18N={
     rlAnnualLeave:'Annual leave (Urlaub)',
     rlRufStandby:'Rufbereitschaft standby',
     rlRufCallin:'Rufeinsatz call-in',
-    rlHazard:'Hazard allowance (tax-free)',
+    rlHazard:'Hazard allowance (income-tax-free)',
     rlWorksCouncil:'Works council (~0.3%)',
     rlUVEmployer:'UV Unfallversicherung (employer)',
     rlLStProgressive:'Lohnsteuer (progressive brackets)',
@@ -5290,8 +5390,8 @@ var I18N={
     setNightStart:'Night-work starts after',
     tipNightStart:'Austrian law (§68 EStG) defines night hours for the 8% tax-free supplement. Check your collective agreement.',
     setNightStartHint:'Hours worked after this time qualify for the 8% night allowance.',
-    setAllowance:'Special allowance — Zulage (€/month, tax-free)',
-    tipAllowance:'Any recurring tax-free allowance from your employer, e.g. hazard pay (Erschwerniszulage). Find it on your payslip. Set to 0 if none.',
+    setAllowance:'Special allowance — Zulage (€/month, income-tax-free, SV applies)',
+    tipAllowance:'Any recurring income-tax-free allowance from your employer, e.g. hazard pay (Erschwerniszulage), subject to social insurance. Find it on your payslip. Set to 0 if none.',
     setLeaveDays:'Annual leave entitlement (days)',
     setShowEmployerCosts:'Show employer costs in Report (DB + DZ + MV + UV)',
     setBRRate:'Works council deduction — Betriebsratsumlage (%)',
@@ -5496,6 +5596,7 @@ var I18N={
     rlCorr:'Korrektur Vormonat (brutto, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 Nettoeffekt (nach SV und Steuer)', corrHint:'Nachverrechnete Zeilen auf deiner Abrechnung (z. B. "09*Ausfallsentgelt"): SV wird in diesem Monat abgezogen, Lohnsteuer mit dem Grenzsteuersatz.',
     pscTitle:'\ud83e\uddfe Abrechnungsvergleich \u2014 trage deine tats\u00e4chlichen Werte ein', pscHint:'Als Brutto "Summe Bez\u00fcge" (vor der Betriebsratsumlage) verwenden, nur den Monatsteil \u2013 ohne Sonderzahlung. Nachverrechnete Zeilen ("NN*") geh\u00f6ren ins Korrekturfeld oben.', pscGross:'Tats\u00e4chliches Brutto (\u20ac)', pscSV:'Tats\u00e4chliche SV gesamt (\u20ac)', pscLST:'Tats\u00e4chliche Lohnsteuer (\u20ac)', pscNet:'Tats\u00e4chliches Netto (\u20ac)', pscClear:'Leeren',
     exLink:'Wie wird das berechnet?', exTitle:'Wie wird das berechnet?',
+    helpTip:'So funktioniert es', logTip:'Neuigkeiten', helpTitle:'So funktioniert es', logTitle:'Neuigkeiten',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
     legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
@@ -5515,7 +5616,7 @@ var I18N={
     lblData:'Daten', lblMonthComparison:'Monatsvergleich',
     simTitle:'Was-wäre-wenn-Simulator', resetAll:'Alles zurücksetzen', simBaseline:'Aktueller Monats-Nettobasiswert',
     simBasedOnShifts:'basierend auf eingetragenen Schichten', simAddExtra:'Zusätzliche Schichten hinzufügen',
-    simLateLabel:'Spätdienste (14:00–22:30 · 8h bezahlt)', simLateSub:'+€50 Zuschlag nächsten Monat', simNightPayLabel:'Inkl. 2,5h Nachtzuschlag (§68, LSt-frei)',
+    simLateLabel:'Spätdienste (14:00–22:30 · 8h bezahlt)', simLateSub:'+€50 Zuschlag nächsten Monat', simNightPayLabel:'Inkl. 2,5h Nachtzuschlag',
     simMiddleLabel:'Mitteldienste (11:30–20:00 · 8h bezahlt)', simMiddleSub:'+€35,50 Zuschlag nächsten Monat',
     simEarlyLabel:'Frühdienste (07:00–15:30 · 8h bezahlt)', simEarlySub:'keine Zuschläge · nur Grundgehalt',
     simRufLabel:'Rufbereitschaft (4,5h Werktag)', simRufSub:'Bereitschaftsentgelt, außerhalb SV-Basis',
@@ -5568,7 +5669,7 @@ var I18N={
     rlAnnualLeave:'Urlaub',
     rlRufStandby:'Rufbereitschaft',
     rlRufCallin:'Rufeinsatz',
-    rlHazard:'Erschwerniszulage (steuerfrei)',
+    rlHazard:'Erschwerniszulage (lohnsteuerfrei)',
     rlWorksCouncil:'Betriebsratsumlage (~0,3%)',
     rlUVEmployer:'UV Unfallversicherung (Arbeitgeber)',
     rlLStProgressive:'Lohnsteuer (progressive Stufen)',
@@ -5588,8 +5689,8 @@ var I18N={
     setNightStart:'Nachtarbeit beginnt nach',
     tipNightStart:'Das österreichische Recht (§68 EStG) definiert Nachtstunden für den 8% steuerfreien Zuschlag. Prüfen Sie Ihren Kollektivvertrag.',
     setNightStartHint:'Stunden nach dieser Uhrzeit gelten für den 8% Nachtzuschlag.',
-    setAllowance:'Sonderzulage (€/Monat, steuerfrei)',
-    tipAllowance:'Eine regelmäßige steuerfreie Zulage Ihres Arbeitgebers, z. B. Erschwerniszulage. Siehe Lohnzettel. Bei keiner Zulage 0 eintragen.',
+    setAllowance:'Sonderzulage (€/Monat, lohnsteuerfrei, SV-pflichtig)',
+    tipAllowance:'Eine regelmäßige lohnsteuerfreie Zulage Ihres Arbeitgebers, z. B. Erschwerniszulage (SV-pflichtig). Siehe Lohnzettel. Bei keiner Zulage 0 eintragen.',
     setLeaveDays:'Jahresurlaub (Tage)',
     setShowEmployerCosts:'Arbeitgeberkosten im Bericht anzeigen (DB + DZ + MV + UV)',
     setBRRate:'Betriebsratsumlage (%)',
@@ -6159,7 +6260,7 @@ function renderAll(){
     _renderYearTimer=setTimeout(function(){yearTabYear=currentYear;renderYear();},200);
   }
 }
-applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();loadCorrections();initContact();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
+applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();loadCorrections();initContact();initChangelogDot();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
 </script>
 <!-- Storage warning banner -->
 <div id="storage-warn" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 16px;text-align:center;z-index:500">⚠️ Storage approaching limit (4MB) — export a JSON backup and consider clearing old years.</div>
