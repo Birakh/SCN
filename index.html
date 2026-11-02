@@ -57,6 +57,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .today-dot{width:18px;height:18px;background:#185fa5;border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
 .hol-tag{font-size:9px;font-weight:500;background:#faeeda;color:#854f0b;padding:1px 5px;border-radius:3px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shift-pill{font-size:9px;font-weight:500;padding:2px 5px;border-radius:3px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+@media (max-width:480px){.shift-pill{padding:2px 2px;text-align:center;white-space:normal;text-overflow:clip;line-height:1.15}.shift-pill .pl-t{display:none}.shift-pill .pl-h{font-size:0}.shift-pill .pl-h::after{content:attr(data-short);font-size:8px}}
+@media (pointer:coarse){.app-header .icon-btn{min-height:34px}}
+body.dark .lp-latenight b{color:#d9d2ff!important}
+body.dark #shift-search{background:#2a2a2e!important;color:#e2e2dc!important;border-color:#4a4a4e!important}
+.preset-btn .cc-del{display:none}
+.cards-editing .preset-btn .cc-del{display:block;width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;padding:0;top:-7px;right:-7px;background:#c0392b;color:#fff;border-radius:50%;z-index:2}
+.cards-editing .preset-btn .cc-del:hover{background:#a93226;color:#fff}
 .sp-normal {background:#e6f1fb;color:#185fa5}
 .sp-middle {background:#e1f5ee;color:#0f6e56}
 .sp-late   {background:#eeedfe;color:#3c3489}
@@ -806,7 +813,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
           <span><span class="wf-leg-dot" style="background:#9b8fd8"></span>SZ (if month)</span>
         </div>
       </div>
-      <div class="panel-label" data-i18n="lblDeductions">Deductions (Austrian 2026 rates)</div>
+      <div class="panel-label" data-i18n="lblDeductions">Deductions (Austrian rates)</div>
       <div class="rrow"><span class="rl">KV Krankenversicherung (3.87%)</span><span class="rv neg" id="r-kv">—</span></div>
       <div class="rrow" id="r-cap-row" style="display:none"><span class="rl" style="color:#27ae60">✓ SV cap reached (€6,930/mo max)</span><span class="rv pos" id="r-cap-save">—</span></div>
       <div class="rrow" id="r-sv-remaining-row"><span class="rl">SV-pflichtiger Restbetrag bis Deckelung</span><span class="rv" id="r-sv-remaining">—</span></div>
@@ -1780,7 +1787,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
 <div class="modal">
   <div class="modal-title" id="modal-title" data-i18n="modalEditShift">Edit shift</div>
-  <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px" data-i18n="modalQuickPresets">Quick presets</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em" data-i18n="modalQuickPresets">Quick presets</span><a href="#" id="cards-edit-link" onclick="toggleCardEdit();return false;" style="font-size:11px" data-i18n="cardsEdit">Edit cards</a></div>
   <div class="presets-grid" id="modal-presets-grid"></div>
   <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px" data-i18n="modalManualEntry">Manual entry</div>
   <div class="mfield">
@@ -2484,7 +2491,7 @@ function renderReport(){
     var svPct=Math.min(100,(r.taxable/SV_CAP_MONTHLY*100));
     svBar.style.width=svPct.toFixed(1)+'%';
     svBar.style.background=r.svM.capped?'#27ae60':'#185fa5';
-    if(svBarNote) svBarNote.textContent=svPct.toFixed(1)+'% of monthly SV ceiling (€'+SV_CAP_MONTHLY.toLocaleString('de-AT')+')';
+    if(svBarNote) svBarNote.textContent=svPct.toFixed(1)+'% of monthly SV ceiling (€'+SV_CAP_MONTHLY.toLocaleString('de-DE')+')';
     if(r.svM.capped){
       if(svRemRow) svRemRow.style.display='none';
       if(svBarWrap) svBarWrap.style.display='';
@@ -2578,7 +2585,7 @@ function renderTaxBreakdown(r){
   var items=[
     {l:'KV (3.87%)',  v:r.svM.kv,  col:'#b5d4f4'},
     {l:'PV (10.25%)', v:r.svM.pv,  col:'#378add'},
-    {l:'AV (2.95%)',  v:r.svM.av,  col:'#185fa5'},
+    {l:'AV',  v:r.svM.av,  col:'#185fa5'},
     {l:'AK (0.5%)',   v:r.svM.ak,  col:'#5b87c5'},
     {l:'WBF ('+wbfPct+'%)',  v:r.svM.wbf, col:'#8aabda'},
     {l:'Lohnsteuer',  v:r.lst,     col:'#042c53'},
@@ -2925,6 +2932,12 @@ function marginalRate(annualBase){
   return 0;
 }
 
+function toggleCardEdit(){
+  var g=document.getElementById('modal-presets-grid'),l=document.getElementById('cards-edit-link');
+  if(!g) return;
+  var on=g.classList.toggle('cards-editing');
+  if(l) l.textContent=on?I18N[getLang()].cardsDone:I18N[getLang()].cardsEdit;
+}
 // ═══ HIDEABLE BUILT-IN CARDS ═══
 var hiddenCards=[]; // keys of built-in quick cards the user hid - persisted in sp_hidden_cards
 var CARD_KEYS=['early','middle','late','latenight','night','long','ruf1','ruf2','callin','leave','sick','holiday'];
@@ -3020,7 +3033,12 @@ function renderCalendar(){
       var pill=document.createElement('span');
       pill.className='shift-pill sp-'+sh.type;
       var labels={normal:'Shift',middle:'Middle',late:'Late',latenight:'Late 8%',holiday:'Holiday',leave:'Urlaub',sick:'Krank',ruf:'On-call',callin:'Rufeinsatz'};
-      pill.textContent=(labels[sh.type]||sh.type)+' '+sh.start+'–'+sh.end;
+      var _lab=(labels[sh.type]||sh.type);
+      var _ct=function(x){return x.replace(/^(\d\d):00$/,'$1');};
+      var _ta=document.createElement('span');_ta.className='pl-t';_ta.textContent=_lab+' ';
+      var _tb=document.createElement('span');_tb.className='pl-h';_tb.textContent=sh.start+'\u2013'+sh.end;_tb.setAttribute('data-short',_ct(sh.start)+'\u2013'+_ct(sh.end));
+      pill.appendChild(_ta);pill.appendChild(_tb);
+      pill.title=_lab+' '+sh.start+'\u2013'+sh.end;
       cell.appendChild(pill);
       if(sh.note){var noteEl=document.createElement('span');noteEl.className='shift-note';noteEl.textContent=sh.note;cell.appendChild(noteEl);}
       if(azgViolations[k]){
@@ -3282,6 +3300,8 @@ function openModal(k){
   var kvShifts=getKVShifts();
   var s2=getSettings();
   // Render preset buttons and type options for active KV
+  var _g=document.getElementById('modal-presets-grid');if(_g)_g.classList.remove('cards-editing');
+  var _l=document.getElementById('cards-edit-link');if(_l)_l.textContent=I18N[getLang()].cardsEdit;
   try{renderModalPresets(kvRules, kvShifts, s2);}catch(e){try{renderModalPresets(DEFAULT_KV_RULES, DEFAULT_SHIFT_TIMES, s2);}catch(e2){}}
   updateModalTypeOptions(kvRules);
   // Late+Night 8% additionally hidden after April (months May–Dec) per historical rule
@@ -5017,7 +5037,7 @@ function pscChecks(r,aGross,aSV,aLSt,aNet,dg,dsv,dl,dn){
   function _ab(x){return isNaN(x)?0:Math.abs(x);}
   if(_ab(dn)>1||_ab(dg)>1||_ab(dsv)>1||_ab(dl)>1){
     var cause=null;
-    if(!isNaN(aNet)&&!isNaN(dg)&&dg>1&&!getCorrection(currentYear,currentMonth)){
+    if(!isNaN(aNet)&&!isNaN(dg)&&dg>1&&dg<=200&&!getCorrection(currentYear,currentMonth)){
       var k=monthKey(currentYear,currentMonth),old=corrections[k];
       corrections[k]=Math.round(dg*100)/100;var sim=calcSalary(currentYear,currentMonth);
       if(old===undefined)delete corrections[k];else corrections[k]=old;
@@ -5298,6 +5318,7 @@ var I18N={
     pscTitle:'\ud83e\uddfe Payslip comparison \u2014 enter your actual values', pscHint:'Use "Summe Bez\u00fcge" (before the works-council levy) as gross, the monthly part only \u2013 no Sonderzahlung. Retro lines ("NN*") belong in the correction field above.', pscGross:'Actual gross (\u20ac)', pscSV:'Actual SV total (\u20ac)', pscLST:'Actual income tax (\u20ac)', pscNet:'Actual net (\u20ac)', pscClear:'Clear',
     exLink:'How is this calculated?', exTitle:'How is this calculated?',
     helpTip:'How it works', logTip:'What\u2019s new', helpTitle:'How it works', logTitle:'What\u2019s new',
+    cardsEdit:'Edit cards', cardsDone:'Done',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
     legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
@@ -5305,7 +5326,7 @@ var I18N={
     filterShifts:'🔍 Filter shifts…',
     dowMon:'Mon',dowTue:'Tue',dowWed:'Wed',dowThu:'Thu',dowFri:'Fri',dowSat:'Sat',dowSun:'Sun',
     tabReport:'Report', tabTaxCalc:'Tax Calc', tabSettings:'Settings', tabYear:'Year', tabCompare:'Compare', tabSim:'Sim',
-    lblGrossBreakdown:'Gross breakdown', lblWaterfall:'Pay waterfall', lblDeductions:'Deductions (Austrian 2026 rates)',
+    lblGrossBreakdown:'Gross breakdown', lblWaterfall:'Pay waterfall', lblDeductions:'Deductions (Austrian rates)',
     lblHoursSummary:'Hours summary', lblBruttoNetto:'Austrian 2026 Brutto → Netto Calculator',
     lblMonthlyBreakdown:'Monthly breakdown', lblAnnualTotals:'Annual totals', lblEffRates:'Effective rates',
     lblBrackets:'2026 Lohnsteuer brackets', lblSupplImpact:'Supplement & on-call impact',
@@ -5597,6 +5618,7 @@ var I18N={
     pscTitle:'\ud83e\uddfe Abrechnungsvergleich \u2014 trage deine tats\u00e4chlichen Werte ein', pscHint:'Als Brutto "Summe Bez\u00fcge" (vor der Betriebsratsumlage) verwenden, nur den Monatsteil \u2013 ohne Sonderzahlung. Nachverrechnete Zeilen ("NN*") geh\u00f6ren ins Korrekturfeld oben.', pscGross:'Tats\u00e4chliches Brutto (\u20ac)', pscSV:'Tats\u00e4chliche SV gesamt (\u20ac)', pscLST:'Tats\u00e4chliche Lohnsteuer (\u20ac)', pscNet:'Tats\u00e4chliches Netto (\u20ac)', pscClear:'Leeren',
     exLink:'Wie wird das berechnet?', exTitle:'Wie wird das berechnet?',
     helpTip:'So funktioniert es', logTip:'Neuigkeiten', helpTitle:'So funktioniert es', logTitle:'Neuigkeiten',
+    cardsEdit:'Karten bearbeiten', cardsDone:'Fertig',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
     legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
@@ -5604,7 +5626,7 @@ var I18N={
     filterShifts:'🔍 Schichten filtern…',
     dowMon:'Mo',dowTue:'Di',dowWed:'Mi',dowThu:'Do',dowFri:'Fr',dowSat:'Sa',dowSun:'So',
     tabReport:'Bericht', tabTaxCalc:'Steuerrechner', tabSettings:'Einstellungen', tabYear:'Jahr', tabCompare:'Vergleich', tabSim:'Simulator',
-    lblGrossBreakdown:'Brutto-Aufschlüsselung', lblWaterfall:'Gehaltsfluss', lblDeductions:'Abzüge (Österreich 2026)',
+    lblGrossBreakdown:'Brutto-Aufschlüsselung', lblWaterfall:'Gehaltsfluss', lblDeductions:'Abz\u00fcge (\u00d6sterreich)',
     lblHoursSummary:'Stundenübersicht', lblBruttoNetto:'Österreich 2026 Brutto → Netto Rechner',
     lblMonthlyBreakdown:'Monatliche Aufschlüsselung', lblAnnualTotals:'Jahressummen', lblEffRates:'Effektive Sätze',
     lblBrackets:'Lohnsteuerstufen 2026', lblSupplImpact:'Zuschläge & Rufbereitschaft – Auswirkung',
