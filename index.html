@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#185fa5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ShiftPlanner">
+<meta name="apple-mobile-web-app-title" content="Paychecker">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23185fa5'/><text y='.9em' font-size='70' x='50%' text-anchor='middle'>📅</text></svg>">
 <title>Paychecker Austria</title>
 <meta name="description" content="Free, private Austrian salary and shift calculator: estimate your net pay from your shifts. Data stays in your browser.">
@@ -693,7 +693,6 @@ body.dark .kv-badge-verified{background:#1b3a1f;color:#81c784;border-color:#388e
 body.dark .kv-badge-unverified{background:#3a2e00;color:#ffca28;border-color:#f9a825}
 body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-color:#444}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -2004,6 +2003,9 @@ function avRate(monthlyGross){
 // 2026: SV per sozialversicherung.gv.at; tariff per EStG. 2027: tariff per Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026, +2.2666%),
 // SV values per OeGK announcement (HBGL 7,410; AV brackets 0.5/1.5/2.5%; BGBl pending). Unchanged by law: KV 3.87, PV 10.25, AV 2.95 (top), AK 0.5.
 // To add a year: append an entry, set status, run the replay/unit tests.
+var LAST_ERROR='';
+window.addEventListener('error',function(e){try{LAST_ERROR=String(e.message||'error').slice(0,120)+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){}});
+window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+String((e.reason&&e.reason.message)||e.reason||'').slice(0,120);}catch(x){}});
 var APP_VERSION='1.0.0';
 var RATES_VERIFIED='2026-10-30';
 var RATES={
@@ -3748,7 +3750,7 @@ function exportJSON(){
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url;a.download='shiftplanner-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.href=url;a.download='paychecker-backup-'+new Date().toISOString().slice(0,10)+'.json';
   a.click();URL.revokeObjectURL(url);
   try{localStorage.setItem('sp_last_export',new Date().toISOString());}catch(e){}
   checkBackupReminder();
@@ -4225,8 +4227,21 @@ function getForecastAccuracy(y,m){
 }
 
 // ═══ EXCEL EXPORT ═══
+// The Excel library (SheetJS 0.18.5, Apache-2.0) is hosted next to index.html as xlsx.full.min.js and loaded only on first export.
+// The app only WRITES spreadsheets; it never parses uploaded ones.
+function loadXLSX(cb,onerr){
+  if(typeof XLSX!=='undefined'){cb();return;}
+  var s=document.createElement('script');
+  s.src='xlsx.full.min.js';
+  s.onload=function(){cb();};
+  s.onerror=function(){if(onerr)onerr();};
+  document.head.appendChild(s);
+}
 function exportXLSX(){
-  if(typeof XLSX==='undefined'){alert('Excel library not loaded — check your internet connection.');return;}
+  if(typeof XLSX==='undefined'){
+    loadXLSX(exportXLSX,function(){alert(bi('The Excel library could not be loaded. Check your connection and try again.','Die Excel-Bibliothek konnte nicht geladen werden. Verbindung pr\u00fcfen und erneut versuchen.'));});
+    return;
+  }
   var s=getSettings();
   // Export the year that's currently in view (year tab if open, else currentYear)
   var yearTab=document.getElementById('tab-year');
@@ -4328,7 +4343,7 @@ function exportXLSX(){
   XLSX.utils.book_append_sheet(wb,wsTax,'Steuerinfo 2026');
 
   // ── Write file ────────────────────────────────────────────────────────────
-  XLSX.writeFile(wb,'shiftplanner-'+exportYear+'.xlsx');
+  XLSX.writeFile(wb,'paychecker-austria-'+exportYear+'.xlsx');
   try{localStorage.setItem('sp_last_export',new Date().toISOString());}catch(e){}
   checkBackupReminder();
 }
@@ -4773,6 +4788,15 @@ function finishWizard(){
   }
 }
 
+// Escape closes the topmost dialog. The disclaimer is blocking and is never closed this way.
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape') return;
+  var map=[['feedback-overlay',closeFeedback],['impressum-overlay',closeImpressum],['explain-overlay',closeExplain],['help-overlay',closeHelp],['changelog-overlay',closeChangelog]];
+  for(var i=0;i<map.length;i++){var el=document.getElementById(map[i][0]);if(el&&el.classList.contains('open')){map[i][1]();return;}}
+  var m=document.getElementById('modal');
+  if(m&&m.classList.contains('open')) closeModal();
+});
+
 // ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
 // To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
 var CHANGELOG=[
@@ -4784,7 +4808,8 @@ var CHANGELOG=[
     ['Supplement hours follow payroll rounding (hours to 2 decimals, amounts to cents).','Zulagenstunden folgen der Rundung der Lohnverrechnung (Stunden auf 2 Dezimalen, Betr\u00e4ge auf Cent).'],
     ['New: prior-month correction, payslip comparison with checks and likely causes, anonymised "report this result", and "How is this calculated?".','Neu: Korrektur Vormonat, Abrechnungsvergleich mit Pr\u00fcfungen und m\u00f6glichen Ursachen, anonymisiertes "Ergebnis melden" und "Wie wird das berechnet?".'],
     ['New: sick leave, fixed days off, custom and hideable shift cards, sector choice saved after reload, optional sector step in the first-run wizard.','Neu: Krankenstand, fixe freie Tage, eigene und ausblendbare Dienstkarten, gespeicherte Branchenwahl, optionaler Branchenschritt im Start-Assistenten.'],
-    ['New: backup reminder, feedback form with optional technical info, Impressum and disclaimer.','Neu: Backup-Erinnerung, Feedback-Formular mit optionalen technischen Infos, Impressum und Haftungsausschluss.']
+    ['New: backup reminder, feedback form with optional technical info, Impressum and disclaimer.','Neu: Backup-Erinnerung, Feedback-Formular mit optionalen technischen Infos, Impressum und Haftungsausschluss.'],
+    ['Backups and GitHub sync now include your settings; Esc closes dialogs; the Excel export no longer needs a third-party server.','Backups und GitHub-Sync enthalten jetzt deine Einstellungen; Esc schlie\u00dft Dialoge; der Excel-Export braucht keinen Drittserver mehr.']
   ]}
 ];
 function _buildSections(body,sections){
@@ -4980,6 +5005,7 @@ function buildDiagnostics(){
     'theme: '+(document.body.classList.contains('dark')?'dark':'light'),
     'entries: '+Object.keys(shifts).length+', custom cards: '+customCards.length+', hidden cards: '+hiddenCards.length,
     'screen: '+(window.innerWidth||0)+'x'+(window.innerHeight||0),
+    'last error: '+(LAST_ERROR||'none'),
     'browser: '+(navigator.userAgent||'')
   ].join('\n');
 }
@@ -5037,8 +5063,8 @@ function openImpressum(){
   impRow('Medieninhaber & Diensteanbieter / Media owner & service provider',[IMPRESSUM.name,[IMPRESSUM.street,IMPRESSUM.city].filter(Boolean).join(', ')].filter(Boolean).join(', ')||'\u2014');
   impRow('Kontakt / Contact',IMPRESSUM.email+(WEB3FORMS_KEY?' \u00b7 Feedback-Formular / feedback form':''));
   impRow('Zweck / Purpose','Kostenloser Gehalts- und Schichtrechner (Sch\u00e4tzwerte, keine Beratung). / Free salary and shift estimator (estimates, not advice).');
-  impRow('Datenschutz','Diese Seite \u00fcbermittelt deine Eingaben nicht an den Betreiber. Die Daten werden in deinem Browser (localStorage) auf deinem Ger\u00e4t gespeichert. Die optionale GitHub-Synchronisation \u00fcbertr\u00e4gt verschl\u00fcsselte Daten nur dann an dein eigenes Repository, wenn du sie aktivierst. Die Seite l\u00e4dt ein Skript (SheetJS) von cdnjs.cloudflare.com, und der Hosting-Anbieter kann technische Verbindungsdaten (z. B. IP-Adresse) verarbeiten.');
-  impRow('Privacy','This page does not send your entries to the operator. Data is stored in your browser (localStorage) on your device. Optional GitHub sync transfers encrypted data to your own repository only if you enable it. The page loads one script (SheetJS) from cdnjs.cloudflare.com, and the hosting provider may process technical connection data (e.g. IP address).');
+  impRow('Datenschutz','Diese Seite \u00fcbermittelt deine Eingaben nicht an den Betreiber. Die Daten werden in deinem Browser (localStorage) auf deinem Ger\u00e4t gespeichert. Die optionale GitHub-Synchronisation \u00fcbertr\u00e4gt verschl\u00fcsselte Daten nur dann an dein eigenes Repository, wenn du sie aktivierst. Der Hosting-Anbieter (GitHub Pages) kann technische Verbindungsdaten (z. B. IP-Adresse) verarbeiten.');
+  impRow('Privacy','This page does not send your entries to the operator. Data is stored in your browser (localStorage) on your device. Optional GitHub sync transfers encrypted data to your own repository only if you enable it. The hosting provider (GitHub Pages) may process technical connection data (e.g. IP address).');
   if(WEB3FORMS_KEY){
     impRow('Feedback-Formular / Feedback form','Bei Nutzung des Feedback-Formulars werden deine Nachricht und die von dir eingegebenen Kontaktdaten \u00fcber den Dienst Web3Forms an den Betreiber \u00fcbermittelt. / If you use the feedback form, your message and any contact details you enter are sent to the operator via the service Web3Forms.');
   }
