@@ -9,6 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="ShiftPlanner">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23185fa5'/><text y='.9em' font-size='70' x='50%' text-anchor='middle'>📅</text></svg>">
 <title>Paychecker Austria</title>
+<meta name="description" content="Free, private Austrian salary and shift calculator: estimate your net pay from your shifts. Data stays in your browser.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Paychecker Austria">
+<meta property="og:description" content="Free, private Austrian salary and shift calculator: estimate your net pay from your shifts. Data stays in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23185fa5'/%3E%3Ctext x='32' y='45' font-size='40' font-family='Arial,sans-serif' font-weight='700' text-anchor='middle' fill='white'%3E%E2%82%AC%3C/text%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efea;color:#1a1a1a;font-size:14px;line-height:1.5}
@@ -182,6 +187,7 @@ select,input[type=number],input[type=text]{width:100%;padding:5px 7px;border:.5p
 .supplement-tag{font-size:10px;background:#eeedfe;color:#3c3489;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:500}
 
 @media print{
+.backup-banner,#ios-banner{display:none!important}
   .modal-overlay{display:none!important}
   .layout{display:block}
   .left{display:none}
@@ -700,6 +706,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="app-sub" data-i18n="appSub">Austria · click any day to add or edit a shift</div>
       <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a> &middot; <a href="#" onclick="openImpressum();return false;" data-i18n="impLink">Impressum</a> &middot; <a href="#" id="fb-link" style="display:none" onclick="openFeedback();return false;" data-i18n="fbLink">Feedback</a></div>
       <div id="rates-banner" class="rates-banner" style="display:none"></div>
+      <div id="ios-banner" class="rates-banner" style="display:none"></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="month-nav">
@@ -711,8 +718,8 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <button class="icon-btn" onclick="window.print()" data-i18n="print">🖨 Print</button>
       <button class="icon-btn" onclick="exportICal()" title="Export shifts to .ics for Google / Apple Calendar" data-i18n="icalBtn">📅 iCal</button>
       <button class="icon-btn" onclick="copyPrevMonth()" title="Copy previous month's shifts into this month" data-i18n="copyPrevBtn">📋 Copy prev</button>
-      <button class="icon-btn" id="help-btn" onclick="openHelp()" title="How it works" data-i18n-title="helpTip">❓</button>
-      <button class="icon-btn" id="log-btn" onclick="openChangelog()" title="What’s new" data-i18n-title="logTip">🆕<span class="new-dot" id="log-dot" style="display:none"></span></button>
+      <button class="icon-btn" id="help-btn" onclick="openHelp()" title="How it works" aria-label="How it works" data-i18n-title="helpTip">❓</button>
+      <button class="icon-btn" id="log-btn" onclick="openChangelog()" title="What’s new" aria-label="What’s new" data-i18n-title="logTip">🆕<span class="new-dot" id="log-dot" style="display:none"></span></button>
       <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
       <button class="icon-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / Sprache wechseln">🌐 DE</button>
       <a href="https://buymeacoffee.com/anisbirakhm" target="_blank" rel="noopener"
@@ -1363,7 +1370,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <hr class="divider">
     <div class="panel-section">
       <div class="panel-label" data-i18n="lblBackup">💾 Backup</div>
-      <div style="font-size:10px;color:#aaa;margin-bottom:8px;line-height:1.5" data-i18n="backupIntro">Export a backup file regularly. Your data lives only in this browser — no automatic cloud backup unless you set up sync below.</div>
+      <div style="font-size:10px;color:#aaa;margin-bottom:8px;line-height:1.5" data-i18n="backupIntro">Export a backup file regularly. Your data lives only in this browser — no automatic cloud backup unless you set up sync below. A backup also contains your settings, templates and cards – never your GitHub token or sync password.</div>
       <div style="display:flex;gap:6px;margin-bottom:6px">
         <button class="mbtn" style="flex:1" onclick="exportJSON()" data-i18n="btnExportJSON">📤 Export JSON</button>
         <button class="mbtn" style="flex:1" onclick="exportXLSX()" data-i18n="btnExportXLSX">📊 Export Excel</button>
@@ -2437,8 +2444,9 @@ function renderReport(){
       :'<span class="kv-badge-unverified">⚠ '+tpl.name+' — estimate, verify your payslip</span>';
   })();
   // Hourly strip — compute SZ once, derive annual figures from salaryModel
-  var baseHourly=r.base/173.33;
-  var netHourly=r.net/173.33;
+  var _div=getActiveKVRules().hourlyDivisor||173.33;
+  var baseHourly=kvHourly(r.base);
+  var netHourly=r.net/_div;
   var szCalc=calcSonderzahlung(r.base, s.wbfRate);
   // Headline net payout: include Sonderzahlung net in SZ months, so it matches
   // the actual payslip "Auszahlung" total instead of just the regular monthly net.
@@ -2449,7 +2457,7 @@ function renderReport(){
   var szCount=Math.min(s.salaryModel-12, configuredSZ); // 0,1,2
   var annualGross=r.gross*12+szCalc.gross*szCount;
   var annualNet  =r.net*12  +szCalc.net  *szCount;
-  var trueHourly =annualNet/(12*173.33);
+  var trueHourly =annualNet/(12*(getActiveKVRules().hourlyDivisor||173.33));
   var annualLabel='Annual gross ('+s.salaryModel+' sal.)';
   document.getElementById('r-hourly-base').textContent='€ '+baseHourly.toFixed(2)+'/h';
   document.getElementById('r-hourly-net').textContent='€ '+netHourly.toFixed(2)+'/h';
@@ -2531,7 +2539,7 @@ function renderReport(){
     ytdNightH+=na.nightH;ytdLateNightH+=na.lateNightH;
   }
   var ytdNightEl=document.getElementById('r-nighth-ytd');
-  if(ytdNightEl) ytdNightEl.textContent=ytdNightH.toFixed(1)+'h'+(ytdLateNightH>0?' + '+ytdLateNightH.toFixed(1)+'h late+night':'')+(ytdNightH+ytdLateNightH>0?' → '+fmt((ytdNightH+ytdLateNightH)*r.base/173.33*0.08)+' total 8% earned':'');
+  if(ytdNightEl) ytdNightEl.textContent=ytdNightH.toFixed(1)+'h'+(ytdLateNightH>0?' + '+ytdLateNightH.toFixed(1)+'h late+night':'')+(ytdNightH+ytdLateNightH>0?' → '+fmt((ytdNightH+ytdLateNightH)*kvHourly(r.base)*0.08)+' total 8% earned':'');
   document.getElementById('r-middled').textContent=r.middleDays+' days (prev month)';
   document.getElementById('r-lated').textContent=r.lateDays+' days (prev month)';
   document.getElementById('r-rufh').textContent=
@@ -2918,7 +2926,7 @@ function getCorrection(y,m){return corrections[monthKey(y,m)]||0;}
 function setCorrection(val){
   var v=parseFloat(val),k=monthKey(currentYear,currentMonth);
   if(isFinite(v)&&v!==0)corrections[k]=Math.round(v*100)/100;else delete corrections[k];
-  saveCorrections();renderAll();
+  saveCorrections();markDirty(true);renderAll();
 }
 function syncCorrInput(){
   var el=document.getElementById('corr-input');
@@ -2959,7 +2967,7 @@ function sanitizeCards(a){
 function loadCustomCards(){try{var r=localStorage.getItem('sp_custom_cards');if(r)customCards=sanitizeCards(JSON.parse(r));}catch(e){customCards=[];}}
 function saveCustomCards(){try{localStorage.setItem('sp_custom_cards',JSON.stringify(customCards));}catch(e){}}
 function _ccEsc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
-function _refreshCards(){try{renderModalPresets(getActiveKVRules(),getKVShifts(),getSettings());}catch(e){}}
+function _refreshCards(){markDirty(true);try{renderModalPresets(getActiveKVRules(),getKVShifts(),getSettings());}catch(e){}}
 function addCustomCard(){
   var nameEl=document.getElementById('cc-name');
   var name=((nameEl&&nameEl.value)||'').trim();
@@ -3426,7 +3434,14 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function saveSettings(){
+  var prev=null,now=null;
+  try{prev=localStorage.getItem('sp_settings');}catch(e){}
+  _saveSettings();
+  try{now=localStorage.getItem('sp_settings');}catch(e){}
+  if(prev!==null&&now!==prev&&typeof markDirty==='function')markDirty(true);
+}
 function loadData(){
   try{
     var s=localStorage.getItem('sp_shifts'),a=localStorage.getItem('sp_actuals'),cfg=localStorage.getItem('sp_settings');
@@ -3606,6 +3621,59 @@ async function repoGetFile(pat,repo,branch){
   return {sha:data.sha, content:data.content.replace(/\n/g,'')};
 }
 
+// ═══ WHAT IS BACKED UP ═══
+// Data + settings + templates/cards/corrections + display preferences. NEVER the GitHub token or the sync password.
+var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','kvPreset','freeDays'];
+function sanitizeSettings(c){
+  if(!c||typeof c!=='object') return null;
+  var out={};
+  SETTINGS_KEYS.forEach(function(k){
+    var v=c[k];
+    if(k==='freeDays'){if(Array.isArray(v))out[k]=v.map(Number).filter(function(x){return x>=0&&x<=6&&x%1===0;});}
+    else if(k==='showEmployerCosts'||k==='rufSVBase'){if(typeof v==='boolean')out[k]=v;}
+    else if(k==='kvPreset'){if(typeof v==='string'&&(v===''||KV_TEMPLATES[v]))out[k]=v;}
+    else if(typeof v==='string'||typeof v==='number'){out[k]=String(v).slice(0,40);}
+  });
+  return out;
+}
+function collectState(){
+  saveSettings();
+  var st=null,cl=null,lang=null,dark=null;
+  try{st=JSON.parse(localStorage.getItem('sp_settings')||'null');}catch(e){}
+  try{cl=JSON.parse(localStorage.getItem('sp_cl')||'null');}catch(e){}
+  try{lang=localStorage.getItem('sp_lang');dark=localStorage.getItem('sp_dark');}catch(e){}
+  return {shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards,corrections:corrections,settings:st,checklist:cl,prefs:{lang:lang,dark:dark}};
+}
+// Restores everything except shifts/actuals/OT/grade history (callers set those first).
+// Parts missing from an older backup leave the current values untouched.
+function applyExtras(parsed,includeLists){
+  if(includeLists){
+    if(Array.isArray(parsed.shiftTemplates)){shiftTemplates=parsed.shiftTemplates;saveTemplates();}
+    if(Array.isArray(parsed.customCards)){customCards=sanitizeCards(parsed.customCards);saveCustomCards();}
+    if(Array.isArray(parsed.hiddenCards)){hiddenCards=sanitizeHidden(parsed.hiddenCards);saveHiddenCards();}
+    if(parsed.corrections){corrections=sanitizeCorrections(parsed.corrections);saveCorrections();}
+  }
+  var cfg=sanitizeSettings(parsed.settings);
+  if(cfg&&Object.keys(cfg).length){
+    try{localStorage.setItem('sp_settings',JSON.stringify(cfg));localStorage.setItem('sp_wizard_done','1');}catch(e){}
+    loadData();   // pushes the saved settings into the form fields
+    saveSettings();
+    ['wizard-overlay','onb-overlay'].forEach(function(id){var o=document.getElementById(id);if(o)o.classList.remove('open');});   // restored user needs no setup wizard
+  }
+  if(parsed.checklist&&typeof parsed.checklist==='object'){
+    try{localStorage.setItem('sp_cl',JSON.stringify(parsed.checklist));loadChecklist();}catch(e){}
+  }
+  if(parsed.prefs&&typeof parsed.prefs==='object'){
+    var pl=parsed.prefs.lang,pd=parsed.prefs.dark;
+    if(pl==='en'||pl==='de'){try{localStorage.setItem('sp_lang',pl);}catch(e){}applyLang(pl);}
+    if(pd==='0'||pd==='1'){
+      document.body.classList.toggle('dark',pd==='1');
+      var db=document.getElementById('dark-btn');if(db)db.textContent=pd==='1'?'\u2600\ufe0f':'\ud83c\udf19';
+      try{localStorage.setItem('sp_dark',pd);}catch(e){}
+    }
+  }
+}
+
 async function syncToRepo(){
   var cfg=getRepoConfig();
   var password=document.getElementById('sync-password').value;
@@ -3614,7 +3682,7 @@ async function syncToRepo(){
   if(!password){setSyncStatus('⚠ Enter a Sync Password first.',true);return;}
   setSyncStatus('🔐 Encrypting…',false);
   try{
-    var payload=JSON.stringify({shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory});
+    var payload=JSON.stringify(collectState());
     var encrypted=await encryptPayload(payload,password);
     // GitHub API requires file content as base64 — our encrypted string is ASCII base64 itself
     var b64content=btoa(encrypted);
@@ -3645,7 +3713,7 @@ async function syncFromRepo(){
   var password=document.getElementById('sync-password').value;
   if(!cfg.pat||!cfg.repo){setSyncStatus('⚠ PAT and Repository are required to pull.',true);return;}
   if(!password){setSyncStatus('⚠ Enter your Sync Password to decrypt.',true);return;}
-  if(!confirm('Pull from repo?\n\nThis will OVERWRITE all local shifts, actuals, and OT data with the remote copy.')){return;}
+  if(!confirm('Pull from repo?\n\nThis will OVERWRITE all local shifts, actuals, OT data, templates and settings with the remote copy (settings only if the remote copy has them).')){return;}
   setSyncStatus('⬇ Fetching from repo…',false);
   try{
     var file=await repoGetFile(cfg.pat,cfg.repo,cfg.branch);
@@ -3660,6 +3728,8 @@ async function syncFromRepo(){
     gradeHistory=parsed.gradeHistory||[];
     saveData();saveGradeHistory();
     try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
+    applyExtras(parsed,true);
+    markDirty(false);
     renderAll();
     var ts=new Date().toLocaleTimeString('de-AT');
     setSyncStatus('✓ Pulled & loaded at '+ts,false);
@@ -3674,7 +3744,7 @@ async function syncFromRepo(){
 
 // ═══ LOCAL BACKUP ═══
 function exportJSON(){
-  var payload={version:4,exported:new Date().toISOString(),shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards,corrections:corrections};
+  var payload=Object.assign({version:5,exported:new Date().toISOString()},collectState());
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -3700,7 +3770,7 @@ function importJSON(input){
       }
       // Version warning
       var ver=parsed.version||0;
-      if(ver<4&&!confirm('This backup is version '+ver+' (current is 4). Some fields may be missing. Import anyway?'))return;
+      if(ver<4&&!confirm('This backup is version '+ver+' (current is 5). Some fields may be missing. Import anyway?'))return;
       if(!confirm('Replace ALL current data with the imported backup?\n\n'+keys.length+' shifts, '+Object.keys(parsed.actuals||{}).length+' actuals.'))return;
       shifts=parsed.shifts;actuals=parsed.actuals||{};otData=parsed.otData||{};
       gradeHistory=parsed.gradeHistory||[];
@@ -3710,6 +3780,7 @@ function importJSON(input){
       if(parsed.corrections){corrections=sanitizeCorrections(parsed.corrections);saveCorrections();}
       saveData();saveGradeHistory();saveTemplates();
       try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
+      applyExtras(parsed,false);
       renderAll();renderGradeHistory();renderTemplates();
       alert('✓ Import successful — '+keys.length+' shifts loaded'+(shiftTemplates.length?' + '+shiftTemplates.length+' templates':'')+'.');
     }catch(err){alert('✗ Import failed: '+err.message);}
@@ -4227,7 +4298,7 @@ function exportXLSX(){
   var taxRows=[
     ['Steuer & SV Aufschlüsselung '+exportYear,''],
     ['Grundgehalt',+r0.base.toFixed(2)],
-    ['Stundenlohn (brutto)',+(r0.base/173.33).toFixed(4)],
+    ['Stundenlohn (brutto)',+kvHourly(r0.base).toFixed(4)],
     ['',''],
     ['SV Sätze 2026',''],
     ['KV Krankenversicherung','3.87%'],
@@ -4270,6 +4341,7 @@ function loadTemplates(){
 }
 function saveTemplates(){
   try{localStorage.setItem('sp_templates',JSON.stringify(shiftTemplates));}catch(e){}
+  markDirty(true);
   renderTemplates();
 }
 function saveTemplate(){
@@ -4747,7 +4819,8 @@ function openHelp(){
       bi('You can report a result anonymously (sector, year and differences only) to help verify more sectors.','Du kannst ein Ergebnis anonym melden (nur Branche, Jahr und Differenzen), um weitere Branchen pr\u00fcfen zu helfen.')]},
     {title:bi('5. Backup and privacy','5. Backup und Datenschutz'),lines:[
       bi('Your data stays in this browser (no account, no tracking). Clearing browser data deletes it \u2013 export a JSON backup in Settings from time to time.','Deine Daten bleiben in diesem Browser (kein Konto, kein Tracking). Das L\u00f6schen der Browserdaten l\u00f6scht sie \u2013 exportiere ab und zu ein JSON-Backup in den Einstellungen.'),
-      bi('Optional: sync to your own GitHub repository (encrypted).','Optional: Synchronisation in dein eigenes GitHub-Repository (verschl\u00fcsselt).')]},
+      bi('Optional: sync to your own GitHub repository (encrypted).','Optional: Synchronisation in dein eigenes GitHub-Repository (verschl\u00fcsselt).'),
+      bi('iPhone: Safari can delete a website\u2019s saved data after about a week without visiting it. Add the page to your Home Screen (Share \u2192 Add to Home Screen) and keep a backup.','iPhone: Safari kann gespeicherte Website-Daten nach etwa einer Woche ohne Besuch l\u00f6schen. F\u00fcge die Seite zum Home-Bildschirm hinzu (Teilen \u2192 Zum Home-Bildschirm) und halte ein Backup bereit.')]},
     {title:bi('6. Good to know','6. Gut zu wissen'),lines:[
       bi('Results are estimates, not payroll or tax advice.','Die Ergebnisse sind Sch\u00e4tzungen, keine Lohnverrechnung oder Steuerberatung.'),
       bi('Language, dark mode and print are in the top bar. Questions or wrong numbers? Use Feedback.','Sprache, Dunkelmodus und Drucken findest du in der oberen Leiste. Fragen oder falsche Zahlen? Nutze Feedback.')]}
@@ -4851,6 +4924,30 @@ function openExplain(){
   document.getElementById('explain-overlay').classList.add('open');
 }
 function closeExplain(){var el=document.getElementById('explain-overlay');if(el)el.classList.remove('open');}
+
+// ═══ DATA SAFETY: iPhone Safari may delete site data after ~7 days of Safari use without a visit (home-screen apps are exempt) ═══
+function updateIosHint(){
+  if(Object.keys(shifts).length>0){
+    var asked=false;try{asked=localStorage.getItem('sp_persist_asked')==='1';}catch(e){}
+    if(!asked){
+      try{localStorage.setItem('sp_persist_asked','1');}catch(e){}
+      try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+    }
+  }
+  var el=document.getElementById('ios-banner');
+  if(!el) return;
+  var ua=navigator.userAgent||'';
+  var ios=/iP(hone|ad|od)/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  var standalone=(navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  var dismissed=false;try{dismissed=localStorage.getItem('sp_ios_hint')==='1';}catch(e){}
+  if(!(ios&&!standalone&&!dismissed&&Object.keys(shifts).length>0)){el.style.display='none';return;}
+  el.textContent='';
+  var s=document.createElement('span');
+  s.textContent=bi('\u2139 On iPhone, Safari can delete saved site data after about a week without visiting. Tap Share \u2192 "Add to Home Screen" and export a backup now and then.','\u2139 Auf dem iPhone kann Safari gespeicherte Website-Daten nach etwa einer Woche ohne Besuch l\u00f6schen. Tippe auf Teilen \u2192 "Zum Home-Bildschirm" und exportiere ab und zu ein Backup.')+' ';
+  var a=document.createElement('a');a.href='#';a.textContent=bi('Got it','Verstanden');
+  a.onclick=function(){try{localStorage.setItem('sp_ios_hint','1');}catch(e){}updateIosHint();return false;};
+  el.appendChild(s);el.appendChild(a);el.style.display='';
+}
 
 // ═══ RATES BANNER ═══
 function updateRatesBanner(){
@@ -5463,7 +5560,7 @@ var I18N={
     svRegionalIntro:'Most rates are set by Austrian federal law. The Wohnbauförderungsbeitrag varies by state (Bundesland). Confirm with your payslip.',
     setWBFRate:'Housing subsidy contribution — WBF (% of gross)',
     tipWBFRate:'Wohnbauförderungsbeitrag — a state-level SV contribution. Lower Austria (NÖ): 0.5%. Vienna: 0.5%. Other states may differ. Check your payslip.',
-    backupIntro:'Export a backup file regularly. Your data lives only in this browser — no automatic cloud backup unless you set up sync below.',
+    backupIntro:'Export a backup file regularly. Your data lives only in this browser — no automatic cloud backup unless you set up sync below. A backup also contains your settings, templates and cards \u2013 never your GitHub token or sync password.',
     btnExportJSON:'📤 Export JSON',
     btnExportXLSX:'📊 Export Excel',
     btnImportJSON:'📥 Import JSON',
@@ -5763,7 +5860,7 @@ var I18N={
     svRegionalIntro:'Die meisten Sätze sind bundesweit geregelt. Der Wohnbauförderungsbeitrag variiert je Bundesland. Mit Lohnzettel abgleichen.',
     setWBFRate:'Wohnbauförderungsbeitrag — WBF (% vom Brutto)',
     tipWBFRate:'Wohnbauförderungsbeitrag — ein landesabhängiger SV-Beitrag. Niederösterreich: 0,5%. Wien: 0,5%. Andere Bundesländer können abweichen. Lohnzettel prüfen.',
-    backupIntro:'Exportieren Sie regelmäßig eine Sicherung. Ihre Daten liegen nur in diesem Browser — keine automatische Cloud-Sicherung ohne Sync unten.',
+    backupIntro:'Exportieren Sie regelmäßig eine Sicherung. Ihre Daten liegen nur in diesem Browser — keine automatische Cloud-Sicherung ohne Sync unten. Ein Backup enth\u00e4lt auch deine Einstellungen, Vorlagen und Karten \u2013 nie dein GitHub-Token oder Sync-Passwort.',
     btnExportJSON:'📤 JSON exportieren',
     btnExportXLSX:'📊 Excel exportieren',
     btnImportJSON:'📥 JSON importieren',
@@ -6273,6 +6370,7 @@ var _renderYearTimer=null;
 function renderAll(){
   useRates(currentYear);
   updateRatesBanner();
+  updateIosHint();
   syncCorrInput();
   renderCalendar();renderWeekBar();renderReport();
   // Keep year tab in sync if visible — debounced to avoid 12×calcSalary on rapid navigation
