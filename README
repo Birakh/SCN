@@ -1,0 +1,42 @@
+# Paychecker Austria
+
+A free, private salary and shift calculator for employees in Austria. Enter your shifts and it estimates your monthly gross, social insurance (SV), income tax (Lohnsteuer) and net pay, including supplements, night and holiday pay, Sonderzahlungen (13th/14th salary) and prior-month corrections.
+
+**It is an estimate, not payroll or tax advice.** See the disclaimer inside the app.
+
+## Status
+
+| What | State |
+|---|---|
+| Hospital radiology technologists | Verified against real payslips (to the cent, May–Oct 2026) |
+| All other sectors | Unverified estimates (marked with a warning sign) |
+| Rates 2026 | Official |
+| Rates 2027 | Provisional (SV values announced, final publication pending; tax tariff per BGBl. II 260/2026) |
+
+Help verify more sectors: compare a payslip with the app (the comparison box shows the differences and likely causes) and use "Report this result". Only the sector, the rates year and the differences are sent, never your payslip amounts.
+
+## Privacy
+
+- No account, no tracking, no ads. Your entries are stored in your browser (localStorage) only.
+- Optional: sync an encrypted copy to **your own** GitHub repository. Your token and password are never part of the synced data or of backups.
+- Optional feedback form (sends your message by email through a form service, only when you press Send).
+- iPhone: Safari may delete a site's saved data after about a week without a visit. Add the page to your Home Screen and keep a backup.
+
+## Files
+
+- `index.html` – the whole app (HTML, CSS, JavaScript; no build step, no framework).
+- `xlsx.full.min.js` – SheetJS 0.18.5 (Apache-2.0, see `LICENSE-SheetJS.txt`), loaded only when you export to Excel. The app writes spreadsheets and never reads uploaded ones.
+
+Open `index.html` in a browser or serve the folder with any static host (GitHub Pages works).
+
+## Yearly rate update
+
+Rates live in one table (`RATES`) in `index.html`. Each year: add the new year, mark it provisional until officially published, set `RATES_VERIFIED`, then compare one real payslip.
+
+## License
+
+MIT License, see `LICENSE`. SheetJS (`xlsx.full.min.js`) keeps its own Apache-2.0 licence (`LICENSE-SheetJS.txt`).
+
+## Not affiliated
+
+This project is not affiliated with any employer, union or authority.
