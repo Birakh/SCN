@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Paychecker Austria | SPDX-License-Identifier: MIT | Copyright (c) 2026 Anis Bi | Third-party: SheetJS xlsx.full.min.js (Apache-2.0), see LICENSE-SheetJS.txt -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -940,6 +941,12 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       </div>
       <div id="psc-result"></div>
       <button class="mbtn" style="width:100%;margin-top:6px;font-size:11px" onclick="clearPayslipComp()" data-i18n="pscClear">Clear</button>
+      <details id="psl-box" style="margin-top:8px">
+        <summary style="cursor:pointer;font-size:11px;color:#185fa5" data-i18n="pslTitle">Check line by line: paste your payslip text (optional)</summary>
+        <div style="font-size:10px;color:#aaa;line-height:1.5;margin:4px 0" data-i18n="pslHint">Open the payslip PDF, select all, copy and paste here. The text is analysed on this device only and never sent anywhere.</div>
+        <textarea id="psl-text" rows="6" oninput="analysePayslipText()" data-i18n-placeholder="pslPlaceholder" placeholder="3860 ... 2115 RT Nachmittag kurz 47,18 4,44 209,48 ..." style="width:100%;box-sizing:border-box;font-size:11px;padding:6px 8px;border:.5px solid #ccc;border-radius:6px;font-family:monospace"></textarea>
+        <div id="psl-result" style="font-size:11px;line-height:1.5;margin-top:6px"></div>
+      </details>
     </div>
 
     <p style="font-size:10px;color:#bbb;margin-top:10px;line-height:1.5">Middle shift supplement €35.50 and late shift €50 are taxable. Late+Night (8% only) earns night hours with no fixed supplement. Rufbereitschaft standby may be partially SV-exempt — confirm with HR. Max 10 on-call days/month (AZG §20a).</p>
@@ -1065,36 +1072,41 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <div class="tc-extra-box">
       <div style="font-size:10px;color:#aaa;margin-bottom:10px;line-height:1.5" data-i18n="tcPendlerFamIntro">These reduce your annual Lohnsteuer directly. Enter what applies to you — the monthly LSt estimate above will update.</div>
       <div style="margin-bottom:8px">
-        <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="tcPendlerLabel">Pendlerpauschale — commuter deduction (€/year)
-          <span class="tip" data-i18n-title="tcPendlerTip" title="Kleine Pendlerpauschale (public transport available): 372–1,476€/year. Große Pendlerpauschale (no public transport): 744–2,784€/year. Depends on distance and availability. Use the BMF Pendlerrechner to find your exact amount.">ℹ</span></label>
+        <div style="font-size:10px;color:#aaa;line-height:1.5;margin-bottom:6px" data-i18n="tcCommuteNote">Used in your monthly estimate. Take the amounts from your payslip (fields Pendlerpauschale, Pendlereuro, Familienbonus). Not yet verified against a payslip.</div>
+        <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="tcPendlerLabel">Pendlerpauschale &mdash; commuter deduction (&euro;/year)
+          <span class="tip" data-i18n-title="tcPendlerTip" title="2026, per year. Small (public transport reasonable, from 20 km): 696 / 1,356 / 2,016 EUR for 20-40 / 40-60 / 60+ km. Large (public transport unreasonable, from 2 km): 372 / 1,476 / 2,568 / 3,672 EUR for 2-20 / 20-40 / 40-60 / 60+ km. Full amount from 11 commuting days a month, two thirds for 8-10 days, one third for 4-7 days. The BMF Pendlerrechner decides small or large.">&#8505;</span></label>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="number" id="tc-pendler" value="0" step="100" min="0" oninput="renderTaxCalc();renderJobCompare()" style="width:120px;padding:5px 8px;font-size:13px;border:.5px solid #ccc;border-radius:6px">
+          <input type="number" id="tc-pendler" value="0" step="100" min="0" oninput="onCommuteInput()" style="width:120px;padding:5px 8px;font-size:13px;border:.5px solid #ccc;border-radius:6px">
           <select id="tc-pendler-preset" onchange="applyPendlerPreset()" style="font-size:11px;padding:4px 8px;border:.5px solid #ccc;border-radius:6px">
-            <option value="" data-i18n="tcPendlerQuickPick">Quick-pick distance…</option>
-            <option value="372">Klein: 2–20 km (€372)</option>
-            <option value="744">Klein: 20–40 km (€744)</option>
-            <option value="1116">Klein: 40–60 km (€1,116)</option>
-            <option value="1476">Klein: 60+ km (€1,476)</option>
-            <option value="744">Groß: 2–20 km (€744)</option>
-            <option value="1476">Groß: 20–40 km (€1,476)</option>
-            <option value="2220">Groß: 40–60 km (€2,220)</option>
-            <option value="2784">Groß: 60+ km (€2,784)</option>
+            <option value="" data-i18n="tcPendlerQuickPick">Quick-pick distance&hellip;</option>
+            <option value="696">Klein: 20&ndash;40 km (&euro;696)</option>
+            <option value="1356">Klein: 40&ndash;60 km (&euro;1,356)</option>
+            <option value="2016">Klein: 60+ km (&euro;2,016)</option>
+            <option value="372">Gro&szlig;: 2&ndash;20 km (&euro;372)</option>
+            <option value="1476">Gro&szlig;: 20&ndash;40 km (&euro;1,476)</option>
+            <option value="2568">Gro&szlig;: 40&ndash;60 km (&euro;2,568)</option>
+            <option value="3672">Gro&szlig;: 60+ km (&euro;3,672)</option>
           </select>
         </div>
-        <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="tcPendlereuroNote">Also adds <strong>Pendlereuro</strong> (€2/km × one-way distance per year) automatically if you enter a custom amount.</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">
+          <span style="font-size:11px;color:#888" data-i18n="tcPendlerKm">One-way distance (km)</span>
+          <input type="number" id="tc-pendler-km" value="0" step="1" min="0" oninput="onCommuteInput()" style="width:80px;padding:5px 8px;font-size:13px;border:.5px solid #ccc;border-radius:6px">
+          <span id="tc-pendlereuro-val" style="font-size:11px;color:#27ae60"></span>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="tcPendlereuroNote"><strong>Pendlereuro</strong>: &euro;6 per km of the one-way distance per year (2026), deducted directly from the tax. Needs a Pendlerpauschale. Enter the distance above.</div>
       </div>
       <div style="margin-bottom:4px">
         <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="tcFambonusLabel">Familienbonus Plus — children tax credit (€/year)
           <span class="tip" data-i18n-title="tcFambonusTip" title="€2,000/year per child under 18 in Austria (€166.68/month). €700/year for children 18+ in education. Shared 50/50 with partner or taken in full by one parent. Reduces Lohnsteuer directly — cannot go below €0.">ℹ</span></label>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="number" id="tc-fambonus" value="0" step="500" min="0" oninput="renderTaxCalc();renderJobCompare()" style="width:120px;padding:5px 8px;font-size:13px;border:.5px solid #ccc;border-radius:6px">
+          <input type="number" id="tc-fambonus" value="0" step="500" min="0" oninput="onCommuteInput()" style="width:120px;padding:5px 8px;font-size:13px;border:.5px solid #ccc;border-radius:6px">
           <select id="tc-fambonus-preset" onchange="applyFambonusPreset()" style="font-size:11px;padding:4px 8px;border:.5px solid #ccc;border-radius:6px">
             <option value="" data-i18n="tcFambonusQuickPick">Quick-pick children…</option>
-            <option value="2000">1 child under 18 (€2,000)</option>
-            <option value="4000">2 children under 18 (€4,000)</option>
-            <option value="6000">3 children under 18 (€6,000)</option>
-            <option value="1000">1 child (shared 50/50) (€1,000)</option>
-            <option value="700">1 child 18+ in education (€700)</option>
+            <option value="2000.16">1 child under 18 (€2,000.16)</option>
+            <option value="4000.32">2 children under 18 (€4,000.32)</option>
+            <option value="6000.48">3 children under 18 (€6,000.48)</option>
+            <option value="1000.08">1 child (shared 50/50) (€1,000.08)</option>
+            <option value="700.08">1 child 18+ with Familienbeihilfe (€700.08)</option>
           </select>
         </div>
       </div>
@@ -1283,6 +1295,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       </select>
       <div class="kv-applied" id="kv-applied" data-i18n="kvApplied">✓ KV preset applied — review and adjust below if needed</div>
       <div class="kv-note"><span data-i18n="kvNote">⚠ Only the Krankenanstalten – Radiologietechnologie template has been validated cent-for-cent against a real payslip. All other templates are best-effort estimates from public KV text — always verify against your own Abrechnung.</span> <a href="https://www.wko.at/service/kollektivvertrag" target="_blank" rel="noopener" style="color:#185fa5" data-i18n="kvFindLink">Find your KV ↗</a></div>
+      <div style="font-size:11px;margin-top:6px"><a href="#" onclick="requestSector();return false;" data-i18n="sectorMissing">My sector isn't listed</a></div>
     </div>
     <hr class="divider">
     <div class="panel-section">
@@ -1709,6 +1722,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <option value="" data-i18n="wizKVNone">&mdash; Skip / not listed &mdash;</option>
       </select>
       <div id="wiz-kv-info" style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="wizKVHint">Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.</div>
+      <div style="font-size:11px;margin-top:4px"><a href="#" onclick="requestSector();return false;" data-i18n="sectorMissing">My sector isn't listed</a></div>
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ2">2. Do you receive bonus months?</label>
@@ -1971,7 +1985,7 @@ var SV_AK=0.005;  // AK-Umlage (Arbeiterkammerumlage)
 var SV_WBF=0.005; // Wohnbauförderungsbeitrag (NÖ)
 var SV_TOTAL=SV_KV+SV_PV+SV_AV+SV_AK+SV_WBF; // 0.1807
 
-function calcLohnsteuerAnnual(annualTaxableAfterSV, pendler, fambonus){
+function calcLohnsteuerAnnual(annualTaxableAfterSV, pendler, fambonus, pendlerEuro){
   // 2026: Sonderausgabenpauschale abolished; only Werbungskostenpauschale €132 remains
   // Pendlerpauschale deducted before brackets; Familienbonus Plus after
   var adj=annualTaxableAfterSV-(pendler||0)-132;
@@ -1987,6 +2001,7 @@ function calcLohnsteuerAnnual(annualTaxableAfterSV, pendler, fambonus){
   tax=Math.max(0,tax-VAB);
   // Familienbonus Plus reduces LSt directly, floor at €0
   tax=Math.max(0,tax-(fambonus||0));
+  tax=Math.max(0,tax-(pendlerEuro||0)); // Pendlereuro (Absetzbetrag; only together with a Pendlerpauschale)
   return tax;
 }
 
@@ -2012,20 +2027,20 @@ var RATES={
   2026:{status:'official',hbgl:6930,avFull:0.0295,
     avBr:[{upTo:2225,rate:0},{upTo:2427,rate:0.01},{upTo:2630,rate:0.02}],
     brackets:[[0,13539,0],[13539,21992,0.2],[21992,36458,0.3],[36458,70365,0.4],[70365,104859,0.48],[104859,1000000,0.5],[1000000,Infinity,0.55]],
-    vab:496,ovt:{hours:15,cap:200}},
+    vab:496,ovt:{hours:15,cap:200},pendlerEuroKm:6},
   2027:{status:'provisional',hbgl:7410,avFull:0.0295,
     avBr:[{upTo:2327,rate:0.005},{upTo:2539,rate:0.015},{upTo:2751,rate:0.025}],
     brackets:[[0,13846,0],[13846,22491,0.2],[22491,37285,0.3],[37285,71960,0.4],[71960,107236,0.48],[107236,1000000,0.5],[1000000,Infinity,0.55]],
-    vab:508,ovt:{hours:10,cap:120}}
+    vab:508,ovt:{hours:10,cap:120},pendlerEuroKm:6}
 };
-var VAB=496, OVT={hours:15,cap:200}, RATES_YEAR=2026, RATES_REQ=2026;
+var VAB=496, OVT={hours:15,cap:200}, PENDLER_EURO_KM=6, RATES_YEAR=2026, RATES_REQ=2026;
 function useRates(y){
   var ys=Object.keys(RATES).map(Number).sort();
   var key=RATES[y]?y:(y<ys[0]?ys[0]:ys[ys.length-1]);
   var R=RATES[key];
   RATES_YEAR=key; RATES_REQ=y;
   BRACKETS=R.brackets.map(function(b){return {from:b[0],to:b[1],rate:b[2]};});
-  SV_AV_BRACKETS=R.avBr; SV_AV=R.avFull; SV_CAP_MONTHLY=R.hbgl; VAB=R.vab; OVT=R.ovt;
+  SV_AV_BRACKETS=R.avBr; SV_AV=R.avFull; SV_CAP_MONTHLY=R.hbgl; VAB=R.vab; OVT=R.ovt; PENDLER_EURO_KM=R.pendlerEuroKm;
 }
 useRates(new Date().getFullYear());
 
@@ -2038,12 +2053,27 @@ function calcSVMonthly(monthlyGross, wbfRate){
   return {kv:capped*SV_KV,pv:capped*SV_PV,av:av,ak:capped*SV_AK,wbf:capped*wbf,total:total,capped:monthlyGross>SV_CAP_MONTHLY};
 }
 
+// Commuter allowance / Pendlereuro / Familienbonus entered in the Tax Calc tab (annual amounts, as on the payslip x 12).
+// Verified against official 2026 values (Pendlerpauschale tables, Pendlereuro EUR 6/km, Familienbonus Plus EUR 166.68/month);
+// NOT yet verified against a real payslip that contains them.
+function getCommute(){
+  function f(id){var e=document.getElementById(id);return e?(parseFloat(e.value)||0):0;}
+  var p=f('tc-pendler'),fb=f('tc-fambonus'),km=f('tc-pendler-km');
+  return {pendler:p,fambonus:fb,km:km,pendlerEuro:p>0?km*PENDLER_EURO_KM:0};
+}
+function lstA(annualBase){var c=getCommute();return calcLohnsteuerAnnual(annualBase,c.pendler,c.fambonus,c.pendlerEuro);}
+function updateCommuteLabel(){
+  var c=getCommute(),el=document.getElementById('tc-pendlereuro-val');
+  if(el) el.textContent=c.pendlerEuro>0?('Pendlereuro \u20ac'+c.pendlerEuro.toFixed(0)+'/'+bi('yr','Jahr')+' (\u20ac'+(c.pendlerEuro/12).toFixed(2)+'/'+bi('mo','Monat')+')'):'';
+}
+function onCommuteInput(){updateCommuteLabel();saveSettings();renderAll();renderTaxCalc();renderJobCompare();}
+
 function calcMonthlyLSt(monthlyTaxableGross, wbfRate){
   // Annualize → deduct actual SV (respects AV threshold) → apply brackets → monthly
   var annual=monthlyTaxableGross*12;
   var annualSV=calcSVMonthly(monthlyTaxableGross, wbfRate).total*12;
   var annualAfterSV=annual-annualSV;
-  var annualLSt=calcLohnsteuerAnnual(annualAfterSV);
+  var annualLSt=lstA(annualAfterSV);
   return annualLSt/12;
 }
 
@@ -2283,7 +2313,7 @@ function _calcSalary(year,month){
   // Austrian §66 EStG: LSt base = lstTaxable - actual SV (computed on svTaxable)
   // NOT sv(lstTaxable) — the SV deducted for LSt must match what was actually paid
   var annualLSTBase = lstTaxable*12 - svM.total*12;
-  var lst = calcLohnsteuerAnnual(annualLSTBase) / 12;
+  var lst = lstA(annualLSTBase) / 12;
   var corr=getCorrection(year,month);
   var corrSV=0,corrTax=0;
   if(corr){
@@ -2342,7 +2372,7 @@ function calcAnnualScenario(monthlyGross, salaryModel, pendler, fambonus, wbfRat
   var sv=calcSVMonthly(monthlyGross, wbfRate);
   var annualSV=sv.total*12;
   var annualAfterSV=monthlyGross*12-annualSV;
-  var annualLST=calcLohnsteuerAnnual(annualAfterSV, pendler, fambonus);
+  var annualLST=calcLohnsteuerAnnual(annualAfterSV, pendler, fambonus, pendler>0?getCommute().pendlerEuro:0);
   var monthlyLST=annualLST/12;
   var monthlyNet=monthlyGross-sv.total-monthlyLST;
   var szCount=salaryModel===14?2:(salaryModel===13?1:0);
@@ -2759,7 +2789,7 @@ function renderTaxCalc(){
   var annualSV=sv.total*12;
   var annualAfterSVraw=monthlyGross*12-annualSV;
   var annualLStRaw=calcLohnsteuerAnnual(annualAfterSVraw,0,0); // baseline without deductions
-  var annualLSt=calcLohnsteuerAnnual(annualAfterSVraw,pendler,fambonus);
+  var annualLSt=calcLohnsteuerAnnual(annualAfterSVraw,pendler,fambonus,pendler>0?getCommute().pendlerEuro:0);
   var lst=annualLSt/12;
   var saving=annualLStRaw-annualLSt;
   var monthlyNet=monthlyGross-sv.total-lst+hazard;
@@ -2937,7 +2967,7 @@ function syncCorrInput(){
   el.value=v?v.toFixed(2):'';
 }
 function marginalRate(annualBase){
-  var a=annualBase-132;
+  var a=annualBase-132-getCommute().pendler;
   for(var i=BRACKETS.length-1;i>=0;i--){if(a>BRACKETS[i].from)return BRACKETS[i].rate;}
   return 0;
 }
@@ -3436,7 +3466,7 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
 function saveSettings(){
   var prev=null,now=null;
   try{prev=localStorage.getItem('sp_settings');}catch(e){}
@@ -3470,6 +3500,10 @@ function loadData(){
       if(c.rufSVBase!==undefined)document.getElementById('ruf-sv-base').checked=!!c.rufSVBase;
       if(c.salaryModel)document.getElementById('salary-model').value=c.salaryModel;
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
+      if(c.pendler!=null)document.getElementById('tc-pendler').value=c.pendler;
+      if(c.fambonus!=null)document.getElementById('tc-fambonus').value=c.fambonus;
+      if(c.pendlerKm!=null)document.getElementById('tc-pendler-km').value=c.pendlerKm;
+      updateCommuteLabel();
       if(c.kvPreset&&KV_TEMPLATES[c.kvPreset]){document.getElementById('kv-preset').value=c.kvPreset;showKVNote();}
       if(Array.isArray(c.freeDays))restoreFreeDays(c.freeDays);
     }
@@ -3625,7 +3659,7 @@ async function repoGetFile(pat,repo,branch){
 
 // ═══ WHAT IS BACKED UP ═══
 // Data + settings + templates/cards/corrections + display preferences. NEVER the GitHub token or the sync password.
-var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','kvPreset','freeDays'];
+var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
 function sanitizeSettings(c){
   if(!c||typeof c!=='object') return null;
   var out={};
@@ -4073,6 +4107,30 @@ function jumpToMonth(m,y){
 
 // ═══ SHIFT DURATION PREVIEW ═══
 var _durationTimer=null;
+// What does this shift add to the NET pay? The engine is run for the month and the next one, with and without the shift
+// (supplements and holiday pay can arrive a month later). Existing entries are restored afterwards; nothing is saved.
+function shiftNetEffect(key,draft){
+  if(!key||!draft||!draft.start||!draft.end) return '';
+  var p=key.split('-'),y=+p[0],m=+p[1]-1,ny=m===11?y+1:y,nm=(m+1)%12;
+  var saved=shifts[key];
+  function net(yy,mm){return calcSalary(yy,mm).net;}
+  var b0,b1,a0,a1;
+  try{
+    delete shifts[key];
+    b0=net(y,m);b1=net(ny,nm);
+    shifts[key]={type:draft.type,start:draft.start,end:draft.end};
+    a0=net(y,m);a1=net(ny,nm);
+  } finally {
+    if(saved) shifts[key]=saved; else delete shifts[key];
+  }
+  var d0=a0-b0,d1=a1-b1,de=getLang()==='de';
+  function sg(x){return (x>=0?'+':'\u2212')+fmt(Math.abs(x));}
+  var parts=[];
+  if(Math.abs(d0)>=0.005) parts.push(sg(d0)+' '+(de?'netto im ':'net in ')+MONTH_NAMES[m]);
+  if(Math.abs(d1)>=0.005) parts.push(sg(d1)+' '+(de?'netto im ':'net in ')+MONTH_NAMES[nm]);
+  if(!parts.length) return de?'\u2248 kein Extra-Entgelt (im Gehalt enthalten)':'\u2248 no extra pay (included in salary)';
+  return '\u2248 '+parts.join(' \u00b7 ');
+}
 function updateDuration(){
   clearTimeout(_durationTimer);
   _durationTimer=setTimeout(_doUpdateDuration,150);
@@ -4091,16 +4149,18 @@ function _doUpdateDuration(){
   var parts=[];
   parts.push(h.total.toFixed(1)+'h total');
   if(h.night>0&&(type==='normal'||type==='latenight'))
-    parts.push(h.night.toFixed(1)+'h night pay → '+fmt(hourly*0.08*h.night)+' next month');
-  if(type==='middle')   parts.push('+'+fmt(s.middleS)+' supplement (paid next month)');
-  if(type==='late')     parts.push('+'+fmt(s.lateS)+' supplement (paid next month)');
+    parts.push(h.night.toFixed(1)+'h night pay → '+fmt(hourly*0.08*h.night)+' gross');
+  if(type==='middle')   parts.push('+'+fmt(s.middleS)+' supplement gross');
+  if(type==='late')     parts.push('+'+fmt(s.lateS)+' supplement gross');
   if(type==='ruf')      parts.push(fmt(s.rufRate*h.total)+' standby pay');
   if(type==='callin'){
-    if(editingDate&&isHol(editingDate)) parts.push(fmt(hourly*2*h.paid)+' holiday call-in — 200% (paid next month)');
+    if(editingDate&&isHol(editingDate)) parts.push(fmt(hourly*2*h.paid)+' holiday call-in — 200% gross');
     else parts.push(fmt(hourly*s.callinM*h.total)+' call-in pay');
   }
-  if(type==='holiday')  parts.push(fmt(hourly*2*h.total)+' extra (paid next month)');
+  if(type==='holiday')  parts.push(fmt(hourly*2*h.total)+' extra gross');
   if(type==='leave')    parts.push('in monthly salary (no extra pay)');
+  var _fx='';try{_fx=shiftNetEffect(editingDate,{type:type,start:start,end:end});}catch(e){}
+  if(_fx)parts.push(_fx);
   pill.className='duration-pill show';
   pill.textContent=parts.join(' · ');
 }
@@ -4809,7 +4869,11 @@ var CHANGELOG=[
     ['New: prior-month correction, payslip comparison with checks and likely causes, anonymised "report this result", and "How is this calculated?".','Neu: Korrektur Vormonat, Abrechnungsvergleich mit Pr\u00fcfungen und m\u00f6glichen Ursachen, anonymisiertes "Ergebnis melden" und "Wie wird das berechnet?".'],
     ['New: sick leave, fixed days off, custom and hideable shift cards, sector choice saved after reload, optional sector step in the first-run wizard.','Neu: Krankenstand, fixe freie Tage, eigene und ausblendbare Dienstkarten, gespeicherte Branchenwahl, optionaler Branchenschritt im Start-Assistenten.'],
     ['New: backup reminder, feedback form with optional technical info, Impressum and disclaimer.','Neu: Backup-Erinnerung, Feedback-Formular mit optionalen technischen Infos, Impressum und Haftungsausschluss.'],
-    ['Backups and GitHub sync now include your settings; Esc closes dialogs; the Excel export no longer needs a third-party server.','Backups und GitHub-Sync enthalten jetzt deine Einstellungen; Esc schlie\u00dft Dialoge; der Excel-Export braucht keinen Drittserver mehr.']
+    ['Backups and GitHub sync now include your settings; Esc closes dialogs; the Excel export no longer needs a third-party server.','Backups und GitHub-Sync enthalten jetzt deine Einstellungen; Esc schlie\u00dft Dialoge; der Excel-Export braucht keinen Drittserver mehr.'],
+    ['Commuter allowance, Pendlereuro (\u20ac6/km) and Familienbonus now apply to the monthly estimate (not yet verified against a payslip); corrected the commuter quick-pick amounts.','Pendlerpauschale, Pendlereuro (\u20ac6/km) und Familienbonus gelten jetzt f\u00fcr die Monatssch\u00e4tzung (noch nicht an einer Abrechnung gepr\u00fcft); Pendler-Schnellauswahl korrigiert.'],
+    ['New: a "My sector isn\u2019t listed" link in the setup wizard and in Settings, so you can tell me which sector to verify next.','Neu: Link "Meine Branche fehlt in der Liste" im Start-Assistenten und in den Einstellungen \u2013 so kannst du mir sagen, welche Branche als N\u00e4chstes gepr\u00fcft werden soll.'],
+    ['New: the shift dialog shows what a shift adds to your net pay, month by month (supplements can arrive a month later).','Neu: Der Dienst-Dialog zeigt, was ein Dienst netto bringt, Monat f\u00fcr Monat (Zulagen k\u00f6nnen einen Monat sp\u00e4ter kommen).'],
+    ['New: paste your payslip text for a line-by-line check against your shifts (hours, amounts, retro lines) \u2013 analysed on your device only.','Neu: Abrechnungstext einf\u00fcgen und Zeile f\u00fcr Zeile mit deinen Diensten pr\u00fcfen (Stunden, Betr\u00e4ge, Nachverrechnungen) \u2013 nur auf deinem Ger\u00e4t ausgewertet.']
   ]}
 ];
 function _buildSections(body,sections){
@@ -4829,7 +4893,8 @@ function openHelp(){
     {title:bi('1. Set up','1. Einrichten'),open:true,lines:[
       bi('Pick your sector and enter your salary (first-run wizard, or Settings). The sector pre-fills typical shift times and rules.','W\u00e4hle deine Branche und trage dein Gehalt ein (Start-Assistent oder Einstellungen). Die Branche f\u00fcllt typische Dienstzeiten und Regeln vor.'),
       bi('Only one sector is verified against real payslips; all others are estimates (marked \u26a0).','Nur eine Branche ist mit echten Abrechnungen gepr\u00fcft; alle anderen sind Sch\u00e4tzungen (mit \u26a0 markiert).'),
-      bi('Part-time: mark your fixed days off in Settings and enter your actual monthly gross as salary.','Teilzeit: fixe freie Tage in den Einstellungen markieren und das tats\u00e4chliche Monatsbrutto als Gehalt eintragen.')]},
+      bi('Part-time: mark your fixed days off in Settings and enter your actual monthly gross as salary.','Teilzeit: fixe freie Tage in den Einstellungen markieren und das tats\u00e4chliche Monatsbrutto als Gehalt eintragen.'),
+      bi('Commuting or children? Enter your Pendlerpauschale, distance and Familienbonus in the Tax Calc tab \u2013 they now apply to your monthly estimate.','Pendeln oder Kinder? Trage Pendlerpauschale, Entfernung und Familienbonus im Tab Tax Calc ein \u2013 sie gelten jetzt f\u00fcr deine Monatssch\u00e4tzung.')]},
     {title:bi('2. Enter your shifts','2. Dienste eintragen'),lines:[
       bi('Tap a day to open the shift dialog. Pick a card (early, middle, late, night, \u2026) or enter the times by hand.','Tippe auf einen Tag, um den Dienst-Dialog zu \u00f6ffnen. W\u00e4hle eine Karte (Fr\u00fch, Mittel, Sp\u00e4t, Nacht, \u2026) oder gib die Zeiten selbst ein.'),
       bi('Save your own times as a card ("+ Save as card"); hide cards you never use with the \u2715 (they can be restored).','Speichere eigene Zeiten als Karte ("+ Als Karte speichern"); nicht ben\u00f6tigte Karten mit \u2715 ausblenden (wiederherstellbar).'),
@@ -4932,13 +4997,16 @@ function openExplain(){
     bi('2. Multiply by 12, subtract the \u20ac132 allowance for work expenses.','2. Mal 12, abz\u00fcglich \u20ac132 Werbungskostenpauschale.'),
     bi('3. Apply the tariff '+RATES_YEAR+': '+tl.join(' | ')+'.','3. Tarif '+RATES_YEAR+' anwenden: '+tl.join(' | ')+'.'),
     bi('4. Subtract the commuter tax credit (Verkehrsabsetzbetrag) of \u20ac'+VAB+', divide by 12.','4. Verkehrsabsetzbetrag von \u20ac'+VAB+' abziehen, durch 12 teilen.'),
-    bi('Sonderzahlung (\u00a7 67): SV is deducted first, the first \u20ac620 stay tax-free, the rest is taxed at 6%.','Sonderzahlung (\u00a7 67): zuerst wird die SV abgezogen, die ersten \u20ac620 bleiben steuerfrei, der Rest wird mit 6 % besteuert.')
+    bi('Sonderzahlung (\u00a7 67): SV is deducted first, the first \u20ac620 stay tax-free, the rest is taxed at 6%.','Sonderzahlung (\u00a7 67): zuerst wird die SV abgezogen, die ersten \u20ac620 bleiben steuerfrei, der Rest wird mit 6 % besteuert.'),
+    (function(){var c=getCommute();return (c.pendler>0||c.fambonus>0)
+      ?bi('Your entries: Pendlerpauschale \u20ac'+nf(c.pendler)+'/year (lowers the tax base)'+(c.pendlerEuro>0?', Pendlereuro \u20ac'+nf(c.pendlerEuro)+'/year':'')+(c.fambonus>0?', Familienbonus \u20ac'+nf(c.fambonus)+'/year':'')+' (reduce the tax, never below 0). Not yet verified against a payslip.','Deine Eintr\u00e4ge: Pendlerpauschale \u20ac'+nf(c.pendler)+'/Jahr (mindert die Steuerbasis)'+(c.pendlerEuro>0?', Pendlereuro \u20ac'+nf(c.pendlerEuro)+'/Jahr':'')+(c.fambonus>0?', Familienbonus \u20ac'+nf(c.fambonus)+'/Jahr':'')+' (mindern die Steuer, nie unter 0). Noch nicht an einer Abrechnung gepr\u00fcft.')
+      :bi('No commuter allowance or family bonus entered (Tax Calc tab).','Keine Pendlerpauschale und kein Familienbonus eingetragen (Tab Tax Calc).');})()
   ]);
   sec(bi('Prior-month correction','Korrektur Vormonat'),[
     bi('Retro lines on a payslip ("NN*") are entered as a gross amount. SV on them is charged in the month paid; the tax is booked at your marginal rate on the amount after SV (shown on the payslip as "Differenz aus Vormonaten").','Nachverrechnete Zeilen ("NN*") werden als Bruttobetrag erfasst. Die SV darauf f\u00e4llt im Auszahlungsmonat an; die Steuer wird mit dem Grenzsteuersatz auf den Betrag nach SV verbucht (auf der Abrechnung "Differenz aus Vormonaten").')
   ]);
   sec(bi('Not modelled','Nicht berechnet'),[
-    bi('Commuter allowance and family bonus in the monthly estimate, the \u20ac400 limit for hazard allowances, part-time pay scaling, and special SV rules (apprentices, older workers).','Pendlerpauschale und Familienbonus in der Monatssch\u00e4tzung, die \u20ac400-Grenze f\u00fcr Gefahrenzulagen, Teilzeit-Skalierung des Gehalts sowie besondere SV-Regeln (Lehrlinge, \u00e4ltere Arbeitnehmer).'),
+    bi('The \u20ac400 limit for hazard allowances, part-time pay scaling, and special SV rules (apprentices, older workers).','Die \u20ac400-Grenze f\u00fcr Gefahrenzulagen, Teilzeit-Skalierung des Gehalts sowie besondere SV-Regeln (Lehrlinge, \u00e4ltere Arbeitnehmer).'),
     bi('Results are estimates. Only one sector is verified against real payslips.','Die Ergebnisse sind Sch\u00e4tzungen. Nur eine Branche ist mit echten Abrechnungen gepr\u00fcft.')
   ]);
   sec(bi('Rates and sources','Werte und Quellen'),[
@@ -5146,10 +5214,10 @@ function pscChecks(r,aGross,aSV,aLSt,aNet,dg,dsv,dl,dn){
   }
   // 3. tax plausibility + implied LSt-free amount
   if(!isNaN(aGross)&&!isNaN(aSV)&&!isNaN(aLSt)){
-    var annual=(aGross-aSV)*12,lstMax=calcLohnsteuerAnnual(annual)/12;
+    var cm=getCommute(),annual=(aGross-aSV)*12,lstMax=calcLohnsteuerAnnual(annual,0,cm.fambonus,cm.pendlerEuro)/12;
     if(aLSt>lstMax+1) out.push({lvl:'warn',html:bi('Tax is higher than possible for this gross ('+fmt(lstMax)+' max). Do the amounts include a Sonderzahlung or retro lines?','Die Steuer ist h\u00f6her als f\u00fcr dieses Brutto m\u00f6glich (max. '+fmt(lstMax)+'). Sind Sonderzahlung oder Nachverrechnungen enthalten?')});
     else{
-      var m=marginalRate(annual),est=r.taxable-r.lstTaxable;
+      var m=marginalRate(annual),est=r.taxable-r.lstTaxable+cm.pendler/12;
       if(m>0&&lstMax-aLSt>1){
         var implied=(lstMax-aLSt)/m;
         out.push({lvl:Math.abs(implied-est)>20?'warn':'info',html:bi('Your tax implies about '+fmt(implied)+' of tax-free pay (\u00a7 68 etc.); the estimate assumes '+fmt(est)+'.','Deine Steuer entspricht ca. '+fmt(implied)+' steuerfreiem Entgelt (\u00a7 68 u. a.); die Sch\u00e4tzung nimmt '+fmt(est)+' an.')});
@@ -5171,7 +5239,7 @@ function pscChecks(r,aGross,aSV,aLSt,aNet,dg,dsv,dl,dn){
     }
     if(!cause){
       if(!isNaN(dg)&&Math.abs(dg)>1) cause={lvl:'warn',html:bi('Gross differs by '+fmt(dg)+': check your shift entries and last month\u2019s supplements (middle/late/holiday hours are paid a month later).','Brutto weicht um '+fmt(dg)+' ab: Dienste und die Zuschl\u00e4ge des Vormonats pr\u00fcfen (Mittel-/Sp\u00e4t-/Feiertagsstunden werden einen Monat sp\u00e4ter bezahlt).')};
-      else if(!isNaN(dl)&&Math.abs(dl)>1) cause={lvl:'warn',html:bi('Same gross but different tax: see the tax-free pay above. Commuter allowance and family bonus are not part of the monthly estimate.','Gleiches Brutto, andere Steuer: siehe steuerfreies Entgelt oben. Pendlerpauschale und Familienbonus sind nicht Teil der Monatssch\u00e4tzung.')};
+      else if(!isNaN(dl)&&Math.abs(dl)>1) cause={lvl:'warn',html:bi('Same gross but different tax: see the tax-free pay above. Commuter allowance, Pendlereuro and family bonus count only if you entered them (Tax Calc tab).','Gleiches Brutto, andere Steuer: siehe steuerfreies Entgelt oben. Pendlerpauschale, Pendlereuro und Familienbonus z\u00e4hlen nur, wenn du sie eingetragen hast (Tab Tax Calc).')};
       else if(!isNaN(dsv)&&Math.abs(dsv)>1) cause={lvl:'warn',html:bi('Same gross but different SV: check the WBF rate (federal state), low-income AV brackets, age rules, or a Sonderzahlung in this payslip.','Gleiches Brutto, andere SV: WBF-Satz (Bundesland), AV-Staffelung, Altersregeln oder eine Sonderzahlung in dieser Abrechnung pr\u00fcfen.')};
     }
     if(cause) out.push(cause);
@@ -5202,6 +5270,21 @@ function pscReportText(){
     'checks: '+(p.checks.length?p.checks.join(','):'none'),
     '','Notes (optional): '].join('\n');
 }
+// "My sector isn't listed": opens the feedback form with a short template (or copies it when the form is not configured).
+function requestSector(){
+  var text=['Sector request',
+    'my sector / collective agreement: ',
+    'type of employer (e.g. hospital, retail, hotel): ',
+    'Please add no names and no payslip amounts.'].join('\n');
+  if(WEB3FORMS_KEY){
+    openFeedback();
+    var ta=document.getElementById('fb-msg');if(ta)ta.value=text;
+  } else if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){alert(bi('Copied. Please paste it into your message to the operator.','Kopiert. Bitte in deine Nachricht an den Betreiber einf\u00fcgen.'));},function(){window.prompt('Copy:',text);});
+  } else {
+    window.prompt('Copy:',text);
+  }
+}
 function reportPscResult(){
   if(!PSC_LAST) return;
   var text=pscReportText();
@@ -5214,6 +5297,96 @@ function reportPscResult(){
     window.prompt('Copy:',text);
   }
 }
+
+// ═══ PAYSLIP TEXT: line-by-line check ═══
+// Reads the 'Lohnart' table rows of a pasted payslip: code, text, [hours] [rate] amount (German numbers, trailing '-' = deduction).
+var PSL_NUM='-?\\d{1,3}(?:\\.\\d{3})*,\\d{2}-?|-?\\d+,\\d{2}-?';
+function pslNum(s){var neg=/^-|-$/.test(s);var v=parseFloat(s.replace(/-/g,'').replace(/\./g,'').replace(',','.'));return neg?-v:v;}
+function parsePayslipLines(text){
+  var out=[],tok=new RegExp('^(.*\\S) ('+PSL_NUM+')$');
+  String(text||'').split(/\r?\n/).forEach(function(raw){
+    var l=raw.replace(/\s+/g,' ').trim();
+    var m=l.match(/^(\d{4}) (.+)$/);
+    if(!m) return;
+    var rest=m[2],nums=[],mm;
+    while(nums.length<3&&(mm=rest.match(tok))){nums.unshift(mm[2]);rest=mm[1];}
+    if(!nums.length) return;
+    var name=rest,retro=null,rm=name.match(/^(\d{2})\*\s*(.*)$/);
+    if(rm){retro=+rm[1];name=rm[2];}
+    var last=nums[nums.length-1];
+    out.push({code:m[1],name:name,retro:retro,
+      units:nums.length===3?pslNum(nums[0]):null,
+      rate:nums.length>=2?pslNum(nums[nums.length-2]):null,
+      amount:Math.abs(pslNum(last)),deduction:/-$/.test(last)});
+  });
+  return out;
+}
+function comparePayslipLines(lines){
+  var y=currentYear,m=currentMonth,py=m===0?y-1:y,pm=(m+11)%12;
+  var r=calcSalary(y,m),rules=getActiveKVRules();
+  var cur=calcEarnedSupplements(y,m),prev=calcEarnedSupplements(py,pm),night=calcNightAllowance(y,m);
+  var defer=rules.deferSupplements!==false;
+  var sM=defer?{h:prev.middleH,a:prev.middleP,mon:pm}:{h:cur.middleH,a:cur.middlePSame,mon:m};
+  var sL=defer?{h:prev.lateH,a:prev.lateP,mon:pm}:{h:cur.lateH,a:cur.latePSame,mon:m};
+  var rows=[],retro=[],other=[],info=[];
+  function mon(i){return MONTH_NAMES[i];}
+  lines.forEach(function(ln){
+    if(ln.retro!==null){retro.push(ln);return;}
+    var n=ln.name,t=null;
+    if(/^Gehalt\b/i.test(n)) t={aA:r.base,hint:bi('Salary differs: check the grade or salary in Settings.','Gehalt weicht ab: Einstufung bzw. Gehalt in den Einstellungen pr\u00fcfen.')};
+    else if(/Gefahrenzulage/i.test(n)) t={aA:r.hazard,hint:bi('Hazard allowance differs: check the setting.','Gefahrenzulage weicht ab: Einstellung pr\u00fcfen.')};
+    else if(/Nachmittag kurz|Mittel/i.test(n)) t={aH:sM.h,aA:sM.a,mon:sM.mon,kind:'shifts'};
+    else if(/Nachmittag lang|Sp[a\u00e4]t/i.test(n)) t={aH:sL.h,aA:sL.a,mon:sL.mon,kind:'shifts'};
+    else if(/Schichtzulage|Nachtzulage/i.test(n)) t={aH:night.nightH,aA:night.shiftA,mon:m,kind:'shifts'};
+    else if(/Zuschl/i.test(n)&&/\u00dcStd|Ueberstd|Feiertag/i.test(n)) t={aH:prev.holH,aA:prev.holExtraSuppl,mon:pm,kind:'shifts'};
+    else if(/Grundverg/i.test(n)) t={aH:prev.holH,aA:prev.holExtraBase,mon:pm,kind:'shifts'};
+    else if(/Rufbereitschaft/i.test(n)) t={aA:r.rufPay,hint:bi('Standby pay differs: check the standby shifts and the hourly rate.','Rufbereitschaft weicht ab: Bereitschaftsdienste und Stundensatz pr\u00fcfen.')};
+    else if(/Betriebsrat/i.test(n)) t={aA:r.br,hint:bi('Levy differs: check the works-council rate in Settings.','Umlage weicht ab: Satz der Betriebsratsumlage in den Einstellungen pr\u00fcfen.')};
+    else if(/Urlaubszusch|Weihnachts|Sonderzahlung|Remuneration/i.test(n)){info.push(ln);return;}
+    else {other.push(ln);return;}
+    var dA=ln.amount-t.aA,dH=(ln.units!==null&&t.aH!==undefined)?ln.units-t.aH:null;
+    var ok=Math.abs(dA)<=0.02&&(dH===null||Math.abs(dH)<0.005);
+    var hint='';
+    if(!ok){
+      if(t.kind==='shifts'&&dH!==null&&Math.abs(dH)>=0.005) hint=bi('Hours differ by '+(dH>0?'+':'')+dH.toFixed(2)+' h (about '+Math.round(Math.abs(dH)*60)+' min). Check the shifts and their start and end times in '+mon(t.mon)+'.','Stunden weichen um '+(dH>0?'+':'')+dH.toFixed(2)+' h ab (ca. '+Math.round(Math.abs(dH)*60)+' Min.). Dienste und deren Beginn und Ende im '+mon(t.mon)+' pr\u00fcfen.');
+      else if(t.kind==='shifts') hint=bi('Same hours but a different amount: the rate differs (check salary and supplement settings).','Gleiche Stunden, aber anderer Betrag: der Satz weicht ab (Gehalt und Zulagen-Einstellungen pr\u00fcfen).');
+      else hint=t.hint||'';
+    }
+    rows.push({name:n,pH:ln.units,pA:ln.amount,aH:t.aH,aA:t.aA,ok:ok,hint:hint});
+  });
+  var rsum=0;retro.forEach(function(x){rsum+=x.deduction?-x.amount:x.amount;});
+  return {rows:rows,retro:retro,retroSum:Math.round(rsum*100)/100,other:other,info:info};
+}
+function analysePayslipText(){
+  var ta=document.getElementById('psl-text'),el=document.getElementById('psl-result');
+  if(!ta||!el) return;
+  el.textContent='';
+  if(!ta.value.trim()) return;
+  var lines=parsePayslipLines(ta.value);
+  if(!lines.length){el.textContent=bi('No payslip lines recognised. Copy the whole table (Lohnart, text, hours, rate, amount) from the PDF.','Keine Abrechnungszeilen erkannt. Kopiere die ganze Tabelle (Lohnart, Text, Stunden, Satz, Betrag) aus dem PDF.');return;}
+  var res=comparePayslipLines(lines);
+  function div(txt,color,extra){var d=document.createElement('div');d.style.cssText='padding:3px 0;border-bottom:.5px solid rgba(0,0,0,.06)'+(color?';color:'+color:'')+(extra||'');d.textContent=txt;return d;}
+  var okN=0;
+  res.rows.forEach(function(x){
+    if(x.ok) okN++;
+    var parts=[(x.ok?'\u2713 ':'\u26a0 ')+x.name+': '];
+    parts.push(bi('payslip','Abrechnung')+' '+(x.pH!==null?x.pH.toFixed(2)+' h \u00b7 ':'')+fmt(x.pA));
+    parts.push(' | '+bi('app','App')+' '+(x.aH!==undefined?(+x.aH).toFixed(2)+' h \u00b7 ':'')+fmt(x.aA));
+    el.appendChild(div(parts.join(''),x.ok?'#27ae60':'#c0392b'));
+    if(x.hint) el.appendChild(div('\u21b3 '+x.hint,'#c0392b',';padding-left:14px;border-bottom:none'));
+  });
+  if(res.retro.length){
+    var d=div('\u2139 '+bi('Prior-month (retro) lines: '+res.retro.length+', together '+fmt(res.retroSum)+'. SV is charged now and the tax at the marginal rate: enter them as the prior-month correction.','Nachverrechnete Zeilen: '+res.retro.length+', zusammen '+fmt(res.retroSum)+'. SV f\u00e4llt jetzt an, Lohnsteuer mit dem Grenzsteuersatz: als Korrektur Vormonat erfassen.'),'#185fa5');
+    if(Math.abs(getCorrection(currentYear,currentMonth)-res.retroSum)<0.005){d.appendChild(document.createTextNode(' \u2713 '+bi('applied','\u00fcbernommen')));}
+    else{var b=document.createElement('button');b.type='button';b.className='mbtn';b.style.cssText='font-size:11px;padding:2px 8px;margin-left:6px';b.textContent=bi('Apply','\u00dcbernehmen');b.onclick=function(){setCorrection(String(res.retroSum));};d.appendChild(b);}
+    el.appendChild(d);
+  }
+  var tail=[];
+  if(res.info.length) tail.push(bi(res.info.length+' Sonderzahlung line(s) are not part of the monthly estimate.',res.info.length+' Sonderzahlungs-Zeile(n) sind nicht Teil der Monatssch\u00e4tzung.'));
+  if(res.other.length) tail.push(bi(res.other.length+' line(s) not compared: '+res.other.map(function(x){return x.name;}).join(', ')+'.',res.other.length+' Zeile(n) nicht verglichen: '+res.other.map(function(x){return x.name;}).join(', ')+'.'));
+  el.appendChild(div(bi(okN+' of '+res.rows.length+' compared lines match.',okN+' von '+res.rows.length+' verglichenen Zeilen stimmen.')+(tail.length?' '+tail.join(' '):''),okN===res.rows.length?'#27ae60':'#c0392b',';font-weight:500;border-bottom:none'));
+}
+function refreshPayslipText(){var ta=document.getElementById('psl-text');if(ta&&ta.value.trim())analysePayslipText();}
 
 function renderPayslipComp(){
   var el=document.getElementById('psc-result');
@@ -5623,11 +5796,14 @@ var I18N={
     tcFootnote:'Enter your <strong>regular monthly gross</strong>. Regular salary is annualised at ×12 per §66 EStG — never ×14. Sonderzahlungen are calculated separately above using §67 flat rate. UV is employer-only. Confirm with your payroll office.',
     tcPendlerFamIntro:'These reduce your annual Lohnsteuer directly. Enter what applies to you — the monthly LSt estimate above will update.',
     tcPendlerLabel:'Pendlerpauschale — commuter deduction (€/year)',
-    tcPendlerTip:'Kleine Pendlerpauschale (public transport available): 372–1,476€/year. Große Pendlerpauschale (no public transport): 744–2,784€/year. Depends on distance and availability. Use the BMF Pendlerrechner to find your exact amount.',
+    tcCommuteNote:'Used in your monthly estimate. Take the amounts from your payslip (fields Pendlerpauschale, Pendlereuro, Familienbonus). Not yet verified against a payslip.', tcPendlerKm:'One-way distance (km)',
+    sectorMissing:'My sector isn\u2019t listed',
+    pslTitle:'Check line by line: paste your payslip text (optional)', pslHint:'Open the payslip PDF, select all, copy and paste here. The text is analysed on this device only and never sent anywhere.', pslPlaceholder:'3860 ... 2115 RT Nachmittag kurz 47,18 4,44 209,48 ...',
+    tcPendlerTip:'2026, per year. Small (public transport reasonable, from 20 km): 696 / 1,356 / 2,016 EUR for 20\u201340 / 40\u201360 / 60+ km. Large (public transport unreasonable, from 2 km): 372 / 1,476 / 2,568 / 3,672 EUR for 2\u201320 / 20\u201340 / 40\u201360 / 60+ km. Full amount from 11 commuting days a month, two thirds for 8\u201310 days, one third for 4\u20137 days. The BMF Pendlerrechner decides small or large.',
     tcPendlerQuickPick:'Quick-pick distance…',
-    tcPendlereuroNote:'Also adds <strong>Pendlereuro</strong> (€2/km × one-way distance per year) automatically if you enter a custom amount.',
+    tcPendlereuroNote:'<strong>Pendlereuro</strong>: \u20ac6 per km of the one-way distance per year (2026), deducted directly from the tax. Needs a Pendlerpauschale. Enter the distance above.',
     tcFambonusLabel:'Familienbonus Plus — children tax credit (€/year)',
-    tcFambonusTip:'€2,000/year per child under 18 in Austria (€166.68/month). €700/year for children 18+ in education. Shared 50/50 with partner or taken in full by one parent. Reduces Lohnsteuer directly — cannot go below €0.',
+    tcFambonusTip:'Familienbonus Plus per child: \u20ac166.68/month (\u20ac2,000.16/year) up to the 18th birthday, \u20ac58.34/month (\u20ac700.08/year) afterwards while Familienbeihilfe is paid. One parent in full, or half each. Applied in payroll only if you submitted form E 30. Reduces the Lohnsteuer directly, never below \u20ac0.',
     tcFambonusQuickPick:'Quick-pick children…',
     nettoIntro:'Enter the net amount you want to take home. The app calculates the gross salary you would need to negotiate for.',
     nettoTargetLabel:'Target net per month (€)',
@@ -5923,11 +6099,14 @@ var I18N={
     tcFootnote:'Geben Sie Ihr <strong>reguläres Monatsbrutto</strong> ein. Das reguläre Gehalt wird mit ×12 nach §66 EStG hochgerechnet — nie ×14. Sonderzahlungen werden oben separat mit dem §67 Pauschalsatz berechnet. UV ist nur Arbeitgeberanteil. Mit Lohnverrechnung abgleichen.',
     tcPendlerFamIntro:'Diese reduzieren Ihre Jahres-Lohnsteuer direkt. Tragen Sie ein, was für Sie zutrifft — die LSt-Schätzung oben aktualisiert sich.',
     tcPendlerLabel:'Pendlerpauschale (€/Jahr)',
-    tcPendlerTip:'Kleine Pendlerpauschale (ÖPNV verfügbar): 372–1.476€/Jahr. Große Pendlerpauschale (kein ÖPNV zumutbar): 744–2.784€/Jahr. Abhängig von Entfernung und Verfügbarkeit. Genauen Betrag im BMF-Pendlerrechner ermitteln.',
+    tcCommuteNote:'Gilt f\u00fcr deine Monatssch\u00e4tzung. Betr\u00e4ge aus der Abrechnung \u00fcbernehmen (Felder Pendlerpauschale, Pendlereuro, Familienbonus). Noch nicht an einer Abrechnung gepr\u00fcft.', tcPendlerKm:'Einfache Wegstrecke (km)',
+    sectorMissing:'Meine Branche fehlt in der Liste',
+    pslTitle:'Zeile f\u00fcr Zeile pr\u00fcfen: Abrechnungstext einf\u00fcgen (optional)', pslHint:'Abrechnung als PDF \u00f6ffnen, alles markieren, kopieren und hier einf\u00fcgen. Der Text wird nur auf diesem Ger\u00e4t ausgewertet und nirgends hin gesendet.', pslPlaceholder:'3860 ... 2115 RT Nachmittag kurz 47,18 4,44 209,48 ...',
+    tcPendlerTip:'2026, pro Jahr. Klein (\u00d6ffi zumutbar, ab 20 km): 696 / 1.356 / 2.016 EUR f\u00fcr 20\u201340 / 40\u201360 / 60+ km. Gro\u00df (\u00d6ffi unzumutbar, ab 2 km): 372 / 1.476 / 2.568 / 3.672 EUR f\u00fcr 2\u201320 / 20\u201340 / 40\u201360 / 60+ km. Voller Betrag ab 11 Pendeltagen im Monat, zwei Drittel bei 8\u201310 Tagen, ein Drittel bei 4\u20137 Tagen. Ob klein oder gro\u00df gilt, entscheidet der BMF-Pendlerrechner.',
     tcPendlerQuickPick:'Entfernung auswählen…',
-    tcPendlereuroNote:'Fügt bei eigenem Betrag automatisch den <strong>Pendlereuro</strong> hinzu (€2/km × einfache Strecke pro Jahr).',
+    tcPendlereuroNote:'<strong>Pendlereuro</strong>: 6 \u20ac pro km einfacher Wegstrecke und Jahr (2026), direkt von der Steuer abgezogen. Setzt ein Pendlerpauschale voraus. Entfernung oben eintragen.',
     tcFambonusLabel:'Familienbonus Plus (€/Jahr)',
-    tcFambonusTip:'€2.000/Jahr pro Kind unter 18 in Österreich (€166,68/Monat). €700/Jahr für Kinder 18+ in Ausbildung. 50/50 mit Partner geteilt oder zur Gänze bei einem Elternteil. Reduziert die Lohnsteuer direkt — kann nicht unter €0 gehen.',
+    tcFambonusTip:'Familienbonus Plus pro Kind: \u20ac166,68/Monat (\u20ac2.000,16/Jahr) bis zum 18. Geburtstag, danach \u20ac58,34/Monat (\u20ac700,08/Jahr), solange Familienbeihilfe bezogen wird. Ein Elternteil zur G\u00e4nze oder je zur H\u00e4lfte. In der Lohnverrechnung nur mit Antrag E 30. Mindert die Lohnsteuer direkt, nie unter \u20ac0.',
     tcFambonusQuickPick:'Kinder auswählen…',
     nettoIntro:'Geben Sie den gewünschten Netto-Betrag ein. Die App berechnet das dazu nötige Bruttogehalt für Ihre Verhandlung.',
     nettoTargetLabel:'Ziel-Netto pro Monat (€)',
@@ -6215,8 +6394,7 @@ function applyPendlerPreset(){
   if(!val)return;
   document.getElementById('tc-pendler').value=val;
   sel.value='';
-  renderTaxCalc();
-  renderJobCompare();
+  onCommuteInput();
 }
 function applyFambonusPreset(){
   var sel=document.getElementById('tc-fambonus-preset');
@@ -6224,8 +6402,7 @@ function applyFambonusPreset(){
   if(!val)return;
   document.getElementById('tc-fambonus').value=val;
   sel.value='';
-  renderTaxCalc();
-  renderJobCompare();
+  onCommuteInput();
 }
 
 
@@ -6395,9 +6572,11 @@ function renderRaise(){
 var _renderYearTimer=null;
 function renderAll(){
   useRates(currentYear);
+  updateCommuteLabel();
   updateRatesBanner();
   updateIosHint();
   syncCorrInput();
+  refreshPayslipText();
   renderCalendar();renderWeekBar();renderReport();
   // Keep year tab in sync if visible — debounced to avoid 12×calcSalary on rapid navigation
   var yearTab=document.getElementById('tab-year');
