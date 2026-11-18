@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="base-uri 'none'; object-src 'none'; form-action 'none'; connect-src 'self' https://api.github.com https://api.web3forms.com">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#185fa5">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -62,6 +63,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dnum.wknd-num{color:#bbb}
 .today-dot{width:18px;height:18px;background:#185fa5;border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
 .hol-tag{font-size:9px;font-weight:500;background:#faeeda;color:#854f0b;padding:1px 5px;border-radius:3px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media print{html{zoom:1!important}}
+.pl-k{font-weight:700;margin-right:2px}
 .shift-pill{font-size:9px;font-weight:500;padding:2px 5px;border-radius:3px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
 @media (max-width:480px){.shift-pill{padding:2px 2px;text-align:center;white-space:normal;text-overflow:clip;line-height:1.15}.shift-pill .pl-t{display:none}.shift-pill .pl-h{font-size:0}.shift-pill .pl-h::after{content:attr(data-short);font-size:8px}}
 @media (pointer:coarse){.app-header .icon-btn{min-height:34px}}
@@ -115,6 +118,23 @@ select,input[type=number],input[type=text]{width:100%;padding:5px 7px;border:.5p
 .neg{color:#c0392b}.pos{color:#27ae60}.info{color:#185fa5}
 .rrow.total-row{padding-top:7px;font-size:13px;border-top:.5px solid #ddd;margin-top:3px}
 .net-box{background:#185fa5;border-radius:10px;padding:12px 14px;margin:10px 0;color:#fff}
+.net-top{display:flex;align-items:center;gap:6px;margin:6px 0}
+.net-top-main{flex:1;text-align:left;background:#185fa5;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;min-height:40px}
+.net-top-main b{font-size:18px;margin-left:6px}
+.gl-q{width:24px;height:24px;border-radius:50%;border:.5px solid #888;background:transparent;color:inherit;font-size:12px;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
+#gloss-list dt{font-weight:600;margin-top:8px}
+#gloss-list dd{margin:2px 0 0}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid #378add;outline-offset:2px}
+@media (pointer:coarse){.month-nav button,.icon-btn{min-height:44px;min-width:44px}.gl-q{min-height:40px;min-width:40px}}
+.msel-bar{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap;font-size:12px}
+.msel-bar .mbtn{min-height:40px}
+body.dark .rates-banner a,body.dark .cs-overlay a{color:#8ab4f8}
+.acc-badge>span,#kv-badge>span{white-space:normal;max-width:100%;line-height:1.4;border-radius:12px}
+.disc-note .dot::before{content:"\00b7";display:inline-block;margin:0 5px 0 2px;text-decoration:none}
+.day-cell.msel-on{outline:2px solid #378add;outline-offset:-2px;background:rgba(55,138,221,.15)}
+.forecast-pay{font-size:12px;margin:4px 0 6px}
+.acc-badge{margin:4px 0;font-size:11px}
+@media print{.net-top,#undo-toast,.msel-bar{display:none!important}}
 .net-label{font-size:10px;opacity:.75;margin-bottom:3px}
 .net-val{font-size:22px;font-weight:500}
 .net-sub{font-size:10px;opacity:.6;margin-top:2px}
@@ -704,29 +724,36 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <div>
       <div class="app-title" data-i18n="appTitle">Paychecker Austria</div>
       <div class="app-sub" data-i18n="appSub">Austria · click any day to add or edit a shift</div>
-      <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a> &middot; <a href="#" onclick="openImpressum();return false;" data-i18n="impLink">Impressum</a> &middot; <a href="#" id="fb-link" style="display:none" onclick="openFeedback();return false;" data-i18n="fbLink">Feedback</a></div>
+      <div class="disc-note"><span data-i18n="discNote">Estimates only — not payroll, tax or legal advice.</span> <a href="#" onclick="openDisclaimer();return false;" data-i18n="discLink">Full disclaimer</a> &middot; <a href="#" onclick="openImpressum();return false;" data-i18n="impLink">Impressum</a> <a href="#" id="fb-link" class="dot" style="display:none" onclick="openFeedback();return false;" data-i18n="fbLink">Feedback</a> <a href="#" class="dot" onclick="openDiag();return false;" data-i18n="diagLink">Diagnostics</a> <a href="#" class="dot" onclick="openGloss();return false;" data-i18n="glossLink">Glossary</a> <span id="app-ver" class="dot" style="opacity:.7"></span> <a href="?demo=1" id="demo-link" class="dot" data-i18n="demoLink">Demo</a></div>
+      <div id="demo-banner" class="rates-banner" style="display:none"><span data-i18n="demoBanner">Demo mode: fake data, nothing is saved or synced. Your own data is untouched.</span> <a href="#" onclick="exitDemo();return false;" data-i18n="demoExit">Exit demo</a></div>
+      <div id="undo-toast" role="status" aria-live="polite" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:6px 8px 6px 14px;border-radius:8px;font-size:12px;z-index:999;max-width:90vw;align-items:center;gap:10px"><span id="undo-msg"></span><button type="button" id="undo-btn" onclick="undoLast()" data-i18n="undoBtn" style="background:transparent;border:.5px solid #8fc1ff;color:#8fc1ff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px">Undo</button></div>
+      <div id="err-boundary" class="rates-banner" role="alert" style="display:none"><span id="eb-msg"></span> <button class="mbtn" type="button" onclick="exportRawData()" data-i18n="ebExport">Export data</button> <button class="mbtn" type="button" onclick="closeBoundary()" data-i18n="ebClose">Dismiss</button></div>
       <div id="rates-banner" class="rates-banner" style="display:none"></div>
       <div id="ios-banner" class="rates-banner" style="display:none"></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="month-nav">
-        <button onclick="changeMonth(-1)">‹</button>
-        <div class="month-label" id="month-label" onclick="openMonthJump(event)" style="cursor:pointer;user-select:none" title="Click to jump to any month"></div>
-        <button onclick="changeMonth(1)">›</button>
+        <button onclick="changeMonth(-1)" data-i18n-aria="navPrev" aria-label="Previous month">‹</button>
+        <div class="month-label" id="month-label" onclick="openMonthJump(event)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMonthJump(event);}" style="cursor:pointer;user-select:none" title="Click to jump to any month"></div>
+        <button onclick="changeMonth(1)" data-i18n-aria="navNext" aria-label="Next month">›</button>
         <button onclick="goToToday()" title="Jump to today" style="font-size:11px;padding:4px 8px" data-i18n="today">Today</button>
       </div>
       <button class="icon-btn" onclick="window.print()" data-i18n="print">🖨 Print</button>
       <button class="icon-btn" onclick="exportICal()" title="Export shifts to .ics for Google / Apple Calendar" data-i18n="icalBtn">📅 iCal</button>
       <button class="icon-btn" onclick="copyPrevMonth()" title="Copy previous month's shifts into this month" data-i18n="copyPrevBtn">📋 Copy prev</button>
+      <button class="icon-btn" onclick="openQuick()" title="Fill many days by typing letters" aria-label="Quick entry" data-i18n-title="quickTip"><span data-i18n="quickBtn">⌨ Quick entry</span></button>
       <button class="icon-btn" id="help-btn" onclick="openHelp()" title="How it works" aria-label="How it works" data-i18n-title="helpTip">❓</button>
       <button class="icon-btn" id="log-btn" onclick="openChangelog()" title="What’s new" aria-label="What’s new" data-i18n-title="logTip">🆕<span class="new-dot" id="log-dot" style="display:none"></span></button>
-      <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+      <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode" aria-label="Toggle dark mode" data-i18n-aria="darkAria">🌙</button>
+      <button class="icon-btn" id="zoom-btn" onclick="cycleZoom()" title="Text size" aria-label="Text size" data-i18n-title="zoomTip">Aa</button>
       <button class="icon-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / Sprache wechseln">🌐 DE</button>
       <a href="https://buymeacoffee.com/anisbirakhm" target="_blank" rel="noopener"
         style="display:inline-flex;align-items:center;gap:5px;background:#FFDD00;color:#000;font-weight:600;font-size:11px;padding:5px 11px;border-radius:7px;text-decoration:none;border:.5px solid #e6c800;white-space:nowrap"
         title="Support this project"><img src="data:image/png;base64,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" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:2px"> <span data-i18n="supportBtn">Buy me a coffee</span></a>
     </div>
   </div>
+  <div id="net-top" class="net-top" style="display:none"><button type="button" class="net-top-main" onclick="goToNet()"><span data-i18n="netTopLbl">Estimated net</span><b id="net-top-val"></b></button><button type="button" class="gl-q" onclick="openGloss('net')" data-i18n-aria="glossQ" aria-label="What does this mean?">?</button></div>
+  <div id="acc-badge" class="acc-badge" style="display:none"></div>
   <div class="legend">
     <span class="lpill lp-normal" data-i18n="legEarly">Early 07–15</span>
     <span class="lpill lp-middle"><span data-i18n="legMiddle">Middle 11:30–20</span> <b style="color:#0f6e56">+€35.50</b></span>
@@ -754,6 +781,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <div class="cal-dow" data-i18n="dowFri">Fri</div>
     <div class="cal-dow wknd" data-i18n="dowSat">Sat</div><div class="cal-dow wknd" data-i18n="dowSun">Sun</div>
   </div>
+  <div class="msel-bar" id="msel-bar"><button type="button" class="mbtn" id="msel-toggle" aria-pressed="false" onclick="toggleMultiSelect()" data-i18n="mselBtn">☑ Select days</button><span id="msel-actions" style="display:none"><span id="msel-count"></span> <button type="button" class="mbtn" id="msel-set" onclick="mselSet()" data-i18n="mselSet">Set shift…</button> <button type="button" class="mbtn" id="msel-del" onclick="mselClear()" data-i18n="mselDel">Delete</button></span></div>
   <div class="cal-grid" id="cal-grid"></div>
 </div>
 
@@ -788,6 +816,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="hcard"><div class="hl">True hourly incl. SZ (net)</div><div class="hv" id="r-hourly-sz">—</div></div>
     </div>
     <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:5px">3-month net forecast</div>
+    <div id="forecast-pay" class="forecast-pay" style="display:none"></div>
     <div class="forecast-strip" id="forecast-strip"></div>
     <div class="panel-section">
       <div class="panel-label" data-i18n="lblGrossBreakdown">Gross breakdown</div>
@@ -1294,7 +1323,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         </optgroup>
       </select>
       <div class="kv-applied" id="kv-applied" data-i18n="kvApplied">✓ KV preset applied — review and adjust below if needed</div>
-      <div class="kv-note"><span data-i18n="kvNote">⚠ Only the Krankenanstalten – Radiologietechnologie template has been validated cent-for-cent against a real payslip. All other templates are best-effort estimates from public KV text — always verify against your own Abrechnung.</span> <a href="https://www.wko.at/service/kollektivvertrag" target="_blank" rel="noopener" style="color:#185fa5" data-i18n="kvFindLink">Find your KV ↗</a></div>
+      <div class="kv-note"><span data-i18n="kvNote">⚠ Only the Krankenanstalten – Radiologietechnologie template has been checked against real payslips (net within 0.01 EUR per month, 2026 only). All other templates are best-effort estimates from public KV text — always verify against your own Abrechnung.</span> <a href="https://www.wko.at/service/kollektivvertrag" target="_blank" rel="noopener" style="color:#185fa5" data-i18n="kvFindLink">Find your KV ↗</a></div>
       <div style="font-size:11px;margin-top:6px"><a href="#" onclick="requestSector();return false;" data-i18n="sectorMissing">My sector isn't listed</a></div>
     </div>
     <hr class="divider">
@@ -1378,6 +1407,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
           <span class="tip" data-i18n-title="tipWBFRate" title="Wohnbauförderungsbeitrag — a state-level SV contribution. Lower Austria (NÖ): 0.5%. Vienna: 0.5%. Other states may differ. Check your payslip.">ℹ</span></label>
         <input type="number" id="wbf-rate" value="0.5" step="0.1" min="0" max="1" onchange="saveSettings();renderAll()">
       </div>
+      <div style="margin-bottom:8px">
+        <label for="pay-day" style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setPayDay">Payday (day of month, optional)</label>
+        <input type="number" id="pay-day" min="1" max="28" step="1" placeholder="25" onchange="saveSettings();renderAll()">
+        <div style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="setPayDayHint">The salary of a month is assumed to be paid in the same month. If the day falls on a weekend or public holiday, the date moves to the previous working day (assumption: check with your employer).</div>
+      </div>
     </div>
     <hr class="divider">
     <div class="panel-section">
@@ -1389,6 +1423,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <button class="mbtn" style="flex:1" onclick="document.getElementById('import-file').click()" data-i18n="btnImportJSON">📥 Import JSON</button>
       </div>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(this)">
+      <button class="mbtn" type="button" id="restore-prev-btn" style="display:none;width:100%;margin-bottom:6px" onclick="restorePrevBackup()" data-i18n="btnRestorePrev">&#8617; Restore data from before the last import/pull</button>
     </div>
     <hr class="divider">
     <div class="panel-section">
@@ -1459,6 +1494,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <tbody id="year-tbody"></tbody>
       <tfoot><tr id="year-tfoot"></tr></tfoot>
     </table>
+  <div id="year-accuracy" style="font-size:11px;line-height:1.5;margin:8px 0;padding:6px 10px;border-radius:6px;background:rgba(128,128,128,.12)"></div>
     <p style="font-size:10px;color:#bbb;margin-top:10px;line-height:1.5" data-i18n="yearLegend">Click month to navigate. <span style="background:#fff8e8;padding:0 3px;border-radius:2px">Amber</span> = today's month · <span style="color:#6fa8dc">●</span> high · <span style="color:#c8943a">●</span> low · <span style="color:#9b8fd8">●</span> SZ month.</p>
     <div class="av-box" id="av-summary">
       <div class="av-title"><span data-i18n="avTitle">📋 Arbeitnehmerveranlagung helper</span> — <span id="av-year-label"></span></div>
@@ -1606,6 +1642,21 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 
 
 <!-- ═══ ONBOARDING TUTORIAL ═══ -->
+<div class="disc-overlay" id="quick-overlay" role="dialog" aria-modal="true" aria-labelledby="quick-title" onclick="closeQuick()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="quick-title" data-i18n="quickTitle">Quick entry</h2>
+    <div class="disc-body"><p id="quick-help"></p></div>
+    <div class="fb-fields">
+      <label style="font-size:12px;display:flex;align-items:center;gap:8px"><span data-i18n="quickStart">Start on day</span><input type="number" id="quick-start" min="1" max="31" value="1" oninput="quickPreview()" style="width:70px"></label>
+      <textarea id="quick-text" rows="3" oninput="quickPreview()" placeholder="E E M M L - - N" style="font-family:monospace"></textarea>
+      <label style="font-size:11px;display:flex;gap:6px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="quick-over" onchange="quickPreview()" style="width:auto;margin-top:2px"><span data-i18n="quickOver">Replace days that already have a shift</span></label>
+      <div id="quick-preview" style="font-size:11px;line-height:1.5;min-height:34px"></div>
+      <button class="mbtn primary" type="button" onclick="applyQuick()" data-i18n="quickFill">Fill calendar</button>
+      <button class="mbtn" type="button" onclick="closeQuick()" data-i18n="impClose">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="disc-overlay" id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" onclick="closeHelp()">
   <div class="disc-box" onclick="event.stopPropagation()">
     <h2 id="help-title" data-i18n="helpTitle">How it works</h2>
@@ -1646,6 +1697,25 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <button class="mbtn primary" type="button" id="fb-send" onclick="sendFeedback()" data-i18n="fbSend">Send</button>
       <button class="mbtn" type="button" onclick="closeFeedback()" data-i18n="impClose">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="disc-overlay" id="diag-overlay" role="dialog" aria-modal="true" aria-labelledby="diag-title" onclick="closeDiag()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="diag-title" data-i18n="diagTitle">Technical info</h2>
+    <div class="disc-body"><p data-i18n="diagNote">Preview of what Copy puts on the clipboard: versions and names of settings only. No amounts, notes, card names, token or password. Nothing is sent anywhere.</p></div>
+    <pre id="diag-pre" style="white-space:pre-wrap;word-break:break-all;font-size:10px;margin:4px 0 8px"></pre>
+    <div id="diag-status" style="font-size:11px;min-height:16px"></div>
+    <button class="mbtn primary" type="button" onclick="copyDiagnostics()" data-i18n="fbCopy">Copy technical info</button>
+    <button class="mbtn" type="button" onclick="closeDiag()" data-i18n="impClose">Close</button>
+  </div>
+</div>
+
+<div class="disc-overlay" id="gloss-overlay" role="dialog" aria-modal="true" aria-labelledby="gloss-title" onclick="closeGloss()">
+  <div class="disc-box" onclick="event.stopPropagation()">
+    <h2 id="gloss-title" data-i18n="glossTitle">Glossary</h2>
+    <dl id="gloss-list" class="disc-body" style="font-size:12px;line-height:1.5"></dl>
+    <button class="mbtn" type="button" id="gloss-close" onclick="closeGloss()" data-i18n="impClose">Close</button>
   </div>
 </div>
 
@@ -1712,13 +1782,14 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     </div>
     <div style="font-size:11px;color:#888;margin-bottom:16px;line-height:1.6" data-i18n="wizIntro">A free, private Austrian salary &amp; shift calculator. Your data never leaves your device. Let’s set up the three things we need.</div>
     <div style="margin-bottom:12px">
-      <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ1">1. Your monthly gross salary (€)</label>
-      <input type="number" id="wiz-salary" placeholder="e.g. 3200.00" step="0.01" min="0" style="width:100%;font-size:14px;padding:7px 10px;border:.5px solid #ccc;border-radius:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px"><label style="font-size:12px;font-weight:500;display:block" data-i18n="wizQ1">1. Your monthly gross salary (€)</label>
+      <button type="button" class="gl-q" style="margin:0" onclick="openGloss('gross')" data-i18n-aria="glossQ" aria-label="What does this mean?">?</button></div>
+      <input type="number" id="wiz-salary" oninput="wizEstimate()" placeholder="e.g. 3200.00" step="0.01" min="0" style="width:100%;font-size:14px;padding:7px 10px;border:.5px solid #ccc;border-radius:7px">
       <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="wizQ1Hint">Find this on your payslip (Bruttobezug). You can change it later.</div>
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQKV">Your sector / collective agreement (optional)</label>
-      <select id="wiz-kv" onchange="wizKVChange()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
+      <select id="wiz-kv" onchange="wizKVChange();wizEstimate()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
         <option value="" data-i18n="wizKVNone">&mdash; Skip / not listed &mdash;</option>
       </select>
       <div id="wiz-kv-info" style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="wizKVHint">Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.</div>
@@ -1726,12 +1797,16 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ2">2. Do you receive bonus months?</label>
-      <select id="wiz-model" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
+      <select id="wiz-model" onchange="wizEstimate()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
         <option value="14" data-i18n="wizQ2Opt14">Yes — 13th and 14th salary (standard in Austria)</option>
         <option value="13" data-i18n="wizQ2Opt13">Yes — one bonus month</option>
         <option value="12" data-i18n="wizQ2Opt12">No — 12 salaries only</option>
       </select>
       <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="wizQ2Hint">Most Austrian employees receive Urlaubsgeld (June) + Weihnachtsgeld (November).</div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label for="wiz-year" style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQYear">Estimate for year</label>
+      <select id="wiz-year" onchange="wizEstimate()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px"></select>
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQ3">3. Do you work shift or on-call hours?</label>
@@ -1761,6 +1836,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         </div>
       </div>
     </div>
+    <div id="wiz-est" role="status" style="display:none;white-space:pre-line;font-size:12px;line-height:1.6;background:rgba(127,127,127,.12);border-radius:8px;padding:8px 10px;margin-bottom:12px"></div>
     <button class="mbtn primary" style="width:100%;padding:10px;font-size:13px" onclick="finishWizard()" data-i18n="wizGetStarted">Get started →</button>
     <div style="font-size:10px;color:#aaa;margin-top:10px;text-align:center" data-i18n="wizFooter">All settings can be changed later in the Settings tab.</div>
   </div>
@@ -1857,7 +1933,211 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 </div>
 </div>
 
+<script type="application/json" id="rates-json">
+{
+ "2026": {
+  "status": "official",
+  "hbgl": 6930,
+  "avFull": 0.0295,
+  "avBr": [
+   {
+    "upTo": 2225,
+    "rate": 0
+   },
+   {
+    "upTo": 2427,
+    "rate": 0.01
+   },
+   {
+    "upTo": 2630,
+    "rate": 0.02
+   }
+  ],
+  "brackets": [
+   [
+    0,
+    13539,
+    0
+   ],
+   [
+    13539,
+    21992,
+    0.2
+   ],
+   [
+    21992,
+    36458,
+    0.3
+   ],
+   [
+    36458,
+    70365,
+    0.4
+   ],
+   [
+    70365,
+    104859,
+    0.48
+   ],
+   [
+    104859,
+    1000000,
+    0.5
+   ],
+   [
+    1000000,
+    null,
+    0.55
+   ]
+  ],
+  "vab": 496,
+  "ovt": {
+   "hours": 15,
+   "cap": 200
+  },
+  "pendlerEuroKm": 6,
+  "sourcesChecked": "2026-11-16",
+  "sources": {
+   "hbgl": [
+    "https://www.oesterreich.gv.at/de/lexicon/H/Seite.991498",
+    "https://www.wko.at/ooe/news/sozialrecht-neu"
+   ],
+   "brackets": [
+    "https://www.bmf.gv.at/themen/steuern/arbeitnehmerveranlagung/steuertarif-steuerabsetzbetraege/steuertarif-steuerabsetzbetraege.html",
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ],
+   "vab": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ],
+   "pendlerEuroKm": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ]
+  },
+  "unverifiedFields": [
+   "avBr",
+   "avFull",
+   "ovt"
+  ],
+  "note": {
+   "en": "",
+   "de": ""
+  }
+ },
+ "2027": {
+  "status": "provisional",
+  "hbgl": 7410,
+  "avFull": 0.0295,
+  "avBr": [
+   {
+    "upTo": 2327,
+    "rate": 0.005
+   },
+   {
+    "upTo": 2539,
+    "rate": 0.015
+   },
+   {
+    "upTo": 2751,
+    "rate": 0.025
+   }
+  ],
+  "brackets": [
+   [
+    0,
+    13846,
+    0
+   ],
+   [
+    13846,
+    22491,
+    0.2
+   ],
+   [
+    22491,
+    37285,
+    0.3
+   ],
+   [
+    37285,
+    71960,
+    0.4
+   ],
+   [
+    71960,
+    107236,
+    0.48
+   ],
+   [
+    107236,
+    1000000,
+    0.5
+   ],
+   [
+    1000000,
+    null,
+    0.55
+   ]
+  ],
+  "vab": 508,
+  "ovt": {
+   "hours": 10,
+   "cap": 120
+  },
+  "pendlerEuroKm": 6,
+  "sourcesChecked": "2026-11-17",
+  "sources": {
+   "brackets": [
+    "https://www.ris.bka.gv.at/Dokumente/BgblAuth/BGBLA_2026_II_260/BGBLA_2026_II_260.html",
+    "https://www.bmf.gv.at/rechtsnews/steuern-rechtsnews/neue-verordnungen/2026/inflationsanpassungsverordnung-2027.html"
+   ],
+   "vab": [
+    "https://www.ris.bka.gv.at/Dokumente/BgblAuth/BGBLA_2026_II_260/BGBLA_2026_II_260.html"
+   ],
+   "pendlerEuroKm": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ]
+  },
+  "unverifiedFields": [
+   "hbgl",
+   "avBr",
+   "avFull",
+   "ovt"
+  ],
+  "note": {
+   "en": "Provisional values. The tax tariff and the commuter tax credit match the 2027 inflation adjustment regulation (BGBl. II 260/2026, checked 2026-11-17). The social-insurance values for 2027 (maximum contribution base, reduced unemployment-insurance steps) were not found in an official source yet; press reports say the official publication was still pending in October 2026.",
+   "de": "Vorl\u00e4ufige Werte. Der Steuertarif und der Verkehrsabsetzbetrag stimmen mit der Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026, gepr\u00fcft 2026-11-17) \u00fcberein. Die Sozialversicherungswerte 2027 (H\u00f6chstbeitragsgrundlage, verminderte Arbeitslosenversicherung) wurden noch nicht in einer offiziellen Quelle gefunden; laut Presse stand die offizielle Kundmachung im Oktober 2026 noch aus."
+  }
+ }
+}
+</script>
 <script>
+// ═══ DEMO MODE (?demo): in-memory localStorage with fake data; real data is never read or written ═══
+var DEMO=false, DEMO_FAILED=false;
+(function(){
+  try{if(!/[?&]demo(=1)?(&|$)/.test(location.search)) return;}catch(e){return;}
+  var mem={}, has=function(k){return Object.prototype.hasOwnProperty.call(mem,k);};
+  var st={getItem:function(k){return has(k)?mem[k]:null;},setItem:function(k,v){mem[k]=String(v);},removeItem:function(k){delete mem[k];},
+    clear:function(){mem={};},key:function(i){return Object.keys(mem)[i]||null;}};
+  try{Object.defineProperty(st,'length',{get:function(){return Object.keys(mem).length;}});Object.defineProperty(window,'localStorage',{value:st,configurable:true});}catch(e){}
+  if(window.localStorage!==st){DEMO_FAILED=true;return;} // could not isolate: never run "demo" on real data
+  var now=new Date(),sh={};
+  function p2(n){return (n<10?'0':'')+n;}
+  for(var mo=-1;mo<=0;mo++){
+    var f=new Date(now.getFullYear(),now.getMonth()+mo,1),dim=new Date(f.getFullYear(),f.getMonth()+1,0).getDate();
+    for(var i=1;i<=dim;i++){
+      var k=f.getFullYear()+'-'+p2(f.getMonth()+1)+'-'+p2(i),r=i%7;
+      if(r===1||r===2||r===3) sh[k]={type:'normal',start:'07:00',end:'15:30'};
+      else if(r===4) sh[k]={type:'late',start:'14:00',end:'22:30'};
+      else if(r===5) sh[k]={type:'latenight',start:'21:30',end:'06:00'};
+      if(i===9) sh[k]={type:'sick',start:'07:00',end:'15:30'};
+      if(i===20) sh[k]={type:'ruf',start:'07:00',end:'18:30'};
+    }
+  }
+  st.setItem('sp_shifts',JSON.stringify(sh));
+  st.setItem('sp_settings',JSON.stringify({kvPreset:'gesundheit_rt',grade:'3200',payDay:'25'}));
+  st.setItem('sp_wizard_done','1');st.setItem('sp_onb_done','1');st.setItem('sp_schema','1'); // keep equal to SCHEMA_VERSION
+  DEMO=true;
+})();
 // ═══ STATE ═══
 var _now=new Date();
 var currentYear=_now.getFullYear(), currentMonth=_now.getMonth(), editingDate=null;
@@ -2019,20 +2299,23 @@ function avRate(monthlyGross){
 // SV values per OeGK announcement (HBGL 7,410; AV brackets 0.5/1.5/2.5%; BGBl pending). Unchanged by law: KV 3.87, PV 10.25, AV 2.95 (top), AK 0.5.
 // To add a year: append an entry, set status, run the replay/unit tests.
 var LAST_ERROR='';
-window.addEventListener('error',function(e){try{LAST_ERROR=String(e.message||'error').slice(0,120)+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){}});
+window.addEventListener('error',function(e){try{LAST_ERROR=String(e.message||'error').slice(0,120)+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){} try{_boundary(e.message);}catch(x){}});
 window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+String((e.reason&&e.reason.message)||e.reason||'').slice(0,120);}catch(x){}});
 var APP_VERSION='1.0.0';
+var BUILD='__BUILD__'; // replaced by the deploy action with the commit hash; the committed file keeps the placeholder
 var RATES_VERIFIED='2026-10-30';
-var RATES={
-  2026:{status:'official',hbgl:6930,avFull:0.0295,
-    avBr:[{upTo:2225,rate:0},{upTo:2427,rate:0.01},{upTo:2630,rate:0.02}],
-    brackets:[[0,13539,0],[13539,21992,0.2],[21992,36458,0.3],[36458,70365,0.4],[70365,104859,0.48],[104859,1000000,0.5],[1000000,Infinity,0.55]],
-    vab:496,ovt:{hours:15,cap:200},pendlerEuroKm:6},
-  2027:{status:'provisional',hbgl:7410,avFull:0.0295,
-    avBr:[{upTo:2327,rate:0.005},{upTo:2539,rate:0.015},{upTo:2751,rate:0.025}],
-    brackets:[[0,13846,0],[13846,22491,0.2],[22491,37285,0.3],[37285,71960,0.4],[71960,107236,0.48],[107236,1000000,0.5],[1000000,Infinity,0.55]],
-    vab:508,ovt:{hours:10,cap:120},pendlerEuroKm:6}
-};
+// Rates live in the JSON block (id="rates-json") above; each year records status, sources and fields without a recorded source.
+var RATES=(function(){
+  var raw=JSON.parse(document.getElementById('rates-json').textContent),out={};
+  Object.keys(raw).forEach(function(y){
+    var r=raw[y];
+    out[y]={status:r.status,hbgl:r.hbgl,avFull:r.avFull,avBr:r.avBr,
+      brackets:r.brackets.map(function(b){return [b[0],b[1]===null?Infinity:b[1],b[2]];}),
+      vab:r.vab,ovt:r.ovt,pendlerEuroKm:r.pendlerEuroKm,
+      meta:{sources:r.sources||{},unverified:r.unverifiedFields||[],note:r.note||{en:'',de:''},checked:r.sourcesChecked||''}};
+  });
+  return out;
+})();
 var VAB=496, OVT={hours:15,cap:200}, PENDLER_EURO_KM=6, RATES_YEAR=2026, RATES_REQ=2026;
 function useRates(y){
   var ys=Object.keys(RATES).map(Number).sort();
@@ -2463,17 +2746,7 @@ function renderReport(){
   (function(){
     var badgeEl=document.getElementById('kv-badge');
     if(!badgeEl) return;
-    var kvEl=document.getElementById('kv-preset');
-    var key=kvEl?kvEl.value:'';
-    var tpl=key?KV_TEMPLATES[key]:null;
-    if(!tpl){
-      badgeEl.innerHTML='<span class="kv-badge-none">⚠ No KV selected — tap to configure</span>';
-      return;
-    }
-    var verified=(key==='gesundheit_rt');
-    badgeEl.innerHTML=verified
-      ?'<span class="kv-badge-verified">✓ '+tpl.name+' — validated</span>'
-      :'<span class="kv-badge-unverified">⚠ '+tpl.name+' — estimate, verify your payslip</span>';
+    renderAccBadge(badgeEl);
   })();
   // Hourly strip — compute SZ once, derive annual figures from salaryModel
   var _div=getActiveKVRules().hourlyDivisor||173.33;
@@ -2484,6 +2757,7 @@ function renderReport(){
   // the actual payslip "Auszahlung" total instead of just the regular monthly net.
   var displayNet=isSZMonth ? r.net+szCalc.net : r.net;
   document.getElementById('net-out').textContent=fmt(displayNet);
+  _syncNetTop();
   // How many SZ payouts per year, capped by what's actually configured
   var configuredSZ=(s.szMonth1>=0?1:0)+(s.szMonth2>=0&&s.szMonth2!==s.szMonth1?1:0);
   var szCount=Math.min(s.salaryModel-12, configuredSZ); // 0,1,2
@@ -2952,7 +3226,7 @@ function sanitizeCorrections(o){
   if(o&&typeof o==='object'){Object.keys(o).forEach(function(k){var v=parseFloat(o[k]);if(/^\d{4}-\d{2}$/.test(k)&&isFinite(v)&&v!==0&&Math.abs(v)<100000)out[k]=Math.round(v*100)/100;});}
   return out;
 }
-function loadCorrections(){try{var r=localStorage.getItem('sp_corrections');if(r)corrections=sanitizeCorrections(JSON.parse(r));}catch(e){corrections={};}}
+function loadCorrections(){var r=_readJSON('sp_corrections',null);if(r)corrections=sanitizeCorrections(r);}
 function saveCorrections(){try{localStorage.setItem('sp_corrections',JSON.stringify(corrections));}catch(e){}}
 function getCorrection(y,m){return corrections[monthKey(y,m)]||0;}
 function setCorrection(val){
@@ -2982,7 +3256,7 @@ function toggleCardEdit(){
 var hiddenCards=[]; // keys of built-in quick cards the user hid - persisted in sp_hidden_cards
 var CARD_KEYS=['early','middle','late','latenight','night','long','ruf1','ruf2','callin','leave','sick','holiday'];
 function sanitizeHidden(a){return Array.isArray(a)?a.filter(function(k){return CARD_KEYS.indexOf(k)>=0;}):[];}
-function loadHiddenCards(){try{var r=localStorage.getItem('sp_hidden_cards');if(r)hiddenCards=sanitizeHidden(JSON.parse(r));}catch(e){hiddenCards=[];}}
+function loadHiddenCards(){var r=_readJSON('sp_hidden_cards',null);if(r)hiddenCards=sanitizeHidden(r);}
 function saveHiddenCards(){try{localStorage.setItem('sp_hidden_cards',JSON.stringify(hiddenCards));}catch(e){}}
 function hideCard(key,ev){if(ev&&ev.stopPropagation)ev.stopPropagation();if(hiddenCards.indexOf(key)<0)hiddenCards.push(key);saveHiddenCards();_refreshCards();}
 function showAllCards(){hiddenCards=[];saveHiddenCards();_refreshCards();}
@@ -2996,7 +3270,7 @@ function sanitizeCards(a){
     return c&&typeof c.name==='string'&&c.name&&/^c\d+$/.test(String(c.id))&&CARD_TYPES.indexOf(c.type)>=0&&/^\d\d:\d\d$/.test(String(c.start))&&/^\d\d:\d\d$/.test(String(c.end));
   }).map(function(c){return {id:String(c.id),name:c.name.substring(0,20),type:c.type,start:c.start,end:c.end};});
 }
-function loadCustomCards(){try{var r=localStorage.getItem('sp_custom_cards');if(r)customCards=sanitizeCards(JSON.parse(r));}catch(e){customCards=[];}}
+function loadCustomCards(){var r=_readJSON('sp_custom_cards',null);if(r)customCards=sanitizeCards(r);}
 function saveCustomCards(){try{localStorage.setItem('sp_custom_cards',JSON.stringify(customCards));}catch(e){}}
 function _ccEsc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
 function _refreshCards(){markDirty(true);try{renderModalPresets(getActiveKVRules(),getKVShifts(),getSettings());}catch(e){}}
@@ -3077,6 +3351,8 @@ function renderCalendar(){
       var _ct=function(x){return x.replace(/^(\d\d):00$/,'$1');};
       var _ta=document.createElement('span');_ta.className='pl-t';_ta.textContent=_lab+' ';
       var _tb=document.createElement('span');_tb.className='pl-h';_tb.textContent=sh.start+'\u2013'+sh.end;_tb.setAttribute('data-short',_ct(sh.start)+'\u2013'+_ct(sh.end));
+      var _tk=document.createElement('span');_tk.className='pl-k';_tk.textContent=(getLang()==='de'?PILL_KEYS_DE:PILL_KEYS_EN)[sh.type]||'';
+      if(_tk.textContent) pill.appendChild(_tk);
       pill.appendChild(_ta);pill.appendChild(_tb);
       pill.title=_lab+' '+sh.start+'\u2013'+sh.end;
       cell.appendChild(pill);
@@ -3084,7 +3360,7 @@ function renderCalendar(){
       if(azgViolations[k]){
         var azgDot=document.createElement('span');
         azgDot.className='azg-dot';
-        azgDot.title='⚠ Only '+azgViolations[k].restH+'h rest before this shift (AZG §12 requires 11h min)';
+        azgDot.title=_azgText(azgViolations[k].restH);azgDot.setAttribute('role','img');azgDot.setAttribute('aria-label',_azgText(azgViolations[k].restH));
         num.appendChild(azgDot);
       }
     } else if(_fd.indexOf(new Date(currentYear,currentMonth,d).getDay())>=0){
@@ -3092,6 +3368,9 @@ function renderCalendar(){
     } else if(!weekend){
       var hint=document.createElement('span');hint.className='add-hint';hint.textContent='+ add';cell.appendChild(hint);
     }
+    cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label',_cellLabel(k,sh));
+    if(_msel!==null){var on=_msel.indexOf(k)>=0;cell.setAttribute('aria-pressed',on?'true':'false');if(on)cell.classList.add('msel-on');}
+    cell.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();openModal(this.dataset.key);}});
     cell.addEventListener('click',function(){openModal(this.dataset.key);});
     cell.addEventListener('touchstart',function(e){lpStart(e,this.dataset.key);},{passive:true});
     cell.addEventListener('touchend',lpEnd,{passive:true});
@@ -3121,6 +3400,16 @@ function changeYearTab(dir){
   renderYear();
 }
 
+// How good were the estimates? Compares the net you entered per month (from your payslips) with today's estimate.
+function renderYearAccuracy(n,sum,max,good){
+  var d=document.getElementById('year-accuracy');
+  if(!d) return;
+  if(!n){d.style.color='';d.textContent=bi('Enter your actual net per month in the table to see how accurate the estimate is.','Trage dein tats\u00e4chliches Netto pro Monat in die Tabelle ein, um zu sehen, wie genau die Sch\u00e4tzung ist.');return;}
+  var avg=sum/n;
+  d.style.color=avg<=5?'#27ae60':'#c0392b';
+  d.textContent=bi('Estimate accuracy (net vs your payslips): '+n+' month(s) entered \u00b7 average gap '+fmt(avg)+' \u00b7 largest '+fmt(max)+' \u00b7 within \u20ac5: '+good+' of '+n+'.',
+                   'Genauigkeit der Sch\u00e4tzung (Netto vs deine Abrechnungen): '+n+' Monat(e) eingetragen \u00b7 durchschnittliche Abweichung '+fmt(avg)+' \u00b7 gr\u00f6\u00dfte '+fmt(max)+' \u00b7 innerhalb \u20ac5: '+good+' von '+n+'.');
+}
 function renderYear(){
   var todayD=new Date();
   document.getElementById('year-label-tab').textContent=yearTabYear;
@@ -3128,6 +3417,7 @@ function renderYear(){
   var tg=0,tn=0,totalOT=0,ytdNet=0;
   var s=getSettings();
   var allResults=[];
+  var accN=0,accSum=0,accMax=0,accGood=0;
   for(var m=0;m<12;m++) allResults.push(calcSalary(yearTabYear,m));
   var sortedNets=allResults.map(function(r){return r.net;}).slice().sort(function(a,b){return a-b;});
   var lo=sortedNets[2],hi=sortedNets[9];
@@ -3144,6 +3434,7 @@ function renderYear(){
     var mk=monthKey(yearTabYear,m);
     var act=actuals[mk];
     var diff=act!=null?act-estNet:null;
+    if(diff!==null){accN++;accSum+=Math.abs(diff);accMax=Math.max(accMax,Math.abs(diff));if(Math.abs(diff)<=5)accGood++;}
     var isCur=(yearTabYear===currentYear&&m===currentMonth);
     var isToday=(yearTabYear===todayD.getFullYear()&&m===todayD.getMonth());
     var tr=document.createElement('tr');
@@ -3173,6 +3464,7 @@ function renderYear(){
       tbody.appendChild(szTr);
     }
   }
+  renderYearAccuracy(accN,accSum,accMax,accGood);
   document.getElementById('year-tfoot').innerHTML=
     '<td>Total</td><td>'+fmtN(tg)+'</td><td>'+fmtN(tn)+'</td>'+
     '<td style="'+(totalOT>0?'color:#ef9f27;font-weight:500':'')+'">'+(totalOT>0?totalOT.toFixed(1)+'h':'—')+'</td><td colspan="3"></td>';
@@ -3329,6 +3621,7 @@ function updateModalTypeOptions(rules){
 }
 
 function openModal(k){
+  if(_msel!==null&&!_mselBypass){_mselToggle(k);return;}
   _modalDirty=false;
   editingDate=k;
   var parts=k.split('-'),d=parseInt(parts[2]);
@@ -3363,7 +3656,7 @@ function openModal(k){
 }
 function closeModal(force){
   if(!force&&_modalDirty&&!confirm('Discard unsaved changes?'))return;
-  _modalDirty=false;
+  _modalDirty=false;_mselApply=false;
   document.getElementById('modal').classList.remove('open');editingDate=null;
 }
 function _markModalDirty(){_modalDirty=true;}
@@ -3380,17 +3673,22 @@ function saveShift(){
   var note=document.getElementById('m-note').value.trim();
   var obj={type:document.getElementById('m-type').value,start:document.getElementById('m-start').value,end:document.getElementById('m-end').value};
   if(note) obj.note=note;
+  if(_mselApply&&_msel&&_msel.length){var ks=_msel.slice();_undoPush(ks);ks.forEach(function(k){shifts[k]=Object.assign({},obj);});_msel=null;_mselApply=false;_mselUi();saveData();closeModal(true);renderAll();_undoToast('undoMulti');return;}
   shifts[editingDate]=obj;
   saveData();closeModal(true);renderAll();
 }
 function deleteShift(){
-  if(editingDate&&shifts[editingDate])delete shifts[editingDate];
+  if(_mselApply&&_msel&&_msel.length){mselClear();closeModal(true);return;}
+  var had=!!(editingDate&&shifts[editingDate]);
+  if(had){_undoPush([editingDate]);delete shifts[editingDate];}
   saveData();closeModal(true);renderAll();
+  if(had)_undoToast('undoDeleted');
 }
 
 // ═══ PATTERNS ═══
 function applyPattern(mode){
   if(!editingDate)return;
+  _undoPush(_monthKeys());
   var note=document.getElementById('m-note').value.trim();
   var sd={type:document.getElementById('m-type').value,start:document.getElementById('m-start').value,end:document.getElementById('m-end').value};
   if(note) sd.note=note;
@@ -3408,6 +3706,7 @@ function applyPattern(mode){
     for(var d2=1;d2<=days2;d2++){var dw=new Date(currentYear,currentMonth,d2).getDay();if(dw>=1&&dw<=5&&fd.indexOf(dw)<0)shifts[dateKey(currentYear,currentMonth,d2)]=Object.assign({},sd);}
   }
   saveData();closeModal(true);renderAll();
+  _undoToast('undoPattern');
 }
 
 // ═══ NAV ═══
@@ -3443,6 +3742,155 @@ function showTab(name,btn){
 }
 
 // ═══ PERSIST ═══
+// ═══ DATA SAFETY: schema version, sanitizers, corrupt-key keeping, safety snapshot, error banner ═══
+// schemaVersion is store metadata (sp_schema) and a backup field; the safety snapshot (sp_prev_backup) is a local safety copy.
+// Neither is restored from a backup and the snapshot is never part of one.
+var SCHEMA_VERSION=1;
+var MIGRATIONS=[function(s){return s;}]; // index = from-version; 0 -> 1: no structural change (sanitizeState cleans the lists)
+var SHIFT_TYPES=['normal','middle','late','latenight','holiday','leave','sick','ruf','callin'];
+var CORRUPT_KEYS=[], DATA_NEWER=false;
+function _isMonthKey(k){return /^\d{4}-\d\d$/.test(String(k));}
+function _isHHMM(s){return /^\d\d:\d\d$/.test(String(s));}
+function sanitizeShifts(o){
+  var out={};
+  if(!o||typeof o!=='object'||Array.isArray(o)) return out;
+  Object.keys(o).forEach(function(k){
+    var s=o[k];
+    if(!/^\d{4}-\d\d-\d\d$/.test(k)||!s||typeof s!=='object') return;
+    if(SHIFT_TYPES.indexOf(s.type)<0||!_isHHMM(s.start)||!_isHHMM(s.end)) return;
+    var r={type:s.type,start:String(s.start),end:String(s.end)};
+    if(typeof s.note==='string'&&s.note) r.note=s.note.slice(0,200);
+    out[k]=r;
+  });
+  return out;
+}
+function sanitizeActuals(o){
+  var out={};
+  if(!o||typeof o!=='object'||Array.isArray(o)) return out;
+  Object.keys(o).forEach(function(k){var v=o[k];if(_isMonthKey(k)&&typeof v==='number'&&isFinite(v))out[k]=v;});
+  return out;
+}
+function sanitizeOT(o){
+  var out={};
+  if(!o||typeof o!=='object'||Array.isArray(o)) return out;
+  Object.keys(o).forEach(function(k){
+    var v=o[k];
+    if(!_isMonthKey(k)) return;
+    if(typeof v==='number'&&isFinite(v)&&v>=0){out[k]=v;return;}
+    if(v&&typeof v==='object'&&typeof v.taken==='number'&&isFinite(v.taken)&&v.taken>=0) out[k]={taken:v.taken,type:v.type==='paidout'?'paidout':'timeoff'};
+  });
+  return out;
+}
+function sanitizeGrades(a){
+  if(!Array.isArray(a)) return [];
+  return a.filter(function(g){return g&&typeof g==='object'&&_isMonthKey(g.ym)&&typeof g.base==='number'&&isFinite(g.base)&&g.base>=0;})
+    .map(function(g){return {ym:String(g.ym),base:g.base};});
+}
+function sanitizeTemplates(a){
+  if(!Array.isArray(a)) return [];
+  return a.slice(0,100).filter(function(t){return t&&typeof t==='object'&&typeof t.name==='string'&&t.name&&SHIFT_TYPES.indexOf(t.type)>=0&&_isHHMM(t.start)&&_isHHMM(t.end);})
+    .map(function(t){return {name:t.name.slice(0,60),type:t.type,start:String(t.start),end:String(t.end),note:typeof t.note==='string'?t.note.slice(0,200):''};});
+}
+function sanitizeState(p){
+  return Object.assign({},p,{shifts:sanitizeShifts(p.shifts),actuals:sanitizeActuals(p.actuals),otData:sanitizeOT(p.otData),
+    gradeHistory:sanitizeGrades(p.gradeHistory),shiftTemplates:Array.isArray(p.shiftTemplates)?sanitizeTemplates(p.shiftTemplates):undefined});
+}
+function migrateState(p){
+  if(!p||typeof p!=='object'||Array.isArray(p)) throw new Error('Invalid backup data.');
+  var v=p.schemaVersion===undefined?0:p.schemaVersion;
+  if(typeof v!=='number'||!isFinite(v)||v<0||v%1!==0) throw new Error('Invalid schema version.');
+  if(v>SCHEMA_VERSION) throw new Error('This data comes from a newer app version. Update the app first.');
+  var out=Object.assign({},p);
+  for(var i=v;i<SCHEMA_VERSION;i++) out=MIGRATIONS[i](out);
+  out.schemaVersion=SCHEMA_VERSION;
+  return out;
+}
+// migrate + sanitize; refuses data that would wipe everything because no shift survived
+function prepareState(p){
+  var m=migrateState(p),c=sanitizeState(m);
+  if(m.shifts&&typeof m.shifts==='object'&&Object.keys(m.shifts).length>0&&Object.keys(c.shifts).length===0) throw new Error('No valid shifts found in this data.');
+  return c;
+}
+function _cnt(x){return Array.isArray(x)?x.length:(x&&typeof x==='object'?Object.keys(x).length:0);}
+function _keepRaw(key,raw){
+  try{if(localStorage.getItem(key+'_corrupt')===null)localStorage.setItem(key+'_corrupt',raw);}catch(e){}
+  if(CORRUPT_KEYS.indexOf(key)<0) CORRUPT_KEYS.push(key);
+}
+function _readJSON(key,fb){
+  var raw=null;
+  try{raw=localStorage.getItem(key);}catch(e){return fb;}
+  if(raw===null||raw==='') return fb;
+  try{return JSON.parse(raw);}catch(e){_keepRaw(key,raw);return fb;}
+}
+// read + sanitize; if sanitizing dropped entries, the original raw value is kept under <key>_corrupt
+function _loadList(key,san){
+  var raw=_readJSON(key,null);
+  if(raw===null) return null;
+  var clean=san(raw);
+  if(_cnt(clean)!==_cnt(raw)) _keepRaw(key,JSON.stringify(raw));
+  return clean;
+}
+function takeSnapshot(){
+  try{
+    var js=JSON.stringify({t:new Date().toISOString(),data:collectState()});
+    if(js.length>2000000) return false;
+    localStorage.setItem('sp_prev_backup',js);
+    updateRestoreBtn();
+    return true;
+  }catch(e){return false;}
+}
+function updateRestoreBtn(){
+  var b=document.getElementById('restore-prev-btn');if(!b) return;
+  var has=false;try{has=localStorage.getItem('sp_prev_backup')!==null;}catch(e){}
+  b.style.display=has?'':'none';
+}
+function restorePrevBackup(){
+  var snap=_readJSON('sp_prev_backup',null);
+  if(!snap||!snap.data){updateRestoreBtn();return;}
+  var T=I18N[getLang()];
+  if(!confirm(T.restorePrevAsk+'\n\n'+String(snap.t||'').slice(0,19).replace('T',' '))) return;
+  try{
+    var p=prepareState(snap.data);
+    takeSnapshot(); // the data being replaced becomes the new safety copy, so this is reversible
+    shifts=p.shifts;actuals=p.actuals;otData=p.otData;gradeHistory=p.gradeHistory;
+    saveData();saveGradeHistory();
+    try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
+    applyExtras(p,true);
+    renderAll();renderGradeHistory();renderTemplates();
+  }catch(err){alert('\u2717 '+err.message);}
+}
+function _boundary(msg){
+  if(!msg||msg==='Script error.'||/ResizeObserver/.test(String(msg))) return;
+  _showBoundary('error');
+}
+function _showBoundary(kind){
+  var el=document.getElementById('err-boundary'),m=document.getElementById('eb-msg');
+  if(!el||!m) return;
+  var k=kind==='corrupt'?'ebCorrupt':(kind==='newer'?'ebNewer':'ebMsg');
+  if(el.style.display===''&&k==='ebMsg'&&m.getAttribute('data-k')) return; // keep the more specific message
+  var fb={ebMsg:'Something went wrong. Your data stays in this browser. Export a copy now.',ebCorrupt:'Some saved data could not be read. A raw copy was kept. Export your data now.',ebNewer:'Your saved data comes from a newer app version. Do not edit it here; export a copy.'};
+  var t;try{t=I18N[getLang()][k];}catch(e){}
+  m.textContent=t||fb[k];
+  m.setAttribute('data-k',k==='ebMsg'?'':k);
+  el.style.display='';
+}
+function closeBoundary(){var el=document.getElementById('err-boundary');if(el)el.style.display='none';}
+function initBoundary(){
+  if(CORRUPT_KEYS.length) _showBoundary('corrupt');
+  else if(DATA_NEWER) _showBoundary('newer');
+  updateRestoreBtn();
+}
+// Fallback export that does not depend on app state: every sp_* key as stored (no sync config; the token is never in localStorage)
+function exportRawData(){
+  var out={rawExport:true,exported:new Date().toISOString(),app:APP_VERSION,keys:{}};
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
+    if(k&&k.indexOf('sp_')===0&&k!=='sp_sync_cfg'&&k!=='sp_probe') out.keys[k]=localStorage.getItem(k);}}catch(e){}
+  var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='paychecker-raw-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(url);
+}
 function saveData(){
   try{
     var payload=JSON.stringify(shifts)+JSON.stringify(actuals);
@@ -3466,7 +3914,7 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,payDay:document.getElementById('pay-day').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
 function saveSettings(){
   var prev=null,now=null;
   try{prev=localStorage.getItem('sp_settings');}catch(e){}
@@ -3476,14 +3924,16 @@ function saveSettings(){
 }
 function loadData(){
   try{
-    var s=localStorage.getItem('sp_shifts'),a=localStorage.getItem('sp_actuals'),cfg=localStorage.getItem('sp_settings');
-    var ot=localStorage.getItem('sp_ot');
-    var gh=localStorage.getItem('sp_grades');
-    if(s)shifts=JSON.parse(s);
-    if(a)actuals=JSON.parse(a);
-    if(ot)otData=JSON.parse(ot);
-    if(gh)gradeHistory=JSON.parse(gh);
-    if(cfg){var c=JSON.parse(cfg);
+    if(parseInt(localStorage.getItem('sp_schema')||'0',10)>SCHEMA_VERSION) DATA_NEWER=true;
+    var s=_loadList('sp_shifts',sanitizeShifts),a=_loadList('sp_actuals',sanitizeActuals),cfg=_readJSON('sp_settings',null);
+    var ot=_loadList('sp_ot',sanitizeOT);
+    var gh=_loadList('sp_grades',sanitizeGrades);
+    if(s)shifts=s;
+    if(a)actuals=a;
+    if(ot)otData=ot;
+    if(gh)gradeHistory=gh;
+    if(!DATA_NEWER){try{localStorage.setItem('sp_schema',String(SCHEMA_VERSION));}catch(e){}}
+    if(cfg&&typeof cfg==='object'){var c=cfg;
       if(c.grade)document.getElementById('grade').value=c.grade;
       if(c.thresh)document.getElementById('thresh').value=c.thresh;
       if(c.rufRate)document.getElementById('ruf-rate').value=c.rufRate;
@@ -3500,6 +3950,7 @@ function loadData(){
       if(c.rufSVBase!==undefined)document.getElementById('ruf-sv-base').checked=!!c.rufSVBase;
       if(c.salaryModel)document.getElementById('salary-model').value=c.salaryModel;
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
+      if(c.payDay!=null)document.getElementById('pay-day').value=c.payDay;
       if(c.pendler!=null)document.getElementById('tc-pendler').value=c.pendler;
       if(c.fambonus!=null)document.getElementById('tc-fambonus').value=c.fambonus;
       if(c.pendlerKm!=null)document.getElementById('tc-pendler-km').value=c.pendlerKm;
@@ -3519,7 +3970,7 @@ function loadData(){
     if(localStorage.getItem('sp_dark')==='1'){document.body.classList.add('dark');document.getElementById('dark-btn').textContent='☀️';}
   }catch(e){}
 }
-function clearMonth(){if(!confirm('Clear '+MONTH_NAMES[currentMonth]+' '+currentYear+'?'))return;var pfx=monthKey(currentYear,currentMonth);Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===pfx)delete shifts[k];});saveData();renderAll();}
+function clearMonth(){if(!confirm('Clear '+MONTH_NAMES[currentMonth]+' '+currentYear+'?'))return;var pfx=monthKey(currentYear,currentMonth);_undoPush(_monthKeys());Object.keys(shifts).forEach(function(k){if(k.substring(0,7)===pfx)delete shifts[k];});saveData();renderAll();_undoToast('undoCleared');}
 function clearAll(){
   var _n=Object.keys(shifts).length,_age=backupAgeDays(),_de=getLang()==='de';
   if(_n>0&&(_age===null||_age>1)){
@@ -3530,7 +3981,8 @@ function clearAll(){
   if(!confirm(_de?'ALLE Daten l\u00f6schen? Das umfasst Schichten, Ist-Werte, \u00dcberstunden, Gradverlauf, Vorlagen und eigene Karten.':'Clear ALL data? This includes shifts, actuals, OT log, grade history, templates and custom cards.'))return;
   shifts={};actuals={};otData={};gradeHistory=[];shiftTemplates=[];customCards=[];saveCustomCards();hiddenCards=[];saveHiddenCards();corrections={};saveCorrections();
   saveData();saveGradeHistory();saveTemplates();
-  try{localStorage.setItem('sp_ot','{}');}catch(e){}
+  try{localStorage.setItem('sp_ot','{}');localStorage.removeItem('sp_prev_backup');}catch(e){}
+  updateRestoreBtn();
   renderAll();renderGradeHistory();renderTemplates();
 }
 
@@ -3659,7 +4111,7 @@ async function repoGetFile(pat,repo,branch){
 
 // ═══ WHAT IS BACKED UP ═══
 // Data + settings + templates/cards/corrections + display preferences. NEVER the GitHub token or the sync password.
-var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
+var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','payDay','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
 function sanitizeSettings(c){
   if(!c||typeof c!=='object') return null;
   var out={};
@@ -3677,8 +4129,8 @@ function collectState(){
   var st=null,cl=null,lang=null,dark=null;
   try{st=JSON.parse(localStorage.getItem('sp_settings')||'null');}catch(e){}
   try{cl=JSON.parse(localStorage.getItem('sp_cl')||'null');}catch(e){}
-  try{lang=localStorage.getItem('sp_lang');dark=localStorage.getItem('sp_dark');}catch(e){}
-  return {shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards,corrections:corrections,settings:st,checklist:cl,prefs:{lang:lang,dark:dark}};
+  var zoom=null;try{lang=localStorage.getItem('sp_lang');dark=localStorage.getItem('sp_dark');zoom=localStorage.getItem('sp_zoom');}catch(e){}
+  return {schemaVersion:SCHEMA_VERSION,shifts:shifts,actuals:actuals,otData:otData,gradeHistory:gradeHistory,shiftTemplates:shiftTemplates,customCards:customCards,hiddenCards:hiddenCards,corrections:corrections,settings:st,checklist:cl,prefs:{lang:lang,dark:dark,zoom:zoom}};
 }
 // Restores everything except shifts/actuals/OT/grade history (callers set those first).
 // Parts missing from an older backup leave the current values untouched.
@@ -3700,7 +4152,8 @@ function applyExtras(parsed,includeLists){
     try{localStorage.setItem('sp_cl',JSON.stringify(parsed.checklist));loadChecklist();}catch(e){}
   }
   if(parsed.prefs&&typeof parsed.prefs==='object'){
-    var pl=parsed.prefs.lang,pd=parsed.prefs.dark;
+    var pl=parsed.prefs.lang,pd=parsed.prefs.dark,pz=parsed.prefs.zoom;
+    if(pz==='1'||pz==='1.15'||pz==='1.3'){try{localStorage.setItem('sp_zoom',pz);}catch(e){}applyZoom(parseFloat(pz));}
     if(pl==='en'||pl==='de'){try{localStorage.setItem('sp_lang',pl);}catch(e){}applyLang(pl);}
     if(pd==='0'||pd==='1'){
       document.body.classList.toggle('dark',pd==='1');
@@ -3711,6 +4164,7 @@ function applyExtras(parsed,includeLists){
 }
 
 async function syncToRepo(){
+  if(DEMO){setSyncStatus(I18N[getLang()].demoNoSync,true);return;}
   var cfg=getRepoConfig();
   var password=document.getElementById('sync-password').value;
   if(!cfg.pat){setSyncStatus('⚠ Enter a GitHub PAT first.',true);return;}
@@ -3745,6 +4199,7 @@ async function syncToRepo(){
 }
 
 async function syncFromRepo(){
+  if(DEMO){setSyncStatus(I18N[getLang()].demoNoSync,true);return;}
   var cfg=getRepoConfig();
   var password=document.getElementById('sync-password').value;
   if(!cfg.pat||!cfg.repo){setSyncStatus('⚠ PAT and Repository are required to pull.',true);return;}
@@ -3760,6 +4215,8 @@ async function syncFromRepo(){
     var plain=await decryptPayload(encrypted,password);
     var parsed=JSON.parse(plain);
     if(!parsed.shifts)throw new Error('Decrypted data looks invalid — wrong password?');
+    parsed=prepareState(parsed);
+    if(!takeSnapshot()&&!confirm(I18N[getLang()].snapFail)) throw new Error('Cancelled');
     shifts=parsed.shifts;actuals=parsed.actuals||{};otData=parsed.otData||{};
     gradeHistory=parsed.gradeHistory||[];
     saveData();saveGradeHistory();
@@ -3804,10 +4261,15 @@ function importJSON(input){
         if(!sample.type||!sample.start||!sample.end)
           throw new Error('Shift data looks malformed (missing type/start/end).');
       }
+      var rawCount=keys.length;
+      parsed=prepareState(parsed);
+      keys=Object.keys(parsed.shifts);
+      var dropped=rawCount-keys.length;
       // Version warning
       var ver=parsed.version||0;
       if(ver<4&&!confirm('This backup is version '+ver+' (current is 5). Some fields may be missing. Import anyway?'))return;
       if(!confirm('Replace ALL current data with the imported backup?\n\n'+keys.length+' shifts, '+Object.keys(parsed.actuals||{}).length+' actuals.'))return;
+      if(!takeSnapshot()&&!confirm(I18N[getLang()].snapFail)) return;
       shifts=parsed.shifts;actuals=parsed.actuals||{};otData=parsed.otData||{};
       gradeHistory=parsed.gradeHistory||[];
       shiftTemplates=parsed.shiftTemplates||[];
@@ -3818,7 +4280,7 @@ function importJSON(input){
       try{localStorage.setItem('sp_ot',JSON.stringify(otData));}catch(ex){}
       applyExtras(parsed,false);
       renderAll();renderGradeHistory();renderTemplates();
-      alert('✓ Import successful — '+keys.length+' shifts loaded'+(shiftTemplates.length?' + '+shiftTemplates.length+' templates':'')+'.');
+      alert('✓ Import successful — '+keys.length+' shifts loaded'+(dropped>0?' ('+dropped+' invalid entries skipped)':'')+(shiftTemplates.length?' + '+shiftTemplates.length+' templates':'')+'.');
     }catch(err){alert('✗ Import failed: '+err.message);}
     input.value='';
   };
@@ -3953,6 +4415,7 @@ function renderForecast(){
     '</div>';
   }
   el.innerHTML=html;
+  renderPayday();
 }
 
 // ═══ URLAUB TRACKER ═══
@@ -3979,22 +4442,39 @@ function renderUrlaubTracker(){
 }
 
 // ═══ ICAL EXPORT ═══
-function exportICal(){
+// ═══ ICS EXPORT (RFC 5545): escaped text, folded lines, DTSTAMP, VTIMEZONE, calendar-correct end dates ═══
+function _icsEscape(s){return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r\n|\r|\n/g,'\\n');}
+// fold to at most 75 octets per physical line, never inside a UTF-8 character
+function _icsFold(line){
+  var out=[],cur='',n=0;
+  Array.from(line).forEach(function(c){
+    var cp=c.codePointAt(0),b=cp<128?1:(cp<2048?2:(cp<65536?3:4));
+    if(n+b>75){out.push(cur);cur=' ';n=1;}
+    cur+=c;n+=b;
+  });
+  out.push(cur);
+  return out.join('\r\n');
+}
+// clock arithmetic on the calendar (UTC used only as a day counter): crosses month, year and leap-day boundaries
+function icsTimes(k,start,totalH){
+  var p=k.split('-'),sp=start.split(':');
+  var s=Date.UTC(+p[0],+p[1]-1,+p[2],+sp[0],+sp[1]),e=s+Math.round(totalH*60)*60000;
+  function _icsLocal(t){var d=new Date(t);return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00';}
+  return {start:_icsLocal(s),end:_icsLocal(e)};
+}
+var ICS_TZ=['BEGIN:VTIMEZONE','TZID:Europe/Vienna','BEGIN:STANDARD','DTSTART:19701025T030000','TZOFFSETFROM:+0200','TZOFFSETTO:+0100','TZNAME:CET','RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU','END:STANDARD','BEGIN:DAYLIGHT','DTSTART:19700329T020000','TZOFFSETFROM:+0100','TZOFFSETTO:+0200','TZNAME:CEST','RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU','END:DAYLIGHT','END:VTIMEZONE'];
+function buildICS(year,now){
   var typeLabels={normal:'Early shift',middle:'Middle shift',late:'Late shift',latenight:'Late shift (8%)',holiday:'Holiday shift',leave:'Urlaub',sick:'Krankenstand',ruf:'Rufbereitschaft',callin:'Rufeinsatz'};
-  var s2=getSettings(); // hoisted — same settings for all events
-  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Paychecker Austria//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Paychecker Shifts '+currentYear];
-  var keys=Object.keys(shifts).filter(function(k){return k.substring(0,4)===String(currentYear);});
+  var s2=getSettings(); // same settings for all events
+  var stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Paychecker Austria//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Paychecker Shifts '+year].concat(ICS_TZ);
+  var keys=Object.keys(shifts).filter(function(k){return k.substring(0,4)===String(year);});
   keys.sort().forEach(function(k){
     var sh=shifts[k];
     var parts=k.split('-');
     var y=parts[0],mo=parts[1],dy=parts[2];
-    var h=calcHours(sh.start,sh.end,s2.thresh); // reuse calcHours — handles midnight crossing correctly
-    var sp=sh.start.split(':');
-    var startM=parseInt(sp[0])*60+parseInt(sp[1]);
-    var endM=startM+Math.round(h.total*60);
-    var endH=Math.floor(endM/60)%24,endMin=endM%60;
-    var dtStart=y+mo+dy+'T'+pad(parseInt(sp[0]))+pad(parseInt(sp[1]))+'00';
-    var dtEnd=y+mo+(endM>=1440?pad(parseInt(dy)+1):dy)+'T'+pad(endH)+pad(endMin)+'00';
+    var h=calcHours(sh.start,sh.end,s2.thresh); // reuse calcHours: handles midnight crossing
+    var t=icsTimes(k,sh.start,h.total);
     var desc=sh.note||'';
     if(sh.type==='ruf'){
       var isWkndDay=isWknd(parseInt(y),parseInt(mo)-1,parseInt(dy));
@@ -4004,14 +4484,18 @@ function exportICal(){
     var summary=(typeLabels[sh.type]||sh.type)+(sh.note?' — '+sh.note:'');
     lines.push('BEGIN:VEVENT');
     lines.push('UID:shift-'+k+'@shift-planner');
-    lines.push('DTSTART;TZID=Europe/Vienna:'+dtStart);
-    lines.push('DTEND;TZID=Europe/Vienna:'+dtEnd);
-    lines.push('SUMMARY:'+summary);
-    if(desc)lines.push('DESCRIPTION:'+desc);
+    lines.push('DTSTAMP:'+stamp);
+    lines.push('DTSTART;TZID=Europe/Vienna:'+t.start);
+    lines.push('DTEND;TZID=Europe/Vienna:'+t.end);
+    lines.push('SUMMARY:'+_icsEscape(summary));
+    if(desc)lines.push('DESCRIPTION:'+_icsEscape(desc));
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');
-  var blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+  return lines.map(_icsFold).join('\r\n')+'\r\n';
+}
+function exportICal(){
+  var blob=new Blob([buildICS(currentYear,new Date())],{type:'text/calendar'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
   a.href=url;a.download='shifts-'+currentYear+'.ics';a.click();URL.revokeObjectURL(url);
@@ -4214,6 +4698,7 @@ function checkBackupReminder(){
 // ═══ LONG-PRESS DELETE ═══
 var _lpTimer=null,_lpKey=null;
 function lpStart(e,k){
+  if(_msel!==null) return;
   _lpKey=k;
   _lpTimer=setTimeout(function(){
     var sh=shifts[k]; if(!sh)return;
@@ -4230,7 +4715,7 @@ function lpStart(e,k){
 }
 function lpEnd(){clearTimeout(_lpTimer);_lpTimer=null;}
 function lpConfirmDelete(){
-  if(_lpKey&&shifts[_lpKey]){delete shifts[_lpKey];saveData();renderAll();}
+  if(_lpKey&&shifts[_lpKey]){_undoPush([_lpKey]);delete shifts[_lpKey];saveData();renderAll();_undoToast('undoDeleted');}
   lpCancel();
 }
 function lpCancel(){
@@ -4412,7 +4897,7 @@ function exportXLSX(){
 var shiftTemplates=[]; // [{name, type, start, end, note}]
 
 function loadTemplates(){
-  try{var raw=localStorage.getItem('sp_templates');if(raw)shiftTemplates=JSON.parse(raw);}catch(e){}
+  var t=_loadList('sp_templates',sanitizeTemplates);if(t)shiftTemplates=t;
 }
 function saveTemplates(){
   try{localStorage.setItem('sp_templates',JSON.stringify(shiftTemplates));}catch(e){}
@@ -4483,14 +4968,132 @@ function renderTemplates(){
   el.innerHTML=shiftTemplates.map(function(t,i){
     var desc=(typeLabels[t.type]||t.type)+' '+t.start+'–'+t.end+(t.note?' · '+t.note:'');
     return '<div class="tpl-row">'+
-      '<span class="tpl-name">'+t.name+'</span>'+
-      '<span class="tpl-desc">'+desc+'</span>'+
+      '<span class="tpl-name">'+_ccEsc(t.name)+'</span>'+
+      '<span class="tpl-desc">'+_ccEsc(desc)+'</span>'+
       '<button class="tpl-apply" onclick="applyTemplate('+i+')">Apply week</button>'+
       '<button class="tpl-del" onclick="deleteTemplate('+i+')" title="Delete">✕</button>'+
     '</div>';
   }).join('');
 }
 
+// ═══ UX: undo (memory only), net on top, glossary, accessibility ═══
+var _undoSnap=null,_undoTimer=null,_glossReturn=null;
+var GLOSS_TERMS=['gross','net','sv','lst','sz','kv','suppl','call'];
+function _monthKeys(){var out=[],n=daysInMonth(currentYear,currentMonth);for(var d=1;d<=n;d++)out.push(dateKey(currentYear,currentMonth,d));return out;}
+function _undoCapture(keys){var m={};keys.forEach(function(k){m[k]=shifts[k]?JSON.parse(JSON.stringify(shifts[k])):null;});return m;}
+function _undoApply(m){Object.keys(m).forEach(function(k){if(m[k])shifts[k]=m[k];else delete shifts[k];});}
+function _undoPush(keys){_undoSnap=_undoCapture(keys);}
+function _undoToast(key){
+  var el=document.getElementById('undo-toast'),m=document.getElementById('undo-msg');if(!el||!m) return;
+  m.textContent=I18N[getLang()][key];el.style.display='flex';
+  clearTimeout(_undoTimer);_undoTimer=setTimeout(hideUndo,8000);
+}
+function hideUndo(){var el=document.getElementById('undo-toast');if(el)el.style.display='none';clearTimeout(_undoTimer);}
+function undoLast(){if(!_undoSnap) return;_undoApply(_undoSnap);_undoSnap=null;saveData();hideUndo();renderAll();}
+function _syncNetTop(){
+  var box=document.getElementById('net-top'),v=document.getElementById('net-top-val'),n=document.getElementById('net-out');
+  if(!box||!v||!n) return;
+  var t=n.textContent;
+  if(!t||t==='\u2014'){box.style.display='none';return;}
+  v.textContent=t;box.style.display='flex';
+  _renderTopBadge();
+}
+function goToNet(){var el=document.getElementById('net-out');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});}
+function openGloss(term){
+  var T=I18N[getLang()],dl=document.getElementById('gloss-list');if(!dl) return;
+  while(dl.firstChild) dl.removeChild(dl.firstChild);
+  GLOSS_TERMS.forEach(function(t){var dt=document.createElement('dt'),dd=document.createElement('dd');
+    dt.id='gl-'+t;dt.textContent=T['gl_'+t+'_t'];dd.textContent=T['gl_'+t+'_d'];dl.appendChild(dt);dl.appendChild(dd);});
+  _glossReturn=document.activeElement;
+  document.getElementById('gloss-overlay').classList.add('open');
+  var tg=term?document.getElementById('gl-'+term):null;
+  if(tg&&tg.scrollIntoView) tg.scrollIntoView({block:'nearest'});
+  var c=document.getElementById('gloss-close');if(c) c.focus();
+}
+function closeGloss(){
+  var el=document.getElementById('gloss-overlay');if(el) el.classList.remove('open');
+  try{if(_glossReturn&&_glossReturn.focus) _glossReturn.focus();}catch(e){}
+  _glossReturn=null;
+}
+function _cellLabel(k,sh){return k+(sh?', '+sh.type+' '+sh.start+'\u2013'+sh.end:'');}
+function initA11y(){
+  document.querySelectorAll('.cs-overlay,.disc-overlay,.mjump-overlay,.modal-overlay,.onb-overlay').forEach(function(el){
+    if(!el.getAttribute('role')) el.setAttribute('role','dialog');
+    el.setAttribute('aria-modal','true');
+  });
+}
+// ═══ S7: payday forecast, accuracy badge, multi-day select ═══
+var VERIFIED_YEARS=[2026];
+var _msel=null,_mselApply=false,_mselBypass=false;
+function parsePayDay(v){var n=parseInt(v,10);return (isFinite(n)&&n>=1&&n<=28)?n:0;}
+function _isWorkday(d){var w=d.getDay();return w!==0&&w!==6&&!isHol(dateKey(d.getFullYear(),d.getMonth(),d.getDate()));}
+function paydayFor(y,m,D){var d=new Date(y,m,D);while(!_isWorkday(d)) d.setDate(d.getDate()-1);return d;}
+// next payday on or after `from`; the salary of month (y,m) is assumed to be paid in that same month
+function nextPayday(from,D){
+  if(!D) return null;
+  var t=new Date(from.getFullYear(),from.getMonth(),from.getDate());
+  for(var off=0;off<3;off++){
+    var b=new Date(t.getFullYear(),t.getMonth()+off,1),d=paydayFor(b.getFullYear(),b.getMonth(),D);
+    if(d>=t) return {date:d,y:b.getFullYear(),m:b.getMonth(),adjusted:d.getDate()!==D};
+  }
+  return null;
+}
+function renderPayday(){
+  var el=document.getElementById('forecast-pay'),inp=document.getElementById('pay-day');if(!el||!inp) return;
+  var np=nextPayday(new Date(),parsePayDay(inp.value));
+  if(!np){el.style.display='none';el.textContent='';return;}
+  var T=I18N[getLang()],s=getSettings();
+  var isSZ=(s.szMonth1>=0&&np.m===s.szMonth1)||(s.szMonth2>=0&&np.m===s.szMonth2);
+  var r=calcSalary(np.y,np.m),total=r.net+(isSZ?calcSonderzahlung(r.base,s.wbfRate).net:0);
+  var has=Object.keys(shifts).some(function(k){return k.substring(0,7)===monthKey(np.y,np.m);});
+  var ds=np.date.toLocaleDateString(getLang()==='de'?'de-AT':'en-GB',{weekday:'short',day:'numeric',month:'short'});
+  el.textContent=T.payNext+': '+ds+(np.adjusted?' ('+T.payAdj+')':'')+' \u00b7 '+fmt(total)+' \u00b7 '+(has?T.payPlanned:T.payBase);
+  el.style.display='';
+}
+function _ratesKeyFor(y){var ks=Object.keys(RATES).map(Number),lo=Math.min.apply(null,ks),hi=Math.max.apply(null,ks);return y<lo?lo:(y>hi?hi:y);}
+// Only gesundheit_rt is validated against real payslips, and only for the years in VERIFIED_YEARS.
+function accuracyBadge(key,name,year,status,T){
+  var cls,text;
+  if(!key||!name){cls='kv-badge-none';text='\u26a0 '+T.accNone;}
+  else if(key==='gesundheit_rt'){
+    var okY=VERIFIED_YEARS.indexOf(year)>=0;
+    cls=okY?'kv-badge-verified':'kv-badge-unverified';
+    text=(okY?'\u2713 ':'\u26a0 ')+name+': '+(okY?T.accVerified:T.accVerifiedOther);
+  } else {cls='kv-badge-unverified';text='\u26a0 '+name+': '+T.accUnverified;}
+  if(status!=='official') text+=' \u00b7 \u26a0 '+T.accProv.replace('{y}',year);
+  return {cls:cls,text:text};
+}
+function renderAccBadge(el){
+  if(!el) return;
+  var kvEl=document.getElementById('kv-preset'),key=kvEl?kvEl.value:'',tpl=key?KV_TEMPLATES[key]:null;
+  var yr=_ratesKeyFor(currentYear),b=accuracyBadge(key,tpl&&tpl.name,yr,RATES[yr].status,I18N[getLang()]);
+  while(el.firstChild) el.removeChild(el.firstChild);
+  var sp=document.createElement('span');sp.className=b.cls;sp.textContent=b.text;el.appendChild(sp);
+}
+function _mselUi(){
+  var on=_msel!==null,T=I18N[getLang()];
+  var bt=document.getElementById('msel-toggle'),ac=document.getElementById('msel-actions');
+  if(bt){bt.setAttribute('aria-pressed',on?'true':'false');bt.textContent=on?T.mselOff:T.mselBtn;}
+  if(ac) ac.style.display=on?'':'none';
+  var n=on?_msel.length:0,c=document.getElementById('msel-count');
+  if(c) c.textContent=T.mselCount.replace('{n}',n);
+  ['msel-set','msel-del'].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=n===0;});
+}
+function toggleMultiSelect(){_msel=(_msel===null)?[]:null;_mselApply=false;_mselUi();renderCalendar();}
+function _mselToggle(k){var i=_msel.indexOf(k);if(i>=0)_msel.splice(i,1);else _msel.push(k);_mselUi();renderCalendar();}
+function mselSet(){
+  if(_msel===null||!_msel.length) return;
+  _mselBypass=true;try{openModal(_msel[0]);}finally{_mselBypass=false;}
+  _mselApply=true;
+  document.getElementById('modal-title').textContent=I18N[getLang()].mselTitle.replace('{n}',_msel.length);
+}
+function mselClear(){
+  if(_msel===null||!_msel.length) return;
+  var ks=_msel.slice();_undoPush(ks);ks.forEach(function(k){delete shifts[k];});
+  _msel=null;_mselApply=false;_mselUi();saveData();renderAll();_undoToast('undoMulti');
+}
+function _azgText(h){return I18N[getLang()].azgWarn.replace('{h}',h);}
+function _renderTopBadge(){var el=document.getElementById('acc-badge');if(!el)return;renderAccBadge(el);el.style.display='';}
 function _showToast(msg,duration){
   var toast=document.createElement('div');
   toast.textContent=msg;
@@ -4500,7 +5103,10 @@ function _showToast(msg,duration){
 }
 
 // ═══ AZG REST PERIOD CHECKER ═══
-// §12 AZG: minimum 11h rest between consecutive shifts
+// Possible-issue check for the daily rest period (below 11 h between consecutive shifts).
+// Sources (RIS): AZG §12 Abs 1 (11 h), Abs 2 (collective agreement may shorten to 8 h), Abs 2c (shift change) https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40177198/NOR40177198.pdf
+// KA-AZG §7 Abs 1 (11 h, hospital staff); Abs 2 (4 h extension within 10 days) is NOT modelled; text read via https://www.jusline.at/gesetz/kaazg/paragraf/7 on 2026-11-16, RIS: BGBl I 1997/8 idF I 2014/76.
+// Wording must stay "possible issue": collective/works agreements and exceptions can differ.
 function getAZGViolations(){
   var violations={};
   var keys=Object.keys(shifts).sort();
@@ -4799,6 +5405,39 @@ function wizSupplChange(){
   if(block) block.style.display=val==='yes'?'':'none';
 }
 
+// Pure: instant base-salary estimate under the rates of `year` (restores the active rates afterwards). No shifts, no optional levies.
+function calcWizEstimate(gross,model,year){
+  if(!(typeof gross==='number'&&isFinite(gross)&&gross>0)) return null;
+  var m=model===13||model===12?model:14;
+  var prev=RATES_REQ;
+  useRates(year);
+  try{
+    var sc=calcAnnualScenario(gross,m,0,0),sv=calcSVMonthly(gross).total;
+    return {gross:gross,sv:sv,lst:gross-sv-sc.monthlyNet,net:sc.monthlyNet,annualNet:sc.annualNetTotal,year:RATES_YEAR,status:RATES[RATES_YEAR].status};
+  }finally{useRates(prev);}
+}
+function fillWizYear(){
+  var sel=document.getElementById('wiz-year');if(!sel) return;
+  var T=I18N[getLang()];
+  if(!sel.options.length){
+    Object.keys(RATES).forEach(function(k){var o=document.createElement('option');o.value=k;sel.appendChild(o);});
+    sel.value=String(RATES_YEAR);
+  }
+  for(var i=0;i<sel.options.length;i++){var k=sel.options[i].value;sel.options[i].textContent=k+' ('+(RATES[k].status==='official'?T.wizYearOff:T.wizYearProv)+')';}
+}
+function wizEstimate(){
+  var el=document.getElementById('wiz-est');if(!el) return;
+  fillWizYear();
+  var g=parseFloat(document.getElementById('wiz-salary').value),m=parseInt(document.getElementById('wiz-model').value,10),y=parseInt(document.getElementById('wiz-year').value,10);
+  var e=calcWizEstimate(g,m,y);
+  if(!e){el.style.display='none';el.textContent='';return;}
+  var T=I18N[getLang()],kv=document.getElementById('wiz-kv').value;
+  var note=e.status!=='official'?T.wizEstProv:(kv==='gesundheit_rt'?T.wizEstVerified:T.wizEstUnverified);
+  el.textContent=T.wizEstTitle+'\n'+T.wizEstNet+': '+fmt(e.net)+'\n'
+    +T.wizEstParts.replace('{g}',fmt(e.gross)).replace('{s}',fmt(e.sv)).replace('{t}',fmt(e.lst))+'\n'
+    +T.wizEstYear+': '+fmt(e.annualNet)+'\n'+note;
+  el.style.display='';
+}
 function finishWizard(){
   var salary=parseFloat(document.getElementById('wiz-salary').value);
   if(!salary||salary<=0){alert('Please enter your monthly salary to continue.');return;}
@@ -4851,11 +5490,101 @@ function finishWizard(){
 // Escape closes the topmost dialog. The disclaimer is blocking and is never closed this way.
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape') return;
-  var map=[['feedback-overlay',closeFeedback],['impressum-overlay',closeImpressum],['explain-overlay',closeExplain],['help-overlay',closeHelp],['changelog-overlay',closeChangelog]];
+  var map=[['gloss-overlay',closeGloss],['diag-overlay',closeDiag],['feedback-overlay',closeFeedback],['impressum-overlay',closeImpressum],['explain-overlay',closeExplain],['help-overlay',closeHelp],['changelog-overlay',closeChangelog],['quick-overlay',closeQuick]];
   for(var i=0;i<map.length;i++){var el=document.getElementById(map[i][0]);if(el&&el.classList.contains('open')){map[i][1]();return;}}
   var m=document.getElementById('modal');
   if(m&&m.classList.contains('open')) closeModal();
 });
+
+// ═══ QUICK ENTRY: fill many days by typing letters (same letters as on the calendar pills) ═══
+var QUICK_EN={E:'normal',M:'middle',L:'late',N:'latenight',H:'holiday',V:'leave',S:'sick'};
+var QUICK_DE={F:'normal',M:'middle',S:'late',N:'latenight',T:'holiday',U:'leave',K:'sick'};
+function quickTimes(type){
+  var k=getKVShifts();
+  var t={normal:k.early,middle:k.middle,late:k.late,latenight:k.late,holiday:k.holiday,leave:k.early,sick:k.early}[type];
+  return t||k.early;
+}
+function quickAvailable(type){
+  var r=getActiveKVRules();
+  if(type==='middle') return r.hasMiddle!==false;
+  if(type==='latenight') return r.hasLateNight!==false;
+  if(type==='holiday') return (r.holidayMode||'200_deferred')!=='none';
+  return true;
+}
+// "E5 -2 M3" or "EEEEE--MMM": one token per day; '-' is a day off; a number repeats the token.
+function parseQuick(text){
+  var map=getLang()==='de'?QUICK_DE:QUICK_EN,out=[],unknown=[],s=String(text||'');
+  for(var i=0;i<s.length;){
+    var ch=s.charAt(i);
+    if(/[\s,;|]/.test(ch)){i++;continue;}
+    var off=/[-._\u2013]/.test(ch),u=ch.toUpperCase();
+    if(!off&&!map[u]){if(unknown.indexOf(ch)<0)unknown.push(ch);i++;continue;}
+    var j=i+1,num='';
+    while(j<s.length&&/\d/.test(s.charAt(j))&&num.length<2){num+=s.charAt(j);j++;}
+    var n=num?Math.max(1,parseInt(num,10)):1;
+    for(var k=0;k<n;k++) out.push(off?null:map[u]);
+    i=j;
+  }
+  return {tokens:out,unknown:unknown};
+}
+function quickPlan(){
+  var y=currentYear,m=currentMonth,dim=daysInMonth(y,m);
+  var start=Math.min(31,Math.max(1,parseInt((document.getElementById('quick-start')||{}).value,10)||1));
+  var over=!!(document.getElementById('quick-over')||{}).checked;
+  var pr=parseQuick((document.getElementById('quick-text')||{}).value);
+  var items=[],unavailable=[],fd=getFreeDays();
+  pr.tokens.forEach(function(type,i){
+    var day=start+i;
+    if(type===null) return;
+    if(!quickAvailable(type)){if(unavailable.indexOf(type)<0)unavailable.push(type);return;}
+    var key=dateKey(y,m,day),tm=quickTimes(type);
+    items.push({day:day,key:key,type:type,start:tm[0],end:tm[1],beyond:day>dim,exists:!!(day<=dim&&shifts[key]),freeDay:day<=dim&&fd.indexOf(new Date(y,m,day).getDay())>=0});
+  });
+  var add=items.filter(function(x){return !x.beyond&&(over||!x.exists);});
+  return {items:items,add:add,start:start,over:over,unknown:pr.unknown,unavailable:unavailable,
+    skipped:items.filter(function(x){return !x.beyond&&x.exists&&!over;}).length,
+    beyond:items.filter(function(x){return x.beyond;}).length,
+    onFree:add.filter(function(x){return x.freeDay;}).length};
+}
+function openQuick(){
+  var h=document.getElementById('quick-help');
+  if(h){
+    var de=getLang()==='de';
+    h.textContent=de
+      ?'Ein Buchstabe pro Tag, beginnend am gew\u00e4hlten Tag: F Fr\u00fch, M Mittel, S Sp\u00e4t, N Sp\u00e4t+Nacht, T Feiertag, U Urlaub, K Krank, - frei. Eine Zahl wiederholt: F5 -2 M3. Nachtdienste und Bereitschaft: \u00fcber die Karten im Dienst-Dialog.'
+      :'One letter per day, starting on the chosen day: E early, M middle, L late, N late+night, H holiday, V annual leave, S sick, - day off. A number repeats: E5 -2 M3. Night shifts and on-call: use the cards in the shift dialog.';
+  }
+  var s=document.getElementById('quick-start');if(s&&!s.value)s.value='1';
+  quickPreview();
+  document.getElementById('quick-overlay').classList.add('open');
+}
+function closeQuick(){var el=document.getElementById('quick-overlay');if(el)el.classList.remove('open');}
+function quickPreview(){
+  var el=document.getElementById('quick-preview');
+  if(!el) return;
+  var p=quickPlan(),de=getLang()==='de',lines=[];
+  if(!p.items.length&&!p.unknown.length&&!p.unavailable.length){el.textContent='';return;}
+  var counts={};p.add.forEach(function(x){counts[x.type]=(counts[x.type]||0)+1;});
+  var map=de?PILL_KEYS_DE:PILL_KEYS_EN;
+  var summary=Object.keys(counts).map(function(t){return map[t]+'\u00d7'+counts[t];}).join(' \u00b7 ');
+  if(p.add.length) lines.push('\u2713 '+bi(p.add.length+' shift(s) will be added: '+summary,p.add.length+' Dienst(e) werden eingetragen: '+summary));
+  if(p.skipped) lines.push('\u2139 '+bi(p.skipped+' day(s) already have a shift and are kept.',p.skipped+' Tag(e) haben schon einen Dienst und bleiben unver\u00e4ndert.'));
+  if(p.beyond) lines.push('\u26a0 '+bi(p.beyond+' entry(ies) fall after the end of the month and are ignored.',p.beyond+' Eintrag/Eintr\u00e4ge liegen nach dem Monatsende und werden ignoriert.'));
+  if(p.onFree) lines.push('\u2139 '+bi(p.onFree+' shift(s) fall on your fixed days off.',p.onFree+' Dienst(e) liegen auf deinen fixen freien Tagen.'));
+  if(p.unknown.length) lines.push('\u26a0 '+bi('Unknown: '+p.unknown.join(' ')+' (use '+Object.keys(QUICK_EN).join(' ')+' or -)','Unbekannt: '+p.unknown.join(' ')+' (erlaubt: '+Object.keys(QUICK_DE).join(' ')+' oder -)'));
+  if(p.unavailable.length) lines.push('\u26a0 '+bi('Not available for your sector: '+p.unavailable.map(function(t){return PILL_KEYS_EN[t];}).join(' '),'F\u00fcr deine Branche nicht verf\u00fcgbar: '+p.unavailable.map(function(t){return PILL_KEYS_DE[t];}).join(' ')));
+  el.textContent='';
+  lines.forEach(function(x){var d=document.createElement('div');d.textContent=x;if(x.charAt(0)==='\u26a0')d.style.color='#c0392b';el.appendChild(d);});
+}
+function applyQuick(){
+  var p=quickPlan();
+  if(!p.add.length) return;
+  p.add.forEach(function(x){shifts[x.key]={type:x.type,start:x.start,end:x.end};});
+  saveData();renderAll();
+  var el=document.getElementById('quick-preview');
+  if(el){el.textContent='\u2713 '+bi(p.add.length+' shift(s) added.',p.add.length+' Dienst(e) eingetragen.');el.style.color='#27ae60';}
+  var ta=document.getElementById('quick-text');if(ta)ta.value='';
+}
 
 // ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
 // To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
@@ -4873,7 +5602,10 @@ var CHANGELOG=[
     ['Commuter allowance, Pendlereuro (\u20ac6/km) and Familienbonus now apply to the monthly estimate (not yet verified against a payslip); corrected the commuter quick-pick amounts.','Pendlerpauschale, Pendlereuro (\u20ac6/km) und Familienbonus gelten jetzt f\u00fcr die Monatssch\u00e4tzung (noch nicht an einer Abrechnung gepr\u00fcft); Pendler-Schnellauswahl korrigiert.'],
     ['New: a "My sector isn\u2019t listed" link in the setup wizard and in Settings, so you can tell me which sector to verify next.','Neu: Link "Meine Branche fehlt in der Liste" im Start-Assistenten und in den Einstellungen \u2013 so kannst du mir sagen, welche Branche als N\u00e4chstes gepr\u00fcft werden soll.'],
     ['New: the shift dialog shows what a shift adds to your net pay, month by month (supplements can arrive a month later).','Neu: Der Dienst-Dialog zeigt, was ein Dienst netto bringt, Monat f\u00fcr Monat (Zulagen k\u00f6nnen einen Monat sp\u00e4ter kommen).'],
-    ['New: paste your payslip text for a line-by-line check against your shifts (hours, amounts, retro lines) \u2013 analysed on your device only.','Neu: Abrechnungstext einf\u00fcgen und Zeile f\u00fcr Zeile mit deinen Diensten pr\u00fcfen (Stunden, Betr\u00e4ge, Nachverrechnungen) \u2013 nur auf deinem Ger\u00e4t ausgewertet.']
+    ['New: paste your payslip text for a line-by-line check against your shifts (hours, amounts, retro lines) \u2013 analysed on your device only.','Neu: Abrechnungstext einf\u00fcgen und Zeile f\u00fcr Zeile mit deinen Diensten pr\u00fcfen (Stunden, Betr\u00e4ge, Nachverrechnungen) \u2013 nur auf deinem Ger\u00e4t ausgewertet.'],
+    ['New: "Aa" makes the text larger (saved and included in backups); calendar pills now carry a letter, so shift types no longer depend on colour alone.','Neu: "Aa" vergr\u00f6\u00dfert die Schrift (gespeichert und im Backup enthalten); Kalender-Eintr\u00e4ge tragen jetzt einen Buchstaben, Diensttypen h\u00e4ngen nicht mehr nur an der Farbe.'],
+    ['New: "Quick entry" fills many days at once by typing letters (E5 -2 M3).','Neu: "Schnelleingabe" tr\u00e4gt viele Tage auf einmal per Buchstaben ein (F5 -2 M3).'],
+    ['New: the Year tab shows how accurate the estimates were against the net amounts you entered from your payslips.','Neu: Der Jahres-Tab zeigt, wie genau die Sch\u00e4tzungen gegen die aus deinen Abrechnungen eingetragenen Nettobetr\u00e4ge waren.']
   ]}
 ];
 function _buildSections(body,sections){
@@ -4898,7 +5630,9 @@ function openHelp(){
     {title:bi('2. Enter your shifts','2. Dienste eintragen'),lines:[
       bi('Tap a day to open the shift dialog. Pick a card (early, middle, late, night, \u2026) or enter the times by hand.','Tippe auf einen Tag, um den Dienst-Dialog zu \u00f6ffnen. W\u00e4hle eine Karte (Fr\u00fch, Mittel, Sp\u00e4t, Nacht, \u2026) oder gib die Zeiten selbst ein.'),
       bi('Save your own times as a card ("+ Save as card"); hide cards you never use with the \u2715 (they can be restored).','Speichere eigene Zeiten als Karte ("+ Als Karte speichern"); nicht ben\u00f6tigte Karten mit \u2715 ausblenden (wiederherstellbar).'),
-      bi('Patterns and "Copy prev" fill many days at once; sick leave and annual leave have their own types.','Muster und "Vormonat kopieren" f\u00fcllen viele Tage auf einmal; Krankenstand und Urlaub haben eigene Typen.')]},
+      bi('Patterns and "Copy prev" fill many days at once; sick leave and annual leave have their own types.','Muster und "Vormonat kopieren" f\u00fcllen viele Tage auf einmal; Krankenstand und Urlaub haben eigene Typen.'),
+      bi('Letters on the calendar pills: E early/day, M middle, L late, N late+night, H holiday, V annual leave, S sick, O on-call, C call-in. "Aa" in the top bar makes the text larger.','Buchstaben auf dem Kalender: F Fr\u00fch/Tag, M Mittel, S Sp\u00e4t, N Sp\u00e4t+Nacht, T Feiertag, U Urlaub, K Krank, B Bereitschaft, E Einsatz. "Aa" in der oberen Leiste vergr\u00f6\u00dfert die Schrift.'),
+      bi('"Quick entry" in the toolbar fills many days at once by typing letters, e.g. E5 -2 M3 (five early shifts, two days off, three middle shifts).','"Quick entry" in der Leiste tr\u00e4gt viele Tage auf einmal ein, z. B. F5 -2 M3 (f\u00fcnf Fr\u00fchdienste, zwei freie Tage, drei Mitteldienste).')]},
     {title:bi('3. Read the report','3. Bericht lesen'),lines:[
       bi('The monthly report shows gross, social insurance, income tax and net.','Der Monatsbericht zeigt Brutto, Sozialversicherung, Lohnsteuer und Netto.'),
       bi('In the verified sector, middle, late and holiday supplements are paid in the month after the shifts; night allowance is paid in the same month.','In der gepr\u00fcften Branche werden Mittel-, Sp\u00e4t- und Feiertagszulagen im Folgemonat bezahlt; die Nachtzulage im selben Monat.'),
@@ -5014,9 +5748,56 @@ function openExplain(){
     bi('Sources: sozialversicherung.gv.at (SV values), EStG \u00a7\u00a7 66\u201368 (tax), Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026) for the 2027 tariff.','Quellen: sozialversicherung.gv.at (SV-Werte), EStG \u00a7\u00a7 66\u201368 (Steuer), Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026) f\u00fcr den Tarif 2027.'),
     bi('This is an information tool, not tax advice.','Dies ist ein Informationswerkzeug, keine Steuerberatung.')
   ]);
+  (function(){
+    var M=R.meta||{sources:{},unverified:[],note:{en:'',de:''},checked:''},box=document.createElement('div');
+    box.id='ex-sources';box.style.cssText='margin-top:10px;font-size:11.5px;line-height:1.55';
+    function h(t){var e=document.createElement('div');e.style.cssText='font-weight:600;font-size:12px;margin:8px 0 4px';e.textContent=t;box.appendChild(e);}
+    function p(t){var e=document.createElement('div');e.textContent=t;box.appendChild(e);}
+    var FL={hbgl:['Maximum contribution base','H\u00f6chstbeitragsgrundlage'],brackets:['Income tax brackets','Tarifstufen'],vab:['Commuter tax credit (Verkehrsabsetzbetrag)','Verkehrsabsetzbetrag'],pendlerEuroKm:['Pendlereuro per km','Pendlereuro pro km'],avBr:['Reduced unemployment-insurance rates','Verminderte Arbeitslosenversicherung'],avFull:['Full unemployment-insurance rate','Voller Arbeitslosenversicherungssatz'],ovt:['Tax-free limits for supplements (\u00a7 68)','Steuerfreie Grenzen f\u00fcr Zuschl\u00e4ge (\u00a7 68)']};
+    function fl(k){var x=FL[k]||[k,k];return getLang()==='de'?x[1]:x[0];}
+    h(bi('Accuracy','Genauigkeit'));
+    p(bi('Checked against real payslips: only the sector "Krankenanstalten \u2013 Radiologietechnologie", rates 2026. Every other sector and every other year is an estimate.','An echten Gehaltsabrechnungen gepr\u00fcft: nur die Branche "Krankenanstalten \u2013 Radiologietechnologie", Werte 2026. Jede andere Branche und jedes andere Jahr ist eine Sch\u00e4tzung.'));
+    h(bi('Official sources for the '+RATES_YEAR+' rates (checked '+(M.checked||'?')+')','Offizielle Quellen f\u00fcr die Werte '+RATES_YEAR+' (gepr\u00fcft '+(M.checked||'?')+')'));
+    var keys=Object.keys(M.sources||{});
+    if(!keys.length) p(bi('None recorded for this year.','F\u00fcr dieses Jahr ist keine erfasst.'));
+    keys.forEach(function(k){
+      var row=document.createElement('div');row.appendChild(document.createTextNode(fl(k)+': '));
+      M.sources[k].forEach(function(u,i){
+        if(!/^https:\/\/(www\.)?(oesterreich\.gv\.at|bmf\.gv\.at|ris\.bka\.gv\.at|sozialversicherung\.gv\.at|wko\.at|usp\.gv\.at)\//.test(u)) return;
+        var a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.textContent=u.replace(/^https:\/\/(www\.)?/,'').split('/')[0];
+        if(i) row.appendChild(document.createTextNode(', '));row.appendChild(a);
+      });
+      box.appendChild(row);
+    });
+    if((M.unverified||[]).length) p(bi('No source recorded yet for: ','Noch keine Quelle erfasst f\u00fcr: ')+M.unverified.map(fl).join('; ')+'.');
+    p(bi('Also without a recorded source in this app: the employee SV shares (health, pension, AK levy), the \u20ac132 allowance, the \u20ac620 allowance and 6% for bonus payments, and the \u20ac400 hazard-allowance limit.','Ebenfalls ohne erfasste Quelle in dieser App: die Dienstnehmeranteile der SV (Kranken, Pension, AK-Umlage), die \u20ac132 Pauschale, der \u20ac620 Freibetrag und die 6 % bei Sonderzahlungen sowie die \u20ac400 Grenze der Gefahrenzulage.'));
+    var nt=(M.note&&M.note[getLang()])||'';if(nt) p(nt);
+    b.appendChild(box);
+  })();
   document.getElementById('explain-overlay').classList.add('open');
 }
 function closeExplain(){var el=document.getElementById('explain-overlay');if(el)el.classList.remove('open');}
+
+// ═══ TEXT SIZE (Aa / A+ / A++) and a non-colour cue on calendar pills ═══
+var ZOOM_LEVELS=[1,1.15,1.3];
+var PILL_KEYS_EN={normal:'E',middle:'M',late:'L',latenight:'N',holiday:'H',leave:'V',sick:'S',ruf:'O',callin:'C'};
+var PILL_KEYS_DE={normal:'F',middle:'M',late:'S',latenight:'N',holiday:'T',leave:'U',sick:'K',ruf:'B',callin:'E'};
+function applyZoom(z){
+  document.documentElement.style.zoom=(z&&z!==1)?String(z):'';
+  var b=document.getElementById('zoom-btn');
+  if(b) b.textContent=z>1.2?'A++':z>1?'A+':'Aa';
+}
+function cycleZoom(){
+  var cur=1;try{cur=parseFloat(localStorage.getItem('sp_zoom'))||1;}catch(e){}
+  var nz=ZOOM_LEVELS[(Math.max(0,ZOOM_LEVELS.indexOf(cur))+1)%ZOOM_LEVELS.length];
+  try{localStorage.setItem('sp_zoom',String(nz));}catch(e){}
+  applyZoom(nz);
+}
+function initZoom(){
+  var z=1;try{z=parseFloat(localStorage.getItem('sp_zoom'))||1;}catch(e){}
+  if(ZOOM_LEVELS.indexOf(z)<0) z=1;
+  applyZoom(z);
+}
 
 // ═══ DATA SAFETY: iPhone Safari may delete site data after ~7 days of Safari use without a visit (home-screen apps are exempt) ═══
 function updateIosHint(){
@@ -5059,14 +5840,36 @@ function updateRatesBanner(){
 }
 
 // ═══ FEEDBACK FORM (Web3Forms; static site has no backend) ═══
-function initContact(){var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
+function initDemo(){
+  var b=document.getElementById('demo-banner'),l=document.getElementById('demo-link');
+  if(DEMO_FAILED){if(b){b.style.display='';b.textContent=I18N[getLang()].demoFail;}return;}
+  if(b)b.style.display=DEMO?'':'none';
+  if(l)l.style.display=DEMO?'none':'';
+}
+function exitDemo(){try{location.href=location.pathname;}catch(e){}}
+function initContact(){initVersion();initDemo();initBoundary();initA11y();_syncNetTop();var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
+function _buildLabel(){return /BUILD/.test(BUILD)?'dev':BUILD;}
+function _displayMode(){try{if(navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))return 'installed';}catch(e){}return 'tab';}
+function _storageOk(){try{localStorage.setItem('sp_probe','1');localStorage.removeItem('sp_probe');return 'ok';}catch(e){return 'unavailable';}}
+function _zoomValue(){var z='1';try{z=localStorage.getItem('sp_zoom')||'1';}catch(e){}return String(z).slice(0,6);}
+function _settingKeyNames(){var st=null;try{st=JSON.parse(localStorage.getItem('sp_settings')||'null');}catch(e){}
+  if(!st||typeof st!=='object') return '(none)';
+  var k=Object.keys(st).filter(function(x){return SETTINGS_KEYS.indexOf(x)>=0;});
+  return k.length?k.join(','):'(none)';}
+function initVersion(){var el=document.getElementById('app-ver');if(el)el.textContent='v'+APP_VERSION+' \u00b7 '+_buildLabel();}
+function openDiag(){var pre=document.getElementById('diag-pre');if(pre)pre.textContent=buildDiagnostics();
+  var st=document.getElementById('diag-status');if(st)st.textContent='';
+  document.getElementById('diag-overlay').classList.add('open');}
+function closeDiag(){var el=document.getElementById('diag-overlay');if(el)el.classList.remove('open');}
 // Technical info only: no salary, no shift contents, no personal data.
 function buildDiagnostics(){
   var kv='(none)';
   try{kv=document.getElementById('kv-preset').value||'(none)';}catch(e){}
   var rs=RATES[RATES_YEAR]?RATES[RATES_YEAR].status:'?';
   return [
-    'app: Paychecker Austria '+APP_VERSION,
+    'app: Paychecker Austria '+APP_VERSION+' build '+_buildLabel(),
+    'mode: '+_displayMode()+', storage '+_storageOk()+', text size '+_zoomValue()+(DEMO?', demo on':''),
+    'setting keys: '+_settingKeyNames(),
     'rates: '+RATES_YEAR+' ('+rs+'), viewing '+currentYear+', verified '+RATES_VERIFIED,
     'sector: '+kv,
     'language: '+getLang(),
@@ -5078,7 +5881,7 @@ function buildDiagnostics(){
   ].join('\n');
 }
 function copyDiagnostics(){
-  var txt=buildDiagnostics(),st=document.getElementById('fb-status'),T=I18N[getLang()];
+  var txt=buildDiagnostics(),dov=document.getElementById('diag-overlay'),st=document.getElementById(dov&&dov.classList.contains('open')?'diag-status':'fb-status'),T=I18N[getLang()];
   function done(){if(st){st.style.color='#27ae60';st.textContent=T.fbCopied;}}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){window.prompt('Copy:',txt);});}
   else{window.prompt('Copy:',txt);}
@@ -5167,7 +5970,7 @@ function ackDisclaimer(){
 
 function checkWizard(){
   if(!localStorage.getItem('sp_wizard_done')&&!localStorage.getItem('sp_settings')){
-    fillWizKV();
+    fillWizKV();fillWizYear();wizEstimate();
     document.getElementById('wizard-overlay').classList.add('open');
   }
 }
@@ -5609,7 +6412,7 @@ var I18N={
     wizQKV:'Your sector / collective agreement (optional)', wizKVNone:'\u2014 Skip / not listed \u2014', wizKVHint:'Pre-fills typical shift times and rules. Only one sector is verified against real payslips; the rest are estimates. You can change this later in Settings.',
     impLink:'Impressum', impClose:'Close',
     fbLink:'Feedback', fbTitle:'Feedback / contact', fbNote:'Bugs, wrong numbers, ideas? Please send anonymised figures only \u2013 no payslips, no names, no personal data.', fbName:'Name (optional)', fbEmail:'Your email (optional, for a reply)', fbMsg:'Your message', fbSend:'Send', fbSending:'Sending\u2026', fbOk:'Thank you \u2013 message sent.', fbErr:'Sending failed. Please try again later or write to the email in the Impressum.', fbShort:'Please write a few words.',
-    fbDiag:'Include technical info (app version, sector, year, browser \u2013 no amounts)', fbWhat:'What is included?', fbCopy:'Copy technical info', fbCopied:'Copied.',
+    fbDiag:'Include technical info (app version, sector, year, browser \u2013 no amounts)', fbWhat:'What is included?', fbCopy:'Copy technical info', fbCopied:'Copied.', diagLink:'Diagnostics', demoLink:'Demo', demoExit:'Exit demo', ebMsg:'Something went wrong. Your data stays in this browser. Export a copy now.', ebCorrupt:'Some saved data could not be read. A raw copy was kept. Export your data now.', ebNewer:'Your saved data comes from a newer app version. Do not edit it here; export a copy.', ebExport:'Export data', ebClose:'Dismiss', wizQYear:'Estimate for year', wizYearOff:'official rates', wizYearProv:'provisional rates', wizEstTitle:'Instant estimate: base salary only, no shifts, no optional levies', wizEstNet:'Net per month', wizEstParts:'Gross {g} \u2212 social insurance {s} \u2212 tax {t}', wizEstYear:'Net per year incl. bonus months', wizEstProv:'This year uses provisional values.', wizEstVerified:'Checked against real payslips for this sector (2026 rates).', mselBtn:'\u2611 Select days', mselOff:'Done selecting', mselCount:'{n} selected', mselSet:'Set shift\u2026', mselDel:'Delete', mselTitle:'Edit {n} days', undoMulti:'Selected days updated.', setPayDay:'Payday (day of month, optional)', setPayDayHint:'The salary of a month is assumed to be paid in the same month. If the day falls on a weekend or public holiday, the date moves to the previous working day (assumption: check with your employer).', payNext:'Next payday', payAdj:'adjusted for weekend or holiday', payPlanned:'planned', payBase:'base only', accNone:'No sector selected: tap to choose', accVerified:'validated against real payslips (2026)', accVerifiedOther:'validated for 2026 only', accUnverified:'estimate, not validated against a payslip', accProv:'{y} values are provisional', azgWarn:'Possible issue: only {h} h of rest before this shift. The statutory minimum is 11 h (AZG \u00a712; KA-AZG \u00a77 for hospital staff). Collective or works agreements can differ. Please check your roster.', navPrev:'Previous month', navNext:'Next month', darkAria:'Toggle dark mode', glossQ:'What does this mean?', glossLink:'Glossary', glossTitle:'Glossary', netTopLbl:'Estimated net', undoBtn:'Undo', undoDeleted:'Shift deleted.', undoCleared:'Month cleared.', undoPattern:'Pattern applied.', gl_gross_t:'Gross (Brutto)', gl_gross_d:'Your pay before anything is deducted.', gl_net_t:'Net (Netto)', gl_net_d:'What is paid out to you after social insurance and income tax.', gl_sv_t:'Social insurance (SV)', gl_sv_d:'Compulsory contributions to health, pension and unemployment insurance, plus a few small levies, taken from your gross pay.', gl_lst_t:'Income tax (Lohnsteuer)', gl_lst_d:'Tax that your employer withholds from your pay and sends to the tax office.', gl_sz_t:'Bonus months (13th and 14th salary)', gl_sz_d:'Extra yearly payments, usually paid in June and November, that are taxed differently from regular monthly pay.', gl_kv_t:'Collective agreement (Kollektivvertrag, KV)', gl_kv_d:'The agreement for your sector that sets minimum pay and many supplements. Your payslip follows it.', gl_suppl_t:'Supplement (Zuschlag)', gl_suppl_d:'Extra pay for work at certain times, for example nights, Sundays or public holidays. Which ones apply depends on your collective agreement.', gl_call_t:'On-call (Rufbereitschaft) and call-in (Rufeinsatz)', gl_call_d:'On-call means being reachable outside your hours. A call-in is when you are actually called to work.', wizEstUnverified:'Estimate only: not checked against a payslip for your sector.', btnRestorePrev:'\u21a9 Restore data from before the last import/pull', restorePrevAsk:'Replace current data with the copy taken before the last import or pull?', snapFail:'No safety copy could be kept (storage full). Continue and overwrite anyway?', demoBanner:'Demo mode: fake data, nothing is saved or synced. Your own data is untouched.', demoNoSync:'Sync is disabled in demo mode.', demoFail:'Demo mode is not available in this browser.', diagTitle:'Technical info', diagNote:'Preview of what Copy puts on the clipboard: versions and names of settings only. No amounts, notes, card names, token or password. Nothing is sent anywhere.',
     rlCorr:'Prior-month correction (gross, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 net effect (after SV and tax)', corrHint:'Retro lines on your payslip (e.g. "09*Ausfallsentgelt"): SV is charged this month, tax at your marginal rate.',
     pscTitle:'\ud83e\uddfe Payslip comparison \u2014 enter your actual values', pscHint:'Use "Summe Bez\u00fcge" (before the works-council levy) as gross, the monthly part only \u2013 no Sonderzahlung. Retro lines ("NN*") belong in the correction field above.', pscGross:'Actual gross (\u20ac)', pscSV:'Actual SV total (\u20ac)', pscLST:'Actual income tax (\u20ac)', pscNet:'Actual net (\u20ac)', pscClear:'Clear',
     exLink:'How is this calculated?', exTitle:'How is this calculated?',
@@ -5799,6 +6602,8 @@ var I18N={
     tcCommuteNote:'Used in your monthly estimate. Take the amounts from your payslip (fields Pendlerpauschale, Pendlereuro, Familienbonus). Not yet verified against a payslip.', tcPendlerKm:'One-way distance (km)',
     sectorMissing:'My sector isn\u2019t listed',
     pslTitle:'Check line by line: paste your payslip text (optional)', pslHint:'Open the payslip PDF, select all, copy and paste here. The text is analysed on this device only and never sent anywhere.', pslPlaceholder:'3860 ... 2115 RT Nachmittag kurz 47,18 4,44 209,48 ...',
+    zoomTip:'Text size',
+    quickBtn:'\u2328 Quick entry', quickTip:'Fill many days by typing letters', quickTitle:'Quick entry', quickStart:'Start on day', quickOver:'Replace days that already have a shift', quickFill:'Fill calendar',
     tcPendlerTip:'2026, per year. Small (public transport reasonable, from 20 km): 696 / 1,356 / 2,016 EUR for 20\u201340 / 40\u201360 / 60+ km. Large (public transport unreasonable, from 2 km): 372 / 1,476 / 2,568 / 3,672 EUR for 2\u201320 / 20\u201340 / 40\u201360 / 60+ km. Full amount from 11 commuting days a month, two thirds for 8\u201310 days, one third for 4\u20137 days. The BMF Pendlerrechner decides small or large.',
     tcPendlerQuickPick:'Quick-pick distance…',
     tcPendlereuroNote:'<strong>Pendlereuro</strong>: \u20ac6 per km of the one-way distance per year (2026), deducted directly from the tax. Needs a Pendlerpauschale. Enter the distance above.',
@@ -5912,7 +6717,7 @@ var I18N={
     wizQKV:'Deine Branche / dein Kollektivvertrag (optional)', wizKVNone:'\u2014 \u00dcberspringen / nicht aufgelistet \u2014', wizKVHint:'F\u00fcllt typische Dienstzeiten und Regeln vor. Nur eine Branche ist mit echten Gehaltsabrechnungen gepr\u00fcft, die anderen sind Sch\u00e4tzungen. \u00c4nderbar in den Einstellungen.',
     impLink:'Impressum', impClose:'Schlie\u00dfen',
     fbLink:'Feedback', fbTitle:'Feedback / Kontakt', fbNote:'Fehler, falsche Zahlen, Ideen? Bitte nur anonymisierte Werte senden \u2013 keine Gehaltsabrechnungen, keine Namen, keine pers\u00f6nlichen Daten.', fbName:'Name (optional)', fbEmail:'Deine E-Mail (optional, f\u00fcr eine Antwort)', fbMsg:'Deine Nachricht', fbSend:'Senden', fbSending:'Wird gesendet\u2026', fbOk:'Danke \u2013 Nachricht gesendet.', fbErr:'Senden fehlgeschlagen. Bitte sp\u00e4ter erneut versuchen oder an die E-Mail im Impressum schreiben.', fbShort:'Bitte schreibe ein paar Worte.',
-    fbDiag:'Technische Infos mitsenden (App-Version, Branche, Jahr, Browser \u2013 keine Betr\u00e4ge)', fbWhat:'Was wird mitgesendet?', fbCopy:'Technische Infos kopieren', fbCopied:'Kopiert.',
+    fbDiag:'Technische Infos mitsenden (App-Version, Branche, Jahr, Browser \u2013 keine Betr\u00e4ge)', fbWhat:'Was wird mitgesendet?', fbCopy:'Technische Infos kopieren', fbCopied:'Kopiert.', diagLink:'Diagnose', demoLink:'Demo', demoExit:'Demo beenden', ebMsg:'Etwas ist schiefgelaufen. Deine Daten bleiben in diesem Browser. Exportiere jetzt eine Kopie.', ebCorrupt:'Einige gespeicherte Daten konnten nicht gelesen werden. Eine Rohkopie wurde behalten. Exportiere jetzt deine Daten.', ebNewer:'Deine gespeicherten Daten stammen aus einer neueren App-Version. Bearbeite sie hier nicht; exportiere eine Kopie.', ebExport:'Daten exportieren', ebClose:'Schlie\u00dfen', wizQYear:'Sch\u00e4tzung f\u00fcr das Jahr', wizYearOff:'offizielle Werte', wizYearProv:'vorl\u00e4ufige Werte', wizEstTitle:'Sofortsch\u00e4tzung: nur Grundgehalt, keine Dienste, keine optionalen Abz\u00fcge', wizEstNet:'Netto pro Monat', wizEstParts:'Brutto {g} \u2212 Sozialversicherung {s} \u2212 Steuer {t}', wizEstYear:'Netto pro Jahr inkl. Sonderzahlungen', wizEstProv:'F\u00fcr dieses Jahr gelten vorl\u00e4ufige Werte.', wizEstVerified:'Mit echten Gehaltsabrechnungen f\u00fcr diesen Bereich gepr\u00fcft (Werte 2026).', mselBtn:'\u2611 Tage ausw\u00e4hlen', mselOff:'Fertig', mselCount:'{n} ausgew\u00e4hlt', mselSet:'Dienst setzen\u2026', mselDel:'L\u00f6schen', mselTitle:'{n} Tage bearbeiten', undoMulti:'Ausgew\u00e4hlte Tage ge\u00e4ndert.', setPayDay:'Zahltag (Tag im Monat, optional)', setPayDayHint:'Es wird angenommen, dass das Gehalt eines Monats im selben Monat ausgezahlt wird. F\u00e4llt der Tag auf ein Wochenende oder einen Feiertag, wird der vorherige Werktag verwendet (Annahme: frag deinen Arbeitgeber).', payNext:'N\u00e4chster Zahltag', payAdj:'an Wochenende oder Feiertag angepasst', payPlanned:'geplant', payBase:'nur Grundgehalt', accNone:'Kein Bereich gew\u00e4hlt: tippen zum Ausw\u00e4hlen', accVerified:'mit echten Gehaltsabrechnungen gepr\u00fcft (2026)', accVerifiedOther:'nur f\u00fcr 2026 gepr\u00fcft', accUnverified:'Sch\u00e4tzung, nicht mit einer Gehaltsabrechnung gepr\u00fcft', accProv:'Werte {y} sind vorl\u00e4ufig', azgWarn:'M\u00f6gliches Problem: nur {h} h Ruhezeit vor diesem Dienst. Die gesetzliche Mindestruhezeit betr\u00e4gt 11 h (AZG \u00a7 12; KA-AZG \u00a7 7 f\u00fcr Krankenanstalten). Kollektiv- oder Betriebsvereinbarungen k\u00f6nnen abweichen. Bitte pr\u00fcfe deinen Dienstplan.', navPrev:'Voriger Monat', navNext:'N\u00e4chster Monat', darkAria:'Dunkelmodus umschalten', glossQ:'Was bedeutet das?', glossLink:'Glossar', glossTitle:'Glossar', netTopLbl:'Voraussichtliches Netto', undoBtn:'R\u00fcckg\u00e4ngig', undoDeleted:'Dienst gel\u00f6scht.', undoCleared:'Monat geleert.', undoPattern:'Muster angewendet.', gl_gross_t:'Brutto', gl_gross_d:'Dein Lohn vor allen Abz\u00fcgen.', gl_net_t:'Netto', gl_net_d:'Der Betrag, der dir nach Sozialversicherung und Lohnsteuer ausgezahlt wird.', gl_sv_t:'Sozialversicherung (SV)', gl_sv_d:'Pflichtbeitr\u00e4ge zur Kranken-, Pensions- und Arbeitslosenversicherung sowie einige kleine Umlagen, die vom Bruttolohn abgezogen werden.', gl_lst_t:'Lohnsteuer (LSt)', gl_lst_d:'Steuer, die dein Arbeitgeber von deinem Lohn einbeh\u00e4lt und ans Finanzamt abf\u00fchrt.', gl_sz_t:'Sonderzahlungen (13. und 14. Gehalt)', gl_sz_d:'Zus\u00e4tzliche j\u00e4hrliche Zahlungen, meist im Juni und November, die anders besteuert werden als das laufende Monatsgehalt.', gl_kv_t:'Kollektivvertrag (KV)', gl_kv_d:'Die Vereinbarung f\u00fcr deine Branche, die Mindestlohn und viele Zuschl\u00e4ge festlegt. Deine Gehaltsabrechnung folgt ihr.', gl_suppl_t:'Zuschlag', gl_suppl_d:'Zusatzzahlung f\u00fcr Arbeit zu bestimmten Zeiten, z. B. nachts, sonntags oder an Feiertagen. Welche gelten, h\u00e4ngt von deinem Kollektivvertrag ab.', gl_call_t:'Rufbereitschaft und Rufeinsatz', gl_call_d:'Rufbereitschaft hei\u00dft, au\u00dferhalb der Arbeitszeit erreichbar zu sein. Ein Rufeinsatz liegt vor, wenn du tats\u00e4chlich zur Arbeit gerufen wirst.', wizEstUnverified:'Nur eine Sch\u00e4tzung: f\u00fcr deinen Bereich nicht mit einer Gehaltsabrechnung gepr\u00fcft.', btnRestorePrev:'\u21a9 Daten von vor dem letzten Import/Pull wiederherstellen', restorePrevAsk:'Aktuelle Daten durch die Kopie von vor dem letzten Import oder Pull ersetzen?', snapFail:'Es konnte keine Sicherheitskopie gespeichert werden (Speicher voll). Trotzdem fortfahren und \u00fcberschreiben?', demoBanner:'Demo-Modus: erfundene Daten, nichts wird gespeichert oder synchronisiert. Deine eigenen Daten bleiben unber\u00fchrt.', demoNoSync:'Synchronisieren ist im Demo-Modus deaktiviert.', demoFail:'Der Demo-Modus ist in diesem Browser nicht verf\u00fcgbar.', diagTitle:'Technische Infos', diagNote:'Vorschau dessen, was in die Zwischenablage kopiert wird: nur Versionen und Namen von Einstellungen. Keine Betr\u00e4ge, Notizen, Kartennamen, Token oder Passw\u00f6rter. Es wird nichts gesendet.',
     rlCorr:'Korrektur Vormonat (brutto, +/\u2212)', rlCorrNet:'\u00a0\u00a0\u2192 Nettoeffekt (nach SV und Steuer)', corrHint:'Nachverrechnete Zeilen auf deiner Abrechnung (z. B. "09*Ausfallsentgelt"): SV wird in diesem Monat abgezogen, Lohnsteuer mit dem Grenzsteuersatz.',
     pscTitle:'\ud83e\uddfe Abrechnungsvergleich \u2014 trage deine tats\u00e4chlichen Werte ein', pscHint:'Als Brutto "Summe Bez\u00fcge" (vor der Betriebsratsumlage) verwenden, nur den Monatsteil \u2013 ohne Sonderzahlung. Nachverrechnete Zeilen ("NN*") geh\u00f6ren ins Korrekturfeld oben.', pscGross:'Tats\u00e4chliches Brutto (\u20ac)', pscSV:'Tats\u00e4chliche SV gesamt (\u20ac)', pscLST:'Tats\u00e4chliche Lohnsteuer (\u20ac)', pscNet:'Tats\u00e4chliches Netto (\u20ac)', pscClear:'Leeren',
     exLink:'Wie wird das berechnet?', exTitle:'Wie wird das berechnet?',
@@ -6102,6 +6907,8 @@ var I18N={
     tcCommuteNote:'Gilt f\u00fcr deine Monatssch\u00e4tzung. Betr\u00e4ge aus der Abrechnung \u00fcbernehmen (Felder Pendlerpauschale, Pendlereuro, Familienbonus). Noch nicht an einer Abrechnung gepr\u00fcft.', tcPendlerKm:'Einfache Wegstrecke (km)',
     sectorMissing:'Meine Branche fehlt in der Liste',
     pslTitle:'Zeile f\u00fcr Zeile pr\u00fcfen: Abrechnungstext einf\u00fcgen (optional)', pslHint:'Abrechnung als PDF \u00f6ffnen, alles markieren, kopieren und hier einf\u00fcgen. Der Text wird nur auf diesem Ger\u00e4t ausgewertet und nirgends hin gesendet.', pslPlaceholder:'3860 ... 2115 RT Nachmittag kurz 47,18 4,44 209,48 ...',
+    zoomTip:'Schriftgr\u00f6\u00dfe',
+    quickBtn:'\u2328 Schnelleingabe', quickTip:'Viele Tage mit Buchstaben eintragen', quickTitle:'Schnelleingabe', quickStart:'Beginn am Tag', quickOver:'Tage mit vorhandenem Dienst ersetzen', quickFill:'Kalender f\u00fcllen',
     tcPendlerTip:'2026, pro Jahr. Klein (\u00d6ffi zumutbar, ab 20 km): 696 / 1.356 / 2.016 EUR f\u00fcr 20\u201340 / 40\u201360 / 60+ km. Gro\u00df (\u00d6ffi unzumutbar, ab 2 km): 372 / 1.476 / 2.568 / 3.672 EUR f\u00fcr 2\u201320 / 20\u201340 / 40\u201360 / 60+ km. Voller Betrag ab 11 Pendeltagen im Monat, zwei Drittel bei 8\u201310 Tagen, ein Drittel bei 4\u20137 Tagen. Ob klein oder gro\u00df gilt, entscheidet der BMF-Pendlerrechner.',
     tcPendlerQuickPick:'Entfernung auswählen…',
     tcPendlereuroNote:'<strong>Pendlereuro</strong>: 6 \u20ac pro km einfacher Wegstrecke und Jahr (2026), direkt von der Steuer abgezogen. Setzt ein Pendlerpauschale voraus. Entfernung oben eintragen.',
@@ -6235,6 +7042,11 @@ function applyLang(lang){
     var text=dict[key]!=null?dict[key]:fallback[key];
     if(text!=null) el.setAttribute('title',text);
   });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+    var key=el.getAttribute('data-i18n-aria');
+    var text=dict[key]!=null?dict[key]:fallback[key];
+    if(text!=null) el.setAttribute('aria-label',text);
+  });
   document.querySelectorAll('[data-i18n-label]').forEach(function(el){
     var key=el.getAttribute('data-i18n-label');
     var text=dict[key]!=null?dict[key]:fallback[key];
@@ -6246,6 +7058,7 @@ function applyLang(lang){
   if(wizBtn) wizBtn.textContent=lang==='en'?'🌐 DE':'🌐 EN';
   var onbBtn=document.getElementById('onb-lang-btn');
   if(onbBtn) onbBtn.textContent=lang==='en'?'🌐 DE':'🌐 EN';
+  try{wizEstimate();}catch(e){}
   document.documentElement.lang=lang;
 }
 
@@ -6257,7 +7070,7 @@ function applyLang(lang){
 //      this KV: whether supplements are paid same-month or deferred to next month, whether
 //      a holiday worked pays 200% (deferred) vs some other split, whether there's an unpaid
 //      break to deduct, and whether shift-based night/late-night tax-free §68 logic applies
-//      at all. Only 'gesundheit_rt' (KH Radiologietechnologie) has been validated cent-for-cent against a real payslip
+//      at all. Only 'gesundheit_rt' (KH Radiologietechnologie) has been checked against real payslips (net within 0.01 EUR per month, 2026 only)
 //      (see calcSalary/calcEarnedSupplements comments). All others are best-effort estimates
 //      from public KV text and should be treated as approximations — verify against your own
 //      Abrechnung and use the feedback link if something's off.
@@ -6279,7 +7092,7 @@ var KV_TEMPLATES={
     shifts:{early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']},
     rules:{deferSupplements:true,holidayMode:'200_deferred',breakDeductionMin:30,nightAllowancePct:0.08,callinNormalRate:1.0,hasRuf:true,hasLateNight:true,hasMiddle:true,hasCallin:true,
       nightLStFree:false,holSupplLStMode:'ot68_2',hourlyDivisor:173,roundHourly:true,lateSupplFrom:'14:00'},
-    note:'Validated cent-for-cent against real Austrian hospital payslips (Radiologietechnologie). The reference template.'},
+    note:'Checked against real Austrian hospital payslips (Radiologietechnologie): net within 0.01 EUR per month, 2026 only. The reference template.'},
   // Healthcare
   gesundheit_kh:{name:'Krankenanstalten',middleS:40,lateS:55,thresh:20,rufRate:5.20,wbf:0.5,
     shifts:{early:['07:00','15:30'],middle:['11:30','20:00'],late:['14:00','22:30'],night:['22:00','06:00'],long:['07:00','19:00'],oncall1:['06:30','11:00'],oncall2:['12:00','20:00'],holiday:['07:00','15:30']},
@@ -6585,7 +7398,7 @@ function renderAll(){
     _renderYearTimer=setTimeout(function(){yearTabYear=currentYear;renderYear();},200);
   }
 }
-applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();loadCorrections();initContact();initChangelogDot();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
+applyLang();loadData();loadTemplates();loadCustomCards();loadHiddenCards();loadCorrections();initContact();initChangelogDot();initZoom();loadChecklist();renderAll();renderTemplates();if(!checkDisclaimer()){checkWizard();checkOnboarding();}
 </script>
 <!-- Storage warning banner -->
 <div id="storage-warn" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 16px;text-align:center;z-index:500">⚠️ Storage approaching limit (4MB) — export a JSON backup and consider clearing old years.</div>
