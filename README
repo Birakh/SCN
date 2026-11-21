@@ -1,42 +1,45 @@
-# Paychecker Austria
+# Paychecker Austria: maintainer README
 
-A free, private salary and shift calculator for employees in Austria. Enter your shifts and it estimates your monthly gross, social insurance (SV), income tax (Lohnsteuer) and net pay, including supplements, night and holiday pay, Sonderzahlungen (13th/14th salary) and prior-month corrections.
+Single-file salary and shift calculator for Austrian shift workers. Vanilla JS/HTML/CSS, no framework, no build step, localStorage only, hosted on GitHub Pages. Accuracy is validated against real payslips for ONE sector (`gesundheit_rt`) and 2026 only. Everything else is an estimate and the UI says so.
 
-**It is an estimate, not payroll or tax advice.** See the disclaimer inside the app.
+## Layout
+- `site/` deployable files: `index.html`, `xlsx.full.min.js`, public `README.md`, licences.
+- `original/index-7.html` base file. `patches/patches.json` + `patches/patches_2..47.json` turn it into `site/index.html` (applied in order).
+- `tools/` `apply_patches.py`, `rebuild.sh`, `run_all.sh`, `ci.sh`, `verify.js` (static checks), `check_release.js` (release gate), `outline.js` (function map).
+- `tests/` jsdom suites, `golden/synthetic_golden.json`. May contain real payslip figures: keep private, never publish, never print.
+- `.github/workflows/ci.yml` runs `tools/ci.sh` (synthetic-only suites).
 
-## Status
+## Daily workflow
+1. `npm install --no-save jsdom` (node 22).
+2. `sh tools/rebuild.sh` must print `REBUILD OK`.
+3. Make a change as ONE new patch file `patches/patches_NN.json` = `[{id, desc, old_str, new_str}]`. Each `old_str` must match exactly once. Never edit `site/index.html` by hand.
+4. Rebuild (step 2), then `sh tools/run_all.sh`. Expected: 36 of 36 suites pass; the release gate says NOT READY only while `WEB3FORMS_KEY` is empty.
+5. Real-browser pass (not in CI): `npm i --no-save puppeteer-core @sparticuz/chromium`, then `node tools/browser_check.js /tmp/shots` (390 px, light and dark, CSP, downloads, focus ring, tap targets, screenshots). The bundled Chromium needs `--single-process` removed from its default args (the script does this).
+6. `sh tools/ci.sh` runs the 16 suites that need no real data (what CI runs).
 
-| What | State |
-|---|---|
-| Hospital radiology technologists | Verified against real payslips (to the cent, May–Oct 2026) |
-| All other sectors | Unverified estimates (marked with a warning sign) |
-| Rates 2026 | Official |
-| Rates 2027 | Provisional (SV values announced, final publication pending; tax tariff per BGBl. II 260/2026) |
+## Rules that the checks enforce
+- I18N: every key in `en` and `de`; `\uXXXX` escapes in JS strings; no `&amp;` in JS strings; no nested `<label>`; no duplicate function names; every `getElementById` has an `id=` in the HTML.
+- No employer name or address anywhere in UI text or comments.
+- Rate or law claims need an official source (sozialversicherung.gv.at, BMF, RIS, WKO) or an "unverified" marker. Sources live in the rates JSON block.
+- Never claim accuracy beyond `VERIFIED_YEARS` and `gesundheit_rt`.
 
-Help verify more sectors: compare a payslip with the app (the comparison box shows the differences and likely causes) and use "Report this result". Only the sector, the rates year and the differences are sent, never your payslip amounts.
+## Adding a persisted setting (all steps required)
+`_saveSettings()` field, `loadData()` restore, `SETTINGS_KEYS`, backup via `collectState()`/`applyExtras()` (settings go through `sanitizeSettings`), a demo seed in the demo IIFE if it should show in demo mode, and a test that covers the backup round trip. The GitHub token and the sync password are never stored in backups. `sp_schema` and `sp_prev_backup` are store metadata and are deliberately not part of backups.
 
-## Privacy
+## Data safety (what exists)
+- `SCHEMA_VERSION` (currently 1) in `sp_schema` and in every backup; `migrateState` refuses newer data; add a function to `MIGRATIONS` for every schema change.
+- Imports, sync pulls and loads pass through the sanitizers; unreadable or dropped data is kept raw under `<key>_corrupt`.
+- A safety snapshot is taken before import and pull (`sp_prev_backup`, restorable with the "Restore data from before the last import/pull" button next to the backup buttons). Delete-all removes it.
+- Sync (GitHub repo, optional): AES-256-GCM with PBKDF2-SHA256 (600000 iterations). Files are written as `PCV2:<iterations>:<base64>` with the header authenticated; old files without the prefix (200000 iterations) are still read. Push requires a sync password of at least 12 characters and refuses a public repository. Repo and branch strings are validated before any request. Older app versions cannot read v2 files.
+- An error banner offers "Export data", a raw dump of all `sp_*` keys.
+- Demo mode (`?demo=1`) swaps localStorage for an in-memory copy with fake data. Any new network call must be blocked in demo mode; any new first-run flag must be seeded in the demo data.
+- The CSP meta tag only restricts `connect-src`, `form-action`, `base-uri` and `object-src`. It does not protect against XSS because the app uses inline script.
 
-- No account, no tracking, no ads. Your entries are stored in your browser (localStorage) only.
-- Optional: sync an encrypted copy to **your own** GitHub repository. Your token and password are never part of the synced data or of backups.
-- Optional feedback form (sends your message by email through a form service, only when you press Send).
-- iPhone: Safari may delete a site's saved data after about a week without a visit. Add the page to your Home Screen and keep a backup.
-
-## Files
-
-- `index.html` – the whole app (HTML, CSS, JavaScript; no build step, no framework).
-- `xlsx.full.min.js` – SheetJS 0.18.5 (Apache-2.0, see `LICENSE-SheetJS.txt`), loaded only when you export to Excel. The app writes spreadsheets and never reads uploaded ones.
-
-Open `index.html` in a browser or serve the folder with any static host (GitHub Pages works).
+## Release
+1. Bump `APP_VERSION` and prepend a `CHANGELOG` entry (a test requires the newest entry to match).
+2. `node tools/check_release.js site/index.html` must print READY (needs the Impressum fields and `WEB3FORMS_KEY`).
+3. Upload only the `site/` files to GitHub Pages.
+4. `BUILD` placeholder: the committed file keeps the placeholder; the deploy step replaces it with the commit hash, for example `sed -i "s/__BUILD__/${GITHUB_SHA::7}/" site/index.html`. This deploy step is not in the repo yet and is untested.
 
 ## Yearly rate update
-
-Rates live in one table (`RATES`) in `index.html`. Each year: add the new year, mark it provisional until officially published, set `RATES_VERIFIED`, then compare one real payslip.
-
-## License
-
-MIT License, see `LICENSE`. SheetJS (`xlsx.full.min.js`) keeps its own Apache-2.0 licence (`LICENSE-SheetJS.txt`).
-
-## Not affiliated
-
-This project is not affiliated with any employer, union or authority.
+See `RATE_UPDATE.md`. Design choices and open items: `DECISIONS.md`, `STATE.md`.
