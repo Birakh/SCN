@@ -756,14 +756,14 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
   <div id="acc-badge" class="acc-badge" style="display:none"></div>
   <div class="legend">
     <span class="lpill lp-normal" data-i18n="legEarly">Early 07–15</span>
-    <span class="lpill lp-middle"><span data-i18n="legMiddle">Middle 11:30–20</span> <b style="color:#0f6e56">+€35.50</b></span>
-    <span class="lpill lp-late"><span data-i18n="legLate">Late 14–22:30</span> <b style="color:#3c3489">+€50</b></span>
-    <span class="lpill lp-latenight"><span data-i18n="legLateNight">Late+Night 14–22:30</span> <b style="color:#26215c" data-i18n="legNightOnly">+8% only</b></span>
-    <span class="lpill lp-holiday"><span data-i18n="legHoliday">Public holiday</span> <b style="color:#854f0b">+200%</b></span>
+    <span class="lpill lp-middle" id="leg-middle"><span data-i18n="legMiddle">Middle 11:30–20</span> <b id="leg-middle-amt" style="color:#0f6e56"></b></span>
+    <span class="lpill lp-late" id="leg-late"><span data-i18n="legLate">Late 14–22:30</span> <b id="leg-late-amt" style="color:#3c3489"></b></span>
+    <span class="lpill lp-latenight" id="leg-latenight"><span data-i18n="legLateNight">Late+Night 14–22:30</span> <b id="leg-night-amt" style="color:#26215c"></b></span>
+    <span class="lpill lp-holiday" id="leg-holiday"><span data-i18n="legHoliday">Public holiday</span> <b id="leg-hol-amt" style="color:#854f0b"></b></span>
     <span class="lpill lp-leave" data-i18n="legLeave">Urlaub</span>
     <span class="lpill lp-sick" data-i18n="legSick">Sick</span>
-    <span class="lpill lp-ruf" data-i18n="legOnCall">On-call</span>
-    <span class="lpill lp-callin" data-i18n="legCallin">Rufeinsatz</span>
+    <span class="lpill lp-ruf" id="leg-ruf" data-i18n="legOnCall">On-call</span>
+    <span class="lpill lp-callin" id="leg-callin" data-i18n="legCallin">Rufeinsatz</span>
     <span style="font-size:10px;color:#aaa;margin-left:2px"><span data-i18n="otLabel">OT</span>: <span style="color:#ef9f27">●</span>&gt;48h <span style="color:#e24b4a">●</span>&gt;60h</span>
   </div>
   <div class="week-bar" id="week-bar"></div>
@@ -1081,7 +1081,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div class="panel-label" style="margin-top:12px" data-i18n="lblEffRates">Effective rates</div>
       <div class="rrow"><span class="rl">Effective tax rate (LSt / gross)</span><span class="rv" id="tc-effrate">—</span></div>
       <div class="rrow"><span class="rl">Total deduction rate (SV+LSt)</span><span class="rv" id="tc-totrate">—</span></div>
-      <div class="rrow"><span class="rl">Hourly rate net (173.33h/month)</span><span class="rv" id="tc-hourly">—</span></div>
+      <div class="rrow"><span class="rl" id="tc-hourly-lbl">Hourly rate net (173.33h/month)</span><span class="rv" id="tc-hourly">—</span></div>
       <div class="rrow"><span class="rl">Marginal tax bracket</span><span class="rv" id="tc-marginal">—</span></div>
 
       <div class="panel-label" style="margin-top:12px" data-i18n="lblBrackets">2026 Lohnsteuer brackets</div>
@@ -1406,6 +1406,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setWBFRate">Housing subsidy contribution — WBF (% of gross)
           <span class="tip" data-i18n-title="tipWBFRate" title="Wohnbauförderungsbeitrag — a state-level SV contribution. Lower Austria (NÖ): 0.5%. Vienna: 0.5%. Other states may differ. Check your payslip.">ℹ</span></label>
         <input type="number" id="wbf-rate" value="0.5" step="0.1" min="0" max="1" onchange="saveSettings();renderAll()">
+      </div>
+      <div style="margin-bottom:8px">
+        <label for="work-pct" style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setWorkPct">Employment level (% of full time)</label>
+        <input type="number" id="work-pct" min="10" max="100" step="1" value="100" onchange="saveSettings();renderAll()">
+        <div style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="setWorkPctHint">100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).</div>
       </div>
       <div style="margin-bottom:8px">
         <label for="pay-day" style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setPayDay">Payday (day of month, optional)</label>
@@ -1805,6 +1810,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
       <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="wizQ2Hint">Most Austrian employees receive Urlaubsgeld (June) + Weihnachtsgeld (November).</div>
     </div>
     <div style="margin-bottom:12px">
+      <label for="wiz-work-pct" style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQWork">Employment level (% of full time)</label>
+      <input type="number" id="wiz-work-pct" min="10" max="100" step="1" value="100" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px">
+      <div style="font-size:10px;color:#aaa;margin-top:3px" data-i18n="wizQWorkHint">100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.</div>
+    </div>
+    <div style="margin-bottom:12px">
       <label for="wiz-year" style="font-size:12px;font-weight:500;display:block;margin-bottom:4px" data-i18n="wizQYear">Estimate for year</label>
       <select id="wiz-year" onchange="wizEstimate()" style="width:100%;padding:7px 10px;font-size:13px;border:.5px solid #ccc;border-radius:7px"></select>
     </div>
@@ -1996,7 +2006,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
    "cap": 200
   },
   "pendlerEuroKm": 6,
-  "sourcesChecked": "2026-11-16",
+  "szFreibetrag": 620,
+  "szRate": 0.06,
+  "szFreigrenze": 2615,
+  "wkPauschale": 132,
+  "sourcesChecked": "2026-11-20",
   "sources": {
    "hbgl": [
     "https://www.oesterreich.gv.at/de/lexicon/H/Seite.991498",
@@ -2011,12 +2025,22 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
    ],
    "pendlerEuroKm": [
     "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ],
+   "szFreibetrag": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40274896/NOR40274896.rtf"
+   ],
+   "szRate": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40274896/NOR40274896.rtf"
+   ],
+   "szFreigrenze": [
+    "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40274896/NOR40274896.rtf"
    ]
   },
   "unverifiedFields": [
    "avBr",
    "avFull",
-   "ovt"
+   "ovt",
+   "wkPauschale"
   ],
   "note": {
    "en": "",
@@ -2084,7 +2108,11 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
    "cap": 120
   },
   "pendlerEuroKm": 6,
-  "sourcesChecked": "2026-11-17",
+  "szFreibetrag": 620,
+  "szRate": 0.06,
+  "szFreigrenze": 2675,
+  "wkPauschale": 132,
+  "sourcesChecked": "2026-11-20",
   "sources": {
    "brackets": [
     "https://www.ris.bka.gv.at/Dokumente/BgblAuth/BGBLA_2026_II_260/BGBLA_2026_II_260.html",
@@ -2095,17 +2123,23 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
    ],
    "pendlerEuroKm": [
     "https://ris.bka.gv.at/Dokumente/Bundesnormen/NOR40279911/NOR40279911.rtf"
+   ],
+   "szFreigrenze": [
+    "https://www.ris.bka.gv.at/Dokumente/BgblAuth/BGBLA_2026_II_260/BGBLA_2026_II_260.html"
    ]
   },
   "unverifiedFields": [
    "hbgl",
    "avBr",
    "avFull",
-   "ovt"
+   "ovt",
+   "szFreibetrag",
+   "szRate",
+   "wkPauschale"
   ],
   "note": {
-   "en": "Provisional values. The tax tariff and the commuter tax credit match the 2027 inflation adjustment regulation (BGBl. II 260/2026, checked 2026-11-17). The social-insurance values for 2027 (maximum contribution base, reduced unemployment-insurance steps) were not found in an official source yet; press reports say the official publication was still pending in October 2026.",
-   "de": "Vorl\u00e4ufige Werte. Der Steuertarif und der Verkehrsabsetzbetrag stimmen mit der Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026, gepr\u00fcft 2026-11-17) \u00fcberein. Die Sozialversicherungswerte 2027 (H\u00f6chstbeitragsgrundlage, verminderte Arbeitslosenversicherung) wurden noch nicht in einer offiziellen Quelle gefunden; laut Presse stand die offizielle Kundmachung im Oktober 2026 noch aus."
+   "en": "Provisional values (checked 2026-11-19). The tax tariff and the commuter tax credit match the 2027 inflation adjustment regulation (BGBl. II 260/2026). The social-insurance values for 2027 are projected: payroll newsletters and the press report them as published by the health insurance fund, but the official Federal Law Gazette publication was still pending. The unemployment-insurance steps in this table apply to employments that already existed on 31 Dec 2026. For employments starting on or after 1 Jan 2027, reports give 1.00% up to 2,327, 2.00% up to 2,539 and 2.95% above. The app has no setting for the start of employment, so new 2027 employments are not modelled correctly.",
+   "de": "Vorl\u00e4ufige Werte (gepr\u00fcft 2026-11-19). Der Steuertarif und der Verkehrsabsetzbetrag stimmen mit der Inflationsanpassungsverordnung 2027 (BGBl. II 260/2026) \u00fcberein. Die Sozialversicherungswerte 2027 sind voraussichtlich: Lohnverrechnungs-Newsletter und Presse berichten sie als von der Gesundheitskasse ver\u00f6ffentlicht, die offizielle Kundmachung im Bundesgesetzblatt stand aber noch aus. Die Stufen der Arbeitslosenversicherung in dieser Tabelle gelten f\u00fcr Dienstverh\u00e4ltnisse, die am 31.12.2026 bereits bestanden. F\u00fcr Dienstverh\u00e4ltnisse ab 1.1.2027 berichten die Quellen 1,00 % bis 2.327, 2,00 % bis 2.539 und 2,95 % dar\u00fcber. Die App hat keine Einstellung f\u00fcr den Beginn des Dienstverh\u00e4ltnisses, neue Dienstverh\u00e4ltnisse 2027 werden daher nicht korrekt abgebildet."
   }
  }
 }
@@ -2268,7 +2302,7 @@ var SV_TOTAL=SV_KV+SV_PV+SV_AV+SV_AK+SV_WBF; // 0.1807
 function calcLohnsteuerAnnual(annualTaxableAfterSV, pendler, fambonus, pendlerEuro){
   // 2026: Sonderausgabenpauschale abolished; only Werbungskostenpauschale €132 remains
   // Pendlerpauschale deducted before brackets; Familienbonus Plus after
-  var adj=annualTaxableAfterSV-(pendler||0)-132;
+  var adj=annualTaxableAfterSV-(pendler||0)-WK_PAUSCHALE;
   if(adj<=0) return 0;
   var tax=0;
   BRACKETS.forEach(function(b){
@@ -2299,9 +2333,9 @@ function avRate(monthlyGross){
 // SV values per OeGK announcement (HBGL 7,410; AV brackets 0.5/1.5/2.5%; BGBl pending). Unchanged by law: KV 3.87, PV 10.25, AV 2.95 (top), AK 0.5.
 // To add a year: append an entry, set status, run the replay/unit tests.
 var LAST_ERROR='';
-window.addEventListener('error',function(e){try{LAST_ERROR=String(e.message||'error').slice(0,120)+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){} try{_boundary(e.message);}catch(x){}});
-window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+String((e.reason&&e.reason.message)||e.reason||'').slice(0,120);}catch(x){}});
-var APP_VERSION='1.0.0';
+window.addEventListener('error',function(e){try{LAST_ERROR=_redactErr(e.message||'error')+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){} try{_boundary(e.message);}catch(x){}});
+window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+_redactErr((e.reason&&e.reason.message)||e.reason||'');}catch(x){}});
+var APP_VERSION='1.1.0';
 var BUILD='__BUILD__'; // replaced by the deploy action with the commit hash; the committed file keeps the placeholder
 var RATES_VERIFIED='2026-10-30';
 // Rates live in the JSON block (id="rates-json") above; each year records status, sources and fields without a recorded source.
@@ -2311,12 +2345,13 @@ var RATES=(function(){
     var r=raw[y];
     out[y]={status:r.status,hbgl:r.hbgl,avFull:r.avFull,avBr:r.avBr,
       brackets:r.brackets.map(function(b){return [b[0],b[1]===null?Infinity:b[1],b[2]];}),
-      vab:r.vab,ovt:r.ovt,pendlerEuroKm:r.pendlerEuroKm,
+      vab:r.vab,ovt:r.ovt,pendlerEuroKm:r.pendlerEuroKm,szFreibetrag:r.szFreibetrag,szRate:r.szRate,szFreigrenze:r.szFreigrenze,wkPauschale:r.wkPauschale,
       meta:{sources:r.sources||{},unverified:r.unverifiedFields||[],note:r.note||{en:'',de:''},checked:r.sourcesChecked||''}};
   });
   return out;
 })();
 var VAB=496, OVT={hours:15,cap:200}, PENDLER_EURO_KM=6, RATES_YEAR=2026, RATES_REQ=2026;
+var SZ_FREIBETRAG=620, SZ_RATE=0.06, SZ_FREIGRENZE=2615, WK_PAUSCHALE=132;
 function useRates(y){
   var ys=Object.keys(RATES).map(Number).sort();
   var key=RATES[y]?y:(y<ys[0]?ys[0]:ys[ys.length-1]);
@@ -2324,6 +2359,7 @@ function useRates(y){
   RATES_YEAR=key; RATES_REQ=y;
   BRACKETS=R.brackets.map(function(b){return {from:b[0],to:b[1],rate:b[2]};});
   SV_AV_BRACKETS=R.avBr; SV_AV=R.avFull; SV_CAP_MONTHLY=R.hbgl; VAB=R.vab; OVT=R.ovt; PENDLER_EURO_KM=R.pendlerEuroKm;
+  SZ_FREIBETRAG=R.szFreibetrag; SZ_RATE=R.szRate; SZ_FREIGRENZE=R.szFreigrenze; WK_PAUSCHALE=R.wkPauschale;
 }
 useRates(new Date().getFullYear());
 
@@ -2473,7 +2509,7 @@ function supplStart(start,from){return(from&&start>='06:00'&&start<from)?from:st
 // Hourly rate. gesundheit_rt payslips (May-Oct 2026): Stundensatz = Gehalt/173, rounded to cents (4776.66 -> 27.61).
 function kvHourly(base){
   var r=getActiveKVRules();
-  var h=base/(r.hourlyDivisor||173.33);
+  var h=base/((r.hourlyDivisor||173.33)*_workFactor());
   return r.roundHourly?Math.round(h*100)/100:h;
 }
 // §68 Abs 2 EStG: Ueberstundenzuschlag LSt-free up to 50% of Grundlohn for the first 10 OT hours, max EUR 120/month
@@ -2604,7 +2640,9 @@ function _calcSalary(year,month){
     corrTax=(corr-corrSV)*marginalRate(annualLSTBase);                 // tax at the marginal rate ('Differenz aus Vormonaten')
   }
   var gross = svTaxable+(s.rufSVBase?0:rufPay)-br+corr; // rufPay already inside svTaxable when rufSVBase
-  var net   = gross-svM.total-corrSV-lst-corrTax;
+  // Payslip arithmetic: gross, SV and income tax are each rounded to cents first and the net is their difference (a payslip prints rounded lines).
+  // Replay of 4 real payslips (May-Oct 2026): this reproduces the net to the cent where the unrounded difference was off by 0.01.
+  var net   = _c2(_c2(gross)-_c2(svM.total)-_c2(lst)-corrSV-corrTax);
 
   return {
     base,
@@ -2645,7 +2683,9 @@ function calcSonderzahlung(base, wbfRate){
   // and 6% flat rate apply to the SV-reduced amount (validated against a real Austrian hospital payslip).
   var svAmount=calcSVSZ(base).total; // KV+PV+AV only, respects AV brackets and cap
   var afterSV=base-svAmount;
-  var lst=Math.max(0,afterSV-620)*0.06;
+  // EStG 67 Abs 1: if the Jahressechstel (one sixth of the annualised regular pay = 2 x the monthly regular pay) is at most the Freigrenze, the fixed-rate taxation does not apply.
+  // The month's base stands in for the regular pay (supplements are not added), so near the limit this is an estimate.
+  var lst=(2*base<=SZ_FREIGRENZE)?0:Math.max(0,afterSV-SZ_FREIBETRAG)*SZ_RATE;
   return {gross:base, sv:svAmount, lst:lst, net:base-svAmount-lst};
 }
 
@@ -2749,7 +2789,7 @@ function renderReport(){
     renderAccBadge(badgeEl);
   })();
   // Hourly strip — compute SZ once, derive annual figures from salaryModel
-  var _div=getActiveKVRules().hourlyDivisor||173.33;
+  var _div=(getActiveKVRules().hourlyDivisor||173.33)*_workFactor();
   var baseHourly=kvHourly(r.base);
   var netHourly=r.net/_div;
   var szCalc=calcSonderzahlung(r.base, s.wbfRate);
@@ -2763,7 +2803,7 @@ function renderReport(){
   var szCount=Math.min(s.salaryModel-12, configuredSZ); // 0,1,2
   var annualGross=r.gross*12+szCalc.gross*szCount;
   var annualNet  =r.net*12  +szCalc.net  *szCount;
-  var trueHourly =annualNet/(12*(getActiveKVRules().hourlyDivisor||173.33));
+  var trueHourly =annualNet/(12*(getActiveKVRules().hourlyDivisor||173.33)*_workFactor());
   var annualLabel='Annual gross ('+s.salaryModel+' sal.)';
   document.getElementById('r-hourly-base').textContent='€ '+baseHourly.toFixed(2)+'/h';
   document.getElementById('r-hourly-net').textContent='€ '+netHourly.toFixed(2)+'/h';
@@ -3092,7 +3132,7 @@ function renderTaxCalc(){
     {l:'Monthly net',v:fmt(monthlyNet),s:'incl. hazard allow.'},
     {l:'Annual net',v:fmt(annualNet),s:''},
     {l:'Effective tax rate',v:effRate.toFixed(1)+'%',s:'LSt / gross'},
-    {l:'Hourly rate (net)',v:'€ '+(monthlyNet/173.33).toFixed(2)+'/h',s:'173.33h/month'},
+    {l:'Hourly rate (net)',v:'€ '+(monthlyNet/(173.33*_workFactor())).toFixed(2)+'/h',s:(173.33*_workFactor()).toFixed(2)+'h/month'},
   ];
   document.getElementById('tc-summary').innerHTML=cards.map(function(c){
     return '<div class="tscard"><div class="tsl">'+c.l+'</div><div class="tsv">'+c.v+'</div><div class="tss">'+c.s+'</div></div>';
@@ -3136,7 +3176,8 @@ function renderTaxCalc(){
   document.getElementById('tc-anet').textContent=fmt(annualNet);
   document.getElementById('tc-effrate').textContent=effRate.toFixed(2)+'%';
   document.getElementById('tc-totrate').textContent=totRate.toFixed(2)+'%';
-  document.getElementById('tc-hourly').textContent='€ '+(monthlyNet/173.33).toFixed(2)+'/h';
+  document.getElementById('tc-hourly').textContent='€ '+(monthlyNet/(173.33*_workFactor())).toFixed(2)+'/h';
+  var _hl=document.getElementById('tc-hourly-lbl');if(_hl)_hl.textContent='Hourly rate net ('+(173.33*_workFactor()).toFixed(2)+'h/month)';
   document.getElementById('tc-marginal').textContent=(marginal*100).toFixed(0)+'%';
   var capNotice=document.getElementById('tc-cap-notice');
   if(capNotice) capNotice.style.display=monthlyGross>SV_CAP_MONTHLY?'':'none';
@@ -3156,7 +3197,7 @@ function renderTaxCalc(){
     var szNetTotal=sz1.net+sz2.net;
 
     // What LSt would have been without §67 flat rate (i.e. at marginal bracket)
-    var szLSTIfNormal=(Math.max(0,szBase-620)*marginal)*2; // approx: taxable × marginal
+    var szLSTIfNormal=(Math.max(0,szBase-SZ_FREIBETRAG)*marginal)*2; // approx: taxable × marginal
     var szSaving=szLSTIfNormal-szLSTTotal;
 
     document.getElementById('tc-sz-gross').textContent=fmt(szGrossTotal)+' (2 × '+fmt(szBase)+')';
@@ -3241,7 +3282,7 @@ function syncCorrInput(){
   el.value=v?v.toFixed(2):'';
 }
 function marginalRate(annualBase){
-  var a=annualBase-132-getCommute().pendler;
+  var a=annualBase-WK_PAUSCHALE-getCommute().pendler;
   for(var i=BRACKETS.length-1;i>=0;i--){if(a>BRACKETS[i].from)return BRACKETS[i].rate;}
   return 0;
 }
@@ -3290,6 +3331,7 @@ function deleteCustomCard(id,ev){
 }
 
 function renderCalendar(){
+  var _hadCalFocus=!!(document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('day-cell'));
   document.getElementById('month-label').textContent=MONTH_NAMES[currentMonth]+' '+currentYear;
   var today=new Date();
   var isPast=(currentYear<today.getFullYear())||(currentYear===today.getFullYear()&&currentMonth<today.getMonth());
@@ -3368,15 +3410,17 @@ function renderCalendar(){
     } else if(!weekend){
       var hint=document.createElement('span');hint.className='add-hint';hint.textContent='+ add';cell.appendChild(hint);
     }
-    cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label',_cellLabel(k,sh));
+    cell.setAttribute('role','button');cell.tabIndex=-1;cell.setAttribute('aria-label',_cellLabel(k,sh));
+    cell.addEventListener('focus',function(){_calFocusKey=this.dataset.key;[].forEach.call(document.querySelectorAll('#cal-grid .day-cell'),function(c){c.tabIndex=-1;});this.tabIndex=0;});
     if(_msel!==null){var on=_msel.indexOf(k)>=0;cell.setAttribute('aria-pressed',on?'true':'false');if(on)cell.classList.add('msel-on');}
-    cell.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();openModal(this.dataset.key);}});
+    cell.addEventListener('keydown',function(e){if(_calKeyNav(e,this.dataset.key))return;if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();openModal(this.dataset.key);}});
     cell.addEventListener('click',function(){openModal(this.dataset.key);});
     cell.addEventListener('touchstart',function(e){lpStart(e,this.dataset.key);},{passive:true});
     cell.addEventListener('touchend',lpEnd,{passive:true});
     cell.addEventListener('touchmove',lpEnd,{passive:true});
     grid.appendChild(cell);
   }
+  _calRover(_hadCalFocus);
 }
 
 // ═══ WEEK HOURS & BAR ═══
@@ -3906,7 +3950,7 @@ function saveData(){
     markDirty(true);
   }catch(e){
     var warn=document.getElementById('storage-warn');
-    if(warn){warn.style.display='';warn.textContent='⚠️ Storage full — export a backup immediately!';}
+    if(warn){warn.style.display='';warn.textContent='⚠️ '+bi('Storage full \u2014 export a backup immediately!','Speicher voll \u2014 exportiere sofort ein Backup!');}
   }
 }
 function markDirty(isDirty){
@@ -3914,7 +3958,7 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,payDay:document.getElementById('pay-day').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,payDay:document.getElementById('pay-day').value,workPct:document.getElementById('work-pct').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
 function saveSettings(){
   var prev=null,now=null;
   try{prev=localStorage.getItem('sp_settings');}catch(e){}
@@ -3951,6 +3995,7 @@ function loadData(){
       if(c.salaryModel)document.getElementById('salary-model').value=c.salaryModel;
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
       if(c.payDay!=null)document.getElementById('pay-day').value=c.payDay;
+      if(c.workPct!=null)document.getElementById('work-pct').value=c.workPct;
       if(c.pendler!=null)document.getElementById('tc-pendler').value=c.pendler;
       if(c.fambonus!=null)document.getElementById('tc-fambonus').value=c.fambonus;
       if(c.pendlerKm!=null)document.getElementById('tc-pendler-km').value=c.pendlerKm;
@@ -4043,11 +4088,16 @@ function setSyncStatus(msg,isErr){
 }
 
 // ═══ AES-GCM CRYPTO ═══
-async function deriveKey(password,salt){
+// ═══ SYNC ENCRYPTION ═══
+// Format v2 (written now): "PCV2:<iterations>:" + base64(salt16 | iv12 | ciphertext); the header is authenticated as AES-GCM additional data.
+// Without the prefix: legacy format (base64 of the same layout, 200000 iterations), still readable. Older app versions cannot read v2.
+// PBKDF2-HMAC-SHA256 at 600000 iterations follows the OWASP Password Storage Cheat Sheet (Argon2id is not available in WebCrypto).
+var KDF_ITERATIONS=600000, KDF_MIN_ITERATIONS=100000, KDF_MAX_ITERATIONS=2000000, KDF_LEGACY_ITERATIONS=200000, PAYLOAD_PREFIX='PCV2:';
+async function deriveKey(password,salt,iterations){
   var enc=new TextEncoder();
   var keyMat=await window.crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
   return window.crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt:salt,iterations:200000,hash:'SHA-256'},
+    {name:'PBKDF2',salt:salt,iterations:iterations||KDF_LEGACY_ITERATIONS,hash:'SHA-256'},
     keyMat,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
   );
 }
@@ -4060,24 +4110,53 @@ function uint8ToBase64(bytes){
   return btoa(binary);
 }
 
+// The iteration count comes from the (untrusted) remote file: accept only a sane range
+function parsePayload(text){
+  var s=String(text).trim();
+  if(s.indexOf(PAYLOAD_PREFIX)!==0) return {v:1,iterations:KDF_LEGACY_ITERATIONS,b64:s};
+  var m=/^PCV2:(\d{1,8}):([A-Za-z0-9+\/]+={0,2})$/.exec(s);
+  var it=m?parseInt(m[1],10):0;
+  if(!m||it<KDF_MIN_ITERATIONS||it>KDF_MAX_ITERATIONS) throw new Error(I18N[getLang()].syncFormat);
+  return {v:2,iterations:it,b64:m[2]};
+}
+
 async function encryptPayload(plaintext,password){
   var enc=new TextEncoder();
   var salt=window.crypto.getRandomValues(new Uint8Array(16));
   var iv=window.crypto.getRandomValues(new Uint8Array(12));
-  var key=await deriveKey(password,salt);
-  var cipherBuf=await window.crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,enc.encode(plaintext));
+  var it=KDF_ITERATIONS;
+  var key=await deriveKey(password,salt,it);
+  var cipherBuf=await window.crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(PAYLOAD_PREFIX+it)},key,enc.encode(plaintext));
   // Pack salt(16) + iv(12) + ciphertext into base64
   var combined=new Uint8Array(16+12+cipherBuf.byteLength);
   combined.set(salt,0);combined.set(iv,16);combined.set(new Uint8Array(cipherBuf),28);
-  return uint8ToBase64(combined);
+  return PAYLOAD_PREFIX+it+':'+uint8ToBase64(combined);
 }
 
-async function decryptPayload(b64,password){
-  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0);});
+async function decryptPayload(text,password){
+  var p=parsePayload(text),raw;
+  try{raw=Uint8Array.from(atob(p.b64),function(c){return c.charCodeAt(0);});}catch(e){throw new Error(I18N[getLang()].syncFormat);}
+  if(raw.length<28+16) throw new Error(I18N[getLang()].syncFormat);
   var salt=raw.slice(0,16),iv=raw.slice(16,28),cipher=raw.slice(28);
-  var key=await deriveKey(password,salt);
-  var plain=await window.crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,cipher);
+  var key=await deriveKey(password,salt,p.iterations);
+  var params={name:'AES-GCM',iv:iv};
+  if(p.v===2) params.additionalData=new TextEncoder().encode(PAYLOAD_PREFIX+p.iterations);
+  var plain=await window.crypto.subtle.decrypt(params,key,cipher);
   return new TextDecoder().decode(plain);
+}
+
+// Inputs that end up in URLs and passwords that protect the remote copy
+function checkSyncPassword(pw){
+  var chars=Array.from(String(pw||''));
+  return (chars.length<12||new Set(chars).size<5)?'syncPwShort':'';
+}
+function isValidRepo(r){
+  var m=/^([A-Za-z0-9_.-]{1,100})\/([A-Za-z0-9_.-]{1,100})$/.exec(String(r||''));
+  return !!m&&!/^\.+$/.test(m[1])&&!/^\.+$/.test(m[2]);
+}
+function isValidBranch(b){
+  b=String(b||'');
+  return /^[A-Za-z0-9._\/-]{1,100}$/.test(b)&&b.indexOf('..')<0&&b.charAt(0)!=='/'&&b.slice(-1)!=='/'&&b.indexOf('//')<0;
 }
 
 // ═══ GITHUB REPO SYNC ═══
@@ -4100,9 +4179,17 @@ function repoHeaders(pat){
   return {'Authorization':'token '+pat,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'};
 }
 
+// true / false, or null when GitHub does not say. Throws with GitHub's message on an error response.
+async function repoIsPrivate(pat,repo){
+  var resp=await fetch('https://api.github.com/repos/'+repo,{headers:repoHeaders(pat)});
+  if(!resp.ok){var e=await resp.json();throw new Error(e.message||resp.status);}
+  var d=await resp.json();
+  return typeof d.private==='boolean'?d.private:null;
+}
+
 // Returns {sha, content} if file exists, or null if 404
 async function repoGetFile(pat,repo,branch){
-  var resp=await fetch(repoApiUrl(repo)+'?ref='+branch,{headers:repoHeaders(pat)});
+  var resp=await fetch(repoApiUrl(repo)+'?ref='+encodeURIComponent(branch),{headers:repoHeaders(pat)});
   if(resp.status===404) return null;
   if(!resp.ok){var e=await resp.json();throw new Error(e.message||resp.status);}
   var data=await resp.json();
@@ -4111,7 +4198,7 @@ async function repoGetFile(pat,repo,branch){
 
 // ═══ WHAT IS BACKED UP ═══
 // Data + settings + templates/cards/corrections + display preferences. NEVER the GitHub token or the sync password.
-var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','payDay','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
+var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','payDay','workPct','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
 function sanitizeSettings(c){
   if(!c||typeof c!=='object') return null;
   var out={};
@@ -4167,32 +4254,41 @@ async function syncToRepo(){
   if(DEMO){setSyncStatus(I18N[getLang()].demoNoSync,true);return;}
   var cfg=getRepoConfig();
   var password=document.getElementById('sync-password').value;
-  if(!cfg.pat){setSyncStatus('⚠ Enter a GitHub PAT first.',true);return;}
-  if(!cfg.repo){setSyncStatus('⚠ Enter a repository (owner/repo-name).',true);return;}
-  if(!password){setSyncStatus('⚠ Enter a Sync Password first.',true);return;}
-  setSyncStatus('🔐 Encrypting…',false);
+  if(!cfg.pat){setSyncStatus('⚠ '+bi('Enter a GitHub PAT first.','Gib zuerst ein GitHub-Token (PAT) ein.'),true);return;}
+  if(!cfg.repo){setSyncStatus('⚠ '+bi('Enter a repository (owner/repo-name).','Gib ein Repository an (Besitzer/Repo-Name).'),true);return;}
+  if(!password){setSyncStatus('⚠ '+bi('Enter a Sync Password first.','Gib zuerst ein Sync-Passwort ein.'),true);return;}
+  var T=I18N[getLang()];
+  if(!isValidRepo(cfg.repo)){setSyncStatus('⚠ '+T.syncBadRepo,true);return;}
+  if(!isValidBranch(cfg.branch)){setSyncStatus('⚠ '+T.syncBadBranch,true);return;}
+  var pwKey=checkSyncPassword(password);
+  if(pwKey){setSyncStatus('⚠ '+T[pwKey],true);return;}
+  setSyncStatus('🔍 '+T.syncChecking,false);
   try{
+    var priv=await repoIsPrivate(cfg.pat,cfg.repo);
+    if(priv===false) throw new Error(T.syncPublicRepo);
+    if(priv===null&&!confirm(T.syncPrivUnknown)) throw new Error('Cancelled');
+    setSyncStatus('🔐 '+bi('Encrypting\u2026','Verschl\u00fcssele\u2026'),false);
     var payload=JSON.stringify(collectState());
     var encrypted=await encryptPayload(payload,password);
     // GitHub API requires file content as base64 — our encrypted string is ASCII base64 itself
     var b64content=btoa(encrypted);
     // Get current SHA if file already exists (required for updates, omit for creates)
-    setSyncStatus('🔍 Checking remote…',false);
+    setSyncStatus('🔍 '+bi('Checking remote\u2026','Pr\u00fcfe Repository-Datei\u2026'),false);
     var existing=await repoGetFile(cfg.pat,cfg.repo,cfg.branch);
     // Auto commit message: date + current viewing month
     var today=new Date().toISOString().slice(0,10);
     var commitMsg='Backup '+today+' '+MONTH_NAMES[currentMonth]+' '+currentYear;
     var body={message:commitMsg,content:b64content,branch:cfg.branch};
     if(existing) body.sha=existing.sha;
-    setSyncStatus('⬆ Pushing to repo…',false);
+    setSyncStatus('⬆ '+bi('Pushing to repo\u2026','Lade ins Repository hoch\u2026'),false);
     var resp=await fetch(repoApiUrl(cfg.repo),{method:'PUT',headers:repoHeaders(cfg.pat),body:JSON.stringify(body)});
     if(!resp.ok){var err=await resp.json();throw new Error(err.message||resp.status);}
-    setSyncStatus('✓ Pushed — commit: '+commitMsg,false);
+    setSyncStatus('✓ '+bi('Pushed \u2014 commit: ','Hochgeladen \u2014 Commit: ')+commitMsg,false);
     try{localStorage.setItem('sp_pushed',new Date().toLocaleString('de-AT')+' · '+commitMsg);}catch(e){}
     markDirty(false);
     renderLastSynced();
   }catch(e){
-    setSyncStatus('✗ Push failed: '+e.message,true);
+    setSyncStatus('✗ '+bi('Push failed: ','Hochladen fehlgeschlagen: ')+e.message,true);
   }finally{
     document.getElementById('sync-password').value='';
   }
@@ -4202,16 +4298,19 @@ async function syncFromRepo(){
   if(DEMO){setSyncStatus(I18N[getLang()].demoNoSync,true);return;}
   var cfg=getRepoConfig();
   var password=document.getElementById('sync-password').value;
-  if(!cfg.pat||!cfg.repo){setSyncStatus('⚠ PAT and Repository are required to pull.',true);return;}
-  if(!password){setSyncStatus('⚠ Enter your Sync Password to decrypt.',true);return;}
+  if(!cfg.pat||!cfg.repo){setSyncStatus('⚠ '+bi('PAT and Repository are required to pull.','Zum Abrufen werden Token (PAT) und Repository ben\u00f6tigt.'),true);return;}
+  if(!password){setSyncStatus('⚠ '+bi('Enter your Sync Password to decrypt.','Gib dein Sync-Passwort zum Entschl\u00fcsseln ein.'),true);return;}
+  if(!isValidRepo(cfg.repo)){setSyncStatus('⚠ '+I18N[getLang()].syncBadRepo,true);return;}
+  if(!isValidBranch(cfg.branch)){setSyncStatus('⚠ '+I18N[getLang()].syncBadBranch,true);return;}
   if(!confirm('Pull from repo?\n\nThis will OVERWRITE all local shifts, actuals, OT data, templates and settings with the remote copy (settings only if the remote copy has them).')){return;}
-  setSyncStatus('⬇ Fetching from repo…',false);
+  setSyncStatus('⬇ '+bi('Fetching from repo\u2026','Rufe aus dem Repository ab\u2026'),false);
   try{
     var file=await repoGetFile(cfg.pat,cfg.repo,cfg.branch);
     if(!file)throw new Error(REPO_FILE+' not found in repo — push first to create it.');
     // atob the API base64 → gives back our encrypted base64 string
     var encrypted=atob(file.content);
-    setSyncStatus('🔓 Decrypting…',false);
+    var legacyFmt=parsePayload(encrypted).v===1;
+    setSyncStatus('🔓 '+bi('Decrypting\u2026','Entschl\u00fcssele\u2026'),false);
     var plain=await decryptPayload(encrypted,password);
     var parsed=JSON.parse(plain);
     if(!parsed.shifts)throw new Error('Decrypted data looks invalid — wrong password?');
@@ -4225,11 +4324,11 @@ async function syncFromRepo(){
     markDirty(false);
     renderAll();
     var ts=new Date().toLocaleTimeString('de-AT');
-    setSyncStatus('✓ Pulled & loaded at '+ts,false);
+    setSyncStatus('✓ '+bi('Pulled & loaded at ','Abgerufen & geladen um ')+ts+(legacyFmt?' · '+I18N[getLang()].syncLegacy:''),false);
     try{localStorage.setItem('sp_pulled',new Date().toLocaleString('de-AT'));}catch(e){}
     renderLastSynced();
   }catch(e){
-    setSyncStatus('✗ Pull failed: '+(e.message||'Decryption error — check password.'),true);
+    setSyncStatus('✗ '+bi('Pull failed: ','Abrufen fehlgeschlagen: ')+(e.message||bi('Decryption error \u2014 check password.','Entschl\u00fcsselungsfehler \u2014 Passwort pr\u00fcfen.')),true);
   }finally{
     document.getElementById('sync-password').value='';
   }
@@ -5052,7 +5151,7 @@ function renderPayday(){
 }
 function _ratesKeyFor(y){var ks=Object.keys(RATES).map(Number),lo=Math.min.apply(null,ks),hi=Math.max.apply(null,ks);return y<lo?lo:(y>hi?hi:y);}
 // Only gesundheit_rt is validated against real payslips, and only for the years in VERIFIED_YEARS.
-function accuracyBadge(key,name,year,status,T){
+function accuracyBadge(key,name,year,status,T,workPct){
   var cls,text;
   if(!key||!name){cls='kv-badge-none';text='\u26a0 '+T.accNone;}
   else if(key==='gesundheit_rt'){
@@ -5060,13 +5159,14 @@ function accuracyBadge(key,name,year,status,T){
     cls=okY?'kv-badge-verified':'kv-badge-unverified';
     text=(okY?'\u2713 ':'\u26a0 ')+name+': '+(okY?T.accVerified:T.accVerifiedOther);
   } else {cls='kv-badge-unverified';text='\u26a0 '+name+': '+T.accUnverified;}
+  if(workPct&&workPct<100){cls='kv-badge-unverified';text=text.replace(/^\u2713/,'\u26a0')+' \u00b7 \u26a0 '+T.accPartTime.replace('{p}',workPct);}
   if(status!=='official') text+=' \u00b7 \u26a0 '+T.accProv.replace('{y}',year);
   return {cls:cls,text:text};
 }
 function renderAccBadge(el){
   if(!el) return;
   var kvEl=document.getElementById('kv-preset'),key=kvEl?kvEl.value:'',tpl=key?KV_TEMPLATES[key]:null;
-  var yr=_ratesKeyFor(currentYear),b=accuracyBadge(key,tpl&&tpl.name,yr,RATES[yr].status,I18N[getLang()]);
+  var yr=_ratesKeyFor(currentYear),b=accuracyBadge(key,tpl&&tpl.name,yr,RATES[yr].status,I18N[getLang()],Math.round(_workFactor()*100));
   while(el.firstChild) el.removeChild(el.firstChild);
   var sp=document.createElement('span');sp.className=b.cls;sp.textContent=b.text;el.appendChild(sp);
 }
@@ -5094,6 +5194,121 @@ function mselClear(){
 }
 function _azgText(h){return I18N[getLang()].azgWarn.replace('{h}',h);}
 function _renderTopBadge(){var el=document.getElementById('acc-badge');if(!el)return;renderAccBadge(el);el.style.display='';}
+// Legend values come from the active sector rules and the supplement fields; template percentages are marked "~" unless the sector is validated.
+var LEGEND_HOLIDAY={'200_deferred':'+200%','150_same':'+150%','none':''};
+function legendInfo(rules,kv,middleV,lateV,present){
+  rules=rules||{};present=present||{};
+  function eur(v){v=parseFloat(v);if(!(v>0))return '';return '+\u20ac'+(Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):v.toFixed(2));}
+  var approx=kv!=='gesundheit_rt',mark=approx?'~':'';
+  var pct=rules.nightAllowancePct!=null?rules.nightAllowancePct:0.08;
+  var hol=LEGEND_HOLIDAY[rules.holidayMode];
+  return {
+    approx:approx,
+    showMiddle:rules.hasMiddle!==false||!!present.middle,
+    showLateNight:rules.hasLateNight!==false||!!present.latenight,
+    showRuf:rules.hasRuf!==false||!!present.ruf,
+    showCallin:rules.hasCallin!==false||!!present.callin,
+    middle:eur(middleV),late:eur(lateV),
+    nightPct:pct>0?String(+(pct*100).toFixed(1)):'',
+    holiday:hol?mark+hol:'',
+    nightMark:mark
+  };
+}
+function renderLegend(){
+  var m=document.getElementById('leg-middle-amt'),kvEl=document.getElementById('kv-preset');if(!m||!kvEl) return;
+  var T=I18N[getLang()],present={};
+  Object.keys(shifts).forEach(function(k){if(shifts[k]&&shifts[k].type)present[shifts[k].type]=true;});
+  var L=legendInfo(getActiveKVRules(),kvEl.value,document.getElementById('middle-suppl').value,document.getElementById('late-suppl').value,present);
+  function show(id,on){var e=document.getElementById(id);if(e)e.style.display=on?'':'none';}
+  function txt(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
+  show('leg-middle',L.showMiddle);show('leg-latenight',L.showLateNight);show('leg-ruf',L.showRuf);show('leg-callin',L.showCallin);
+  txt('leg-middle-amt',L.middle);txt('leg-late-amt',L.late);
+  txt('leg-night-amt',L.nightPct?L.nightMark+T.legNightOnly.replace('{p}',L.nightPct):'');
+  txt('leg-hol-amt',L.holiday);
+  ['leg-middle','leg-late','leg-latenight','leg-holiday'].forEach(function(id){var e=document.getElementById(id);if(e){if(L.approx)e.setAttribute('title',T.legTemplate);else e.removeAttribute('title');}});
+}
+// Round to cents, halves away from zero; the tiny epsilon makes 1.005 and 2.675 round the way decimal arithmetic does.
+function _c2(x){var s=x<0?-1:1;return s*Math.round(Math.abs(x)*100+1e-7)/100;}
+// Employment level (part-time): the salary entered is the actual monthly gross; hourly supplements use the full-time equivalent.
+// ASSUMPTION, not validated against a part-time payslip: hourly = salary / (divisor x level).
+function _workFactor(){
+  var el=document.getElementById('work-pct'),v=el?parseFloat(el.value):NaN;
+  if(!isFinite(v)||v<10||v>100) return 1; // outside 10-100: ignore (treated as full time) rather than guess
+  return v/100;
+}
+// ═══ SMALL GAPS: redacted last error, dialog focus handling, calendar keyboard navigation ═══
+// Diagnostics: strip quoted fragments (they can contain user text), long digit runs and control characters from an error message.
+function _redactErr(m){return String(m).replace(/[\u0000-\u001f]+/g,' ').replace(/(["'`])[^"'`]*\1/g,'\u2026').replace(/[\u2018\u201c][^\u2018\u2019\u201c\u201d]*[\u2019\u201d]/g,'\u2026').replace(/\d{4,}/g,'#').slice(0,120);}
+var _FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+var _OVERLAY_SEL='.cs-overlay,.disc-overlay,.mjump-overlay,.modal-overlay,.onb-overlay';
+var _overlayReturn=new WeakMap(), _focusTrapOn=false;
+function _isShown(e,root){
+  for(var n=e;n&&n!==root.parentNode;n=n.parentNode){
+    if(n.nodeType!==1) continue;
+    if(n.hidden) return false;
+    var cs=getComputedStyle(n);
+    if(cs.display==='none'||cs.visibility==='hidden') return false;
+  }
+  return true;
+}
+function _focusables(root){return [].slice.call(root.querySelectorAll(_FOCUSABLE)).filter(function(e){return _isShown(e,root);});}
+function _openOverlays(){return [].slice.call(document.querySelectorAll(_OVERLAY_SEL)).filter(function(o){return o.classList.contains('open');});}
+function _topOverlay(){
+  var o=_openOverlays();if(!o.length) return null;
+  o.sort(function(a,b){return (parseInt(getComputedStyle(a).zIndex,10)||0)-(parseInt(getComputedStyle(b).zIndex,10)||0);});
+  return o[o.length-1];
+}
+function _focusIntoOverlay(o){
+  var pref=o.querySelector('input:not([type="hidden"]):not([disabled]),select:not([disabled]),textarea:not([disabled])');
+  var f=_focusables(o),t=(pref&&_isShown(pref,o))?pref:(f[0]||o);
+  if(t===o) o.setAttribute('tabindex','-1');
+  if(!o.contains(document.activeElement)) t.focus();
+}
+// Focus moves into a dialog when it opens, stays inside while Tab is pressed, and returns to where it was when the dialog closes.
+function initFocusTrap(){
+  if(_focusTrapOn) return;_focusTrapOn=true;
+  var mo=new MutationObserver(function(muts){muts.forEach(function(m){
+    var o=m.target,was=(m.oldValue||'').split(/\s+/).indexOf('open')>=0,is=o.classList.contains('open');
+    if(is&&!was){var a=document.activeElement;if(a&&a!==document.body&&!o.contains(a)) _overlayReturn.set(o,a);_focusIntoOverlay(o);}
+    else if(!is&&was){var r=_overlayReturn.get(o);_overlayReturn.delete(o);if(r&&document.contains(r)&&!_topOverlay()){try{r.focus();}catch(e){}}}
+  });});
+  [].forEach.call(document.querySelectorAll(_OVERLAY_SEL),function(o){mo.observe(o,{attributes:true,attributeFilter:['class'],attributeOldValue:true});});
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Tab') return;
+    var o=_topOverlay();if(!o) return;
+    var f=_focusables(o);
+    if(!f.length){e.preventDefault();o.focus();return;}
+    var first=f[0],last=f[f.length-1],a=document.activeElement;
+    if(!o.contains(a)){e.preventDefault();first.focus();}
+    else if(e.shiftKey&&a===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&a===last){e.preventDefault();first.focus();}
+  });
+  _openOverlays().forEach(_focusIntoOverlay);
+}
+// Calendar: one tab stop (roving tabindex); arrow keys move by day and week, Home/End jump to the month's first and last day, PageUp/PageDown change the month.
+var _calFocusKey=null;
+function _calRover(had){
+  var cells=[].slice.call(document.querySelectorAll('#cal-grid .day-cell[data-key]'));if(!cells.length) return;
+  var t=new Date(),tk=(t.getFullYear()===currentYear&&t.getMonth()===currentMonth)?dateKey(currentYear,currentMonth,t.getDate()):null,pick=null;
+  [_calFocusKey,tk].forEach(function(k){if(!pick&&k) pick=cells.filter(function(c){return c.dataset.key===k;})[0]||null;});
+  if(!pick) pick=cells[0];
+  cells.forEach(function(c){c.tabIndex=-1;});pick.tabIndex=0;
+  if(had) pick.focus();
+}
+function _calKeyNav(e,k){
+  var p=k.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]),n=null,step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7};
+  if(e.key in step){n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+step[e.key]);}
+  else if(e.key==='Home'){n=new Date(d.getFullYear(),d.getMonth(),1);}
+  else if(e.key==='End'){n=new Date(d.getFullYear(),d.getMonth()+1,0);}
+  else if(e.key==='PageUp'||e.key==='PageDown'){var m=d.getMonth()+(e.key==='PageUp'?-1:1);n=new Date(d.getFullYear(),m,Math.min(d.getDate(),new Date(d.getFullYear(),m+1,0).getDate()));}
+  else return false;
+  e.preventDefault();e.stopPropagation();
+  var nk=dateKey(n.getFullYear(),n.getMonth(),n.getDate());_calFocusKey=nk;
+  if(n.getFullYear()!==currentYear||n.getMonth()!==currentMonth){_saveLastPos();currentYear=n.getFullYear();currentMonth=n.getMonth();renderAll();}
+  _calRover(false);
+  var c=document.querySelector('#cal-grid .day-cell[data-key="'+nk+'"]');if(c) c.focus();
+  return true;
+}
 function _showToast(msg,duration){
   var toast=document.createElement('div');
   toast.textContent=msg;
@@ -5389,6 +5604,22 @@ function fillWizKV(){
     sel.appendChild(o);
   });
 }
+var KV_NOTES_DE={
+  gesundheit_rt:'An echten \u00f6sterreichischen Krankenhaus-Gehaltsabrechnungen (Radiologietechnologie) gepr\u00fcft: Netto innerhalb von 0,01 EUR pro Monat, nur 2026. Die Referenzvorlage.',
+  gesundheit_kh:'Typischer KV f\u00fcr Wiener/N\u00d6 Krankenanstalten: ungepr\u00fcfte Sch\u00e4tzung. Beim Dienstgeber nachpr\u00fcfen.',
+  gesundheit_pflege:'Soziale Dienste (BAGS): ungepr\u00fcfte Sch\u00e4tzung. Zulagen unterscheiden sich je nach Dienstgeber.',
+  rotes_kreuz:'KV des \u00d6sterreichischen Roten Kreuzes: ungepr\u00fcfte Sch\u00e4tzung.',
+  metall:'Sp\u00e4tschichtzulage ca. \u20ac60/Tag, im selben Monat ausgezahlt: ungepr\u00fcfte Sch\u00e4tzung. Beim Betriebsrat nachfragen.',
+  elektro:'Zulagen laut Schichtvereinbarung: ungepr\u00fcfte Sch\u00e4tzung. Beim Betriebsrat nachfragen.',
+  chemie:'Typische Werte: ungepr\u00fcfte Sch\u00e4tzung. Die Zulagen im Chemie-KV unterscheiden sich stark.',
+  handel:'Der Handels-KV kennt keine Standard-Schichtzulagen: ungepr\u00fcfte Sch\u00e4tzung. Ein Sp\u00e4tabend-Zuschlag kann ab 19:00 gelten.',
+  gastgewerbe:'Gastgewerbe-KV: Nachtzuschlag 20:00\u201306:00: ungepr\u00fcfte Sch\u00e4tzung. Keine fixen Mittel- oder Sp\u00e4tzulagen.',
+  oeffentlich:'Bundesbedienstete VBG/BDG: ungepr\u00fcfte Sch\u00e4tzung. Zulagen per Erlass geregelt. Bei der Dienststelle nachfragen.',
+  it:'IT-KV: \u00fcbliche B\u00fcrozeiten: ungepr\u00fcfte Sch\u00e4tzung. Keine Schichtzulagen, sofern nicht individuell vereinbart.',
+  bewachung:'Bewachungs-KV: Nacht- und Sp\u00e4tzulagen gelten: ungepr\u00fcfte Sch\u00e4tzung. Genaue Betr\u00e4ge beim Dienstgeber erfragen.',
+  transport:'Transport-KV: Sp\u00e4tzulage \u00fcblich: ungepr\u00fcfte Sch\u00e4tzung. Je nach Teilbranche (Stra\u00dfe/Schiene/Luftfahrt) unterschiedlich.'
+};
+function _kvNoteText(key){var t=KV_TEMPLATES[key];if(!t)return '';return (getLang()==='de'&&KV_NOTES_DE[key])?KV_NOTES_DE[key]:t.note;}
 function wizKVChange(){
   var key=document.getElementById('wiz-kv').value,info=document.getElementById('wiz-kv-info');
   if(!info) return;
@@ -5397,7 +5628,7 @@ function wizKVChange(){
   var head=key==='gesundheit_rt'
     ?(de?'\u2713 Anhand echter Gehaltsabrechnungen gepr\u00fcft. ':'\u2713 Verified against real payslips. ')
     :(de?'\u26a0 Ungepr\u00fcfte Sch\u00e4tzung \u2013 mit deiner Gehaltsabrechnung vergleichen. ':'\u26a0 Unverified estimate \u2013 compare with your payslip. ');
-  info.textContent=head+KV_TEMPLATES[key].note;
+  info.textContent=head+_kvNoteText(key);
 }
 function wizSupplChange(){
   var val=document.getElementById('wiz-suppl').value;
@@ -5413,7 +5644,8 @@ function calcWizEstimate(gross,model,year){
   useRates(year);
   try{
     var sc=calcAnnualScenario(gross,m,0,0),sv=calcSVMonthly(gross).total;
-    return {gross:gross,sv:sv,lst:gross-sv-sc.monthlyNet,net:sc.monthlyNet,annualNet:sc.annualNetTotal,year:RATES_YEAR,status:RATES[RATES_YEAR].status};
+    var lst0=gross-sv-sc.monthlyNet,net0=_c2(_c2(gross)-_c2(sv)-_c2(lst0));
+    return {gross:gross,sv:sv,lst:lst0,net:net0,annualNet:sc.annualNetTotal+12*(net0-sc.monthlyNet),year:RATES_YEAR,status:RATES[RATES_YEAR].status};
   }finally{useRates(prev);}
 }
 function fillWizYear(){
@@ -5473,6 +5705,8 @@ function finishWizard(){
   }
   // 'unknown' → leave defaults at 0 (Settings note tells them to check KV)
 
+  var wp=parseFloat(document.getElementById('wiz-work-pct').value);
+  document.getElementById('work-pct').value=(isFinite(wp)&&wp>=10&&wp<=100)?String(Math.round(wp)):'100';
   saveSettings();
   try{localStorage.setItem('sp_wizard_done','1');}catch(e){}
   document.getElementById('wizard-overlay').classList.remove('open');
@@ -5589,6 +5823,19 @@ function applyQuick(){
 // ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
 // To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
 var CHANGELOG=[
+  {v:'1.1.0',d:'2026-11',items:[
+    ['First-run wizard shows an instant net estimate for the chosen year (2027 marked provisional) and asks for your employment level (part-time).','Der Einrichtungsassistent zeigt eine Netto-Sofortsch\u00e4tzung f\u00fcr das gew\u00e4hlte Jahr (2027 als vorl\u00e4ufig markiert) und fragt nach dem Besch\u00e4ftigungsausma\u00df (Teilzeit).'],
+    ['Net now follows payslip arithmetic: gross, SV and income tax are rounded to cents first. On four 2026 payslips of the validated sector the net matches to the cent.','Das Netto folgt der Rechenweise der Abrechnung: Brutto, SV und Lohnsteuer werden zuerst auf Cent gerundet. Bei vier Abrechnungen 2026 der gepr\u00fcften Branche stimmt das Netto auf den Cent.'],
+    ['Bonus payments (13th and 14th salary): the tax-free limit for low incomes is applied; the constants are stored with official sources.','Sonderzahlungen (13. und 14. Gehalt): die Freigrenze f\u00fcr niedrige Einkommen wird ber\u00fccksichtigt; die Konstanten sind mit offiziellen Quellen hinterlegt.'],
+    ['Part-time: hourly supplements use the full-time equivalent. This is an assumption and is not validated against a part-time payslip.','Teilzeit: St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent. Das ist eine Annahme und nicht mit einer Teilzeit-Abrechnung gepr\u00fcft.'],
+    ['Result-first month screen with the net on top, an accuracy badge, payday forecast, multi-day select, undo after deleting, and a glossary.','Monatsansicht mit Netto oben, Genauigkeitshinweis, Zahltag-Prognose, Mehrfachauswahl von Tagen, R\u00fcckg\u00e4ngig nach dem L\u00f6schen und einem Glossar.'],
+    ['Rest-period hints (\"possible issue\", 11 hours) with legal sources; the legend shows the values of your sector and marks unvalidated sectors.','Hinweise zur Ruhezeit (\"m\u00f6gliches Problem\", 11 Stunden) mit rechtlichen Quellen; die Legende zeigt die Werte deiner Branche und kennzeichnet ungepr\u00fcfte Branchen.'],
+    ['The explanation page lists official sources and which values still have none; 2027 stays provisional.','Die Erkl\u00e4rseite listet offizielle Quellen und welche Werte noch keine haben; 2027 bleibt vorl\u00e4ufig.'],
+    ['Safer data: imports and loads are checked, a schema version and a safety copy before import or pull, an error banner with raw export, and a demo mode (?demo=1).','Sicherere Daten: Importe und Ladevorg\u00e4nge werden gepr\u00fcft, Schemaversion und Sicherheitskopie vor Import oder Abruf, Fehlerhinweis mit Rohdaten-Export und ein Demo-Modus (?demo=1).'],
+    ['Sync: stronger key derivation (old backups stay readable), the repository must be private, and the password needs at least 12 characters. Older app versions cannot read new sync files.','Sync: st\u00e4rkere Schl\u00fcsselableitung (alte Backups bleiben lesbar), das Repository muss privat sein und das Passwort braucht mindestens 12 Zeichen. \u00c4ltere App-Versionen k\u00f6nnen neue Sync-Dateien nicht lesen.'],
+    ['iCal export fixed for night shifts at the end of a month or year; notes are escaped.','iCal-Export f\u00fcr Nachtdienste am Monats- oder Jahresende korrigiert; Notizen werden maskiert.'],
+    ['Keyboard and accessibility: focus stays inside dialogs, the calendar has one tab stop with arrow-key navigation, more labels, and German texts for sector notes and sync messages.','Tastatur und Barrierefreiheit: Fokus bleibt in Dialogen, der Kalender hat einen Tabstopp mit Pfeiltasten-Navigation, mehr Beschriftungen und deutsche Texte f\u00fcr Branchenhinweise und Sync-Meldungen.']
+  ]},
   {v:'1.0.0',d:'2026-11',items:[
     ['Rates by year: 2026 (official) and 2027 (provisional), with a warning for other years.','Werte pro Jahr: 2026 (offiziell) und 2027 (vorl\u00e4ufig), mit Hinweis bei anderen Jahren.'],
     ['Staggered unemployment-insurance (AV) brackets for low income; Sonderzahlung SV corrected to 17.07% (no AK levy, no WBF).','Gestaffelte Arbeitslosenversicherung (AV) bei niedrigem Einkommen; SV der Sonderzahlung auf 17,07 % korrigiert (ohne AK-Umlage und WBF).'],
@@ -5690,7 +5937,7 @@ function openExplain(){
     d.appendChild(ul);b.appendChild(d);
   }
   b.textContent='';
-  var hourly=rules.hourlyDivisor||173.33;
+  var hourly=+((rules.hourlyDivisor||173.33)*_workFactor()).toFixed(2);
   var nightTxt=rules.nightLStFree===false
     ?bi('taxable for income tax in this sector (verified on a payslip)','lohnsteuerpflichtig in dieser Branche (an einer Abrechnung gepr\u00fcft)')
     :bi('treated as income-tax-free (\u00a7 68; assumed, unverified for this sector)','als lohnsteuerfrei behandelt (\u00a7 68; angenommen, f\u00fcr diese Branche ungepr\u00fcft)');
@@ -5704,7 +5951,7 @@ function openExplain(){
   ]);
   var comp=[
     bi('Base salary from the grade or salary you entered.','Grundgehalt aus der eingegebenen Einstufung bzw. dem Gehalt.'),
-    bi('Hourly rate = salary \u00f7 '+hourly+(rules.roundHourly?', rounded to cents':'')+'.','Stundensatz = Gehalt \u00f7 '+hourly+(rules.roundHourly?', auf Cent gerundet':'')+'.'),
+    bi('Hourly rate = salary \u00f7 '+hourly+(rules.roundHourly?', rounded to cents':'')+'.'+(_workFactor()<1?' Part-time: full-time equivalent, i.e. salary \u00f7 (divisor \u00d7 employment level). This is an assumption, not validated against a payslip.':''),'Stundensatz = Gehalt \u00f7 '+hourly+(rules.roundHourly?', auf Cent gerundet':'')+'.'+(_workFactor()<1?' Teilzeit: Vollzeit\u00e4quivalent, also Gehalt \u00f7 (Divisor \u00d7 Besch\u00e4ftigungsausma\u00df). Das ist eine Annahme und nicht mit einer Gehaltsabrechnung gepr\u00fcft.':'')),
     bi('Middle and late supplements: flat monthly amount \u00f7 8 = hourly rate (rounded to cents) \u00d7 paid hours; '+(rules.deferSupplements?'paid in the month after the shifts.':'paid in the same month.'),'Mittel- und Sp\u00e4tzulage: monatlicher Pauschalbetrag \u00f7 8 = Stundensatz (auf Cent gerundet) \u00d7 bezahlte Stunden; '+(rules.deferSupplements?'Auszahlung im Folgemonat.':'Auszahlung im selben Monat.')),
     bi('Paid hours = shift length minus an unpaid break of '+rules.breakDeductionMin+' min for shifts of 6 h or more.','Bezahlte Stunden = Dienstl\u00e4nge minus unbezahlte Pause von '+rules.breakDeductionMin+' Min. bei Diensten ab 6 Stunden.')
   ];
@@ -5753,7 +6000,7 @@ function openExplain(){
     box.id='ex-sources';box.style.cssText='margin-top:10px;font-size:11.5px;line-height:1.55';
     function h(t){var e=document.createElement('div');e.style.cssText='font-weight:600;font-size:12px;margin:8px 0 4px';e.textContent=t;box.appendChild(e);}
     function p(t){var e=document.createElement('div');e.textContent=t;box.appendChild(e);}
-    var FL={hbgl:['Maximum contribution base','H\u00f6chstbeitragsgrundlage'],brackets:['Income tax brackets','Tarifstufen'],vab:['Commuter tax credit (Verkehrsabsetzbetrag)','Verkehrsabsetzbetrag'],pendlerEuroKm:['Pendlereuro per km','Pendlereuro pro km'],avBr:['Reduced unemployment-insurance rates','Verminderte Arbeitslosenversicherung'],avFull:['Full unemployment-insurance rate','Voller Arbeitslosenversicherungssatz'],ovt:['Tax-free limits for supplements (\u00a7 68)','Steuerfreie Grenzen f\u00fcr Zuschl\u00e4ge (\u00a7 68)']};
+    var FL={hbgl:['Maximum contribution base','H\u00f6chstbeitragsgrundlage'],brackets:['Income tax brackets','Tarifstufen'],vab:['Commuter tax credit (Verkehrsabsetzbetrag)','Verkehrsabsetzbetrag'],pendlerEuroKm:['Pendlereuro per km','Pendlereuro pro km'],avBr:['Reduced unemployment-insurance rates','Verminderte Arbeitslosenversicherung'],avFull:['Full unemployment-insurance rate','Voller Arbeitslosenversicherungssatz'],szFreibetrag:['Bonus payment allowance (0% band)','Freibetrag bei Sonderzahlungen (0-%-Stufe)'],szRate:['Bonus payment rate','Steuersatz bei Sonderzahlungen'],szFreigrenze:['Bonus payments tax-free if one sixth of annual pay is at most','Sonderzahlungen steuerfrei, wenn das Jahressechstel h\u00f6chstens betr\u00e4gt'],wkPauschale:['General allowance for employment expenses','Allgemeiner Werbungskostenpauschbetrag'],ovt:['Tax-free limits for supplements (\u00a7 68)','Steuerfreie Grenzen f\u00fcr Zuschl\u00e4ge (\u00a7 68)']};
     function fl(k){var x=FL[k]||[k,k];return getLang()==='de'?x[1]:x[0];}
     h(bi('Accuracy','Genauigkeit'));
     p(bi('Checked against real payslips: only the sector "Krankenanstalten \u2013 Radiologietechnologie", rates 2026. Every other sector and every other year is an estimate.','An echten Gehaltsabrechnungen gepr\u00fcft: nur die Branche "Krankenanstalten \u2013 Radiologietechnologie", Werte 2026. Jede andere Branche und jedes andere Jahr ist eine Sch\u00e4tzung.'));
@@ -5763,14 +6010,14 @@ function openExplain(){
     keys.forEach(function(k){
       var row=document.createElement('div');row.appendChild(document.createTextNode(fl(k)+': '));
       M.sources[k].forEach(function(u,i){
-        if(!/^https:\/\/(www\.)?(oesterreich\.gv\.at|bmf\.gv\.at|ris\.bka\.gv\.at|sozialversicherung\.gv\.at|wko\.at|usp\.gv\.at)\//.test(u)) return;
+        if(!/^https:\/\/(www\.)?(oesterreich\.gv\.at|(?:[a-z]+\.)?bmf\.gv\.at|ris\.bka\.gv\.at|sozialversicherung\.gv\.at|wko\.at|usp\.gv\.at)\//.test(u)) return;
         var a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.textContent=u.replace(/^https:\/\/(www\.)?/,'').split('/')[0];
         if(i) row.appendChild(document.createTextNode(', '));row.appendChild(a);
       });
       box.appendChild(row);
     });
     if((M.unverified||[]).length) p(bi('No source recorded yet for: ','Noch keine Quelle erfasst f\u00fcr: ')+M.unverified.map(fl).join('; ')+'.');
-    p(bi('Also without a recorded source in this app: the employee SV shares (health, pension, AK levy), the \u20ac132 allowance, the \u20ac620 allowance and 6% for bonus payments, and the \u20ac400 hazard-allowance limit.','Ebenfalls ohne erfasste Quelle in dieser App: die Dienstnehmeranteile der SV (Kranken, Pension, AK-Umlage), die \u20ac132 Pauschale, der \u20ac620 Freibetrag und die 6 % bei Sonderzahlungen sowie die \u20ac400 Grenze der Gefahrenzulage.'));
+    p(bi('Also without a recorded source in this app: the employee SV shares (health, pension, AK levy) and the \u20ac400 hazard-allowance limit.','Ebenfalls ohne erfasste Quelle in dieser App: die Dienstnehmeranteile der SV (Kranken, Pension, AK-Umlage) und die \u20ac400 Grenze der Gefahrenzulage.'));
     var nt=(M.note&&M.note[getLang()])||'';if(nt) p(nt);
     b.appendChild(box);
   })();
@@ -5847,7 +6094,7 @@ function initDemo(){
   if(l)l.style.display=DEMO?'none':'';
 }
 function exitDemo(){try{location.href=location.pathname;}catch(e){}}
-function initContact(){initVersion();initDemo();initBoundary();initA11y();_syncNetTop();var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
+function initContact(){initVersion();initDemo();initBoundary();initA11y();_syncNetTop();initFocusTrap();var l=document.getElementById('fb-link');if(l)l.style.display=WEB3FORMS_KEY?'':'none';}
 function _buildLabel(){return /BUILD/.test(BUILD)?'dev':BUILD;}
 function _displayMode(){try{if(navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))return 'installed';}catch(e){}return 'tab';}
 function _storageOk(){try{localStorage.setItem('sp_probe','1');localStorage.removeItem('sp_probe');return 'ok';}catch(e){return 'unavailable';}}
@@ -6420,7 +6667,7 @@ var I18N={
     cardsEdit:'Edit cards', cardsDone:'Done',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
-    legLateNight:'Late+Night 14–22:30', legNightOnly:'+8% only', legHoliday:'Public holiday',
+    legLateNight:'Late+Night 14–22:30', setWorkPct:'Employment level (% of full time)', setWorkPctHint:'100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).', wizQWork:'Employment level (% of full time)', wizQWorkHint:'100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.', accPartTime:'part-time {p}%: hourly basis is an assumption, not validated against a payslip', syncFormat:'The remote file uses an unsupported or unsafe encryption format.', syncBadRepo:'The repository must look like owner/repo-name.', syncBadBranch:'The branch name contains invalid characters.', syncPwShort:'The sync password needs at least 12 characters and more than a few repeated ones. It protects your encrypted backup if the repository is ever exposed.', syncPublicRepo:'This repository is public. Your encrypted backup would be visible to everyone and could be attacked offline. Make the repository private first.', syncPrivUnknown:'GitHub did not say whether this repository is private. Push anyway?', syncLegacy:'old encryption format; the next push upgrades it', syncChecking:'Checking repository\u2026', legNightOnly:'+{p}% only', legTemplate:'Template value, not validated against a payslip', legHoliday:'Public holiday',
     legLeave:'Urlaub', legOnCall:'On-call', legCallin:'Rufeinsatz', otLabel:'OT',
     filterShifts:'🔍 Filter shifts…',
     dowMon:'Mon',dowTue:'Tue',dowWed:'Wed',dowThu:'Thu',dowFri:'Fri',dowSat:'Sat',dowSun:'Sun',
@@ -6725,7 +6972,7 @@ var I18N={
     cardsEdit:'Karten bearbeiten', cardsDone:'Fertig',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
-    legLateNight:'Spät+Nacht 14–22:30', legNightOnly:'nur +8%', legHoliday:'Feiertag',
+    legLateNight:'Spät+Nacht 14–22:30', setWorkPct:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', setWorkPctHint:'100 = Vollzeit. Gib dein tats\u00e4chliches Bruttomonatsgehalt laut Gehaltsabrechnung ein; St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent (Annahme, nicht mit einer Teilzeit-Abrechnung gepr\u00fcft).', wizQWork:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', wizQWorkHint:'100 = Vollzeit. Teilzeit: gib oben dein tats\u00e4chliches Bruttogehalt laut Gehaltsabrechnung ein.', accPartTime:'Teilzeit {p} %: Stundenbasis ist eine Annahme, nicht mit einer Abrechnung gepr\u00fcft', syncFormat:'Die Datei im Repository hat ein nicht unterst\u00fctztes oder unsicheres Verschl\u00fcsselungsformat.', syncBadRepo:'Das Repository muss wie Besitzer/Repo-Name aussehen.', syncBadBranch:'Der Branch-Name enth\u00e4lt ung\u00fcltige Zeichen.', syncPwShort:'Das Sync-Passwort braucht mindestens 12 Zeichen und mehr als ein paar wiederholte. Es sch\u00fctzt dein verschl\u00fcsseltes Backup, falls das Repository je offenliegt.', syncPublicRepo:'Dieses Repository ist \u00f6ffentlich. Dein verschl\u00fcsseltes Backup w\u00e4re f\u00fcr alle sichtbar und k\u00f6nnte offline angegriffen werden. Mach das Repository zuerst privat.', syncPrivUnknown:'GitHub hat nicht gesagt, ob dieses Repository privat ist. Trotzdem hochladen?', syncLegacy:'altes Verschl\u00fcsselungsformat; der n\u00e4chste Push aktualisiert es', syncChecking:'Repository wird gepr\u00fcft\u2026', legNightOnly:'nur +{p}%', legTemplate:'Vorlagenwert, nicht mit einer Gehaltsabrechnung gepr\u00fcft', legHoliday:'Feiertag',
     legLeave:'Urlaub', legOnCall:'Rufbereitschaft', legCallin:'Rufeinsatz', otLabel:'ÜStd',
     filterShifts:'🔍 Schichten filtern…',
     dowMon:'Mo',dowTue:'Di',dowWed:'Mi',dowThu:'Do',dowFri:'Fr',dowSat:'Sa',dowSun:'So',
@@ -7059,6 +7306,8 @@ function applyLang(lang){
   var onbBtn=document.getElementById('onb-lang-btn');
   if(onbBtn) onbBtn.textContent=lang==='en'?'🌐 DE':'🌐 EN';
   try{wizEstimate();}catch(e){}
+  try{renderLegend();}catch(e){}
+  try{if(document.getElementById('wiz-kv'))wizKVChange();}catch(e){}
   document.documentElement.lang=lang;
 }
 
@@ -7384,6 +7633,7 @@ function renderRaise(){
 // ═══ BOOT ═══
 var _renderYearTimer=null;
 function renderAll(){
+  renderLegend();
   useRates(currentYear);
   updateCommuteLabel();
   updateRatesBanner();
