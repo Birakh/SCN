@@ -128,6 +128,11 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[t
 @media (pointer:coarse){.month-nav button,.icon-btn{min-height:44px;min-width:44px}.gl-q{min-height:40px;min-width:40px}}
 .msel-bar{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap;font-size:12px}
 .msel-bar .mbtn{min-height:40px}
+.st-row{display:flex;align-items:center;gap:6px;margin:6px 0}
+.st-lab{width:96px;display:flex;flex-direction:column;flex-shrink:0}
+.st-lab label{font-size:12px}
+.st-row input[type=time]{width:110px;min-height:36px;box-sizing:border-box}
+.st-def{font-size:10px;color:#aaa;white-space:nowrap}
 body.dark .rates-banner a,body.dark .cs-overlay a{color:#8ab4f8}
 .acc-badge>span,#kv-badge>span{white-space:normal;max-width:100%;line-height:1.4;border-radius:12px}
 .disc-note .dot::before{content:"\00b7";display:inline-block;margin:0 5px 0 2px;text-decoration:none}
@@ -755,10 +760,10 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
   <div id="net-top" class="net-top" style="display:none"><button type="button" class="net-top-main" onclick="goToNet()"><span data-i18n="netTopLbl">Estimated net</span><b id="net-top-val"></b></button><button type="button" class="gl-q" onclick="openGloss('net')" data-i18n-aria="glossQ" aria-label="What does this mean?">?</button></div>
   <div id="acc-badge" class="acc-badge" style="display:none"></div>
   <div class="legend">
-    <span class="lpill lp-normal" data-i18n="legEarly">Early 07–15</span>
-    <span class="lpill lp-middle" id="leg-middle"><span data-i18n="legMiddle">Middle 11:30–20</span> <b id="leg-middle-amt" style="color:#0f6e56"></b></span>
-    <span class="lpill lp-late" id="leg-late"><span data-i18n="legLate">Late 14–22:30</span> <b id="leg-late-amt" style="color:#3c3489"></b></span>
-    <span class="lpill lp-latenight" id="leg-latenight"><span data-i18n="legLateNight">Late+Night 14–22:30</span> <b id="leg-night-amt" style="color:#26215c"></b></span>
+    <span class="lpill lp-normal" id="leg-early"><span data-i18n="legEarly">Early</span> <span id="leg-early-t"></span></span>
+    <span class="lpill lp-middle" id="leg-middle"><span data-i18n="legMiddle">Middle</span> <span id="leg-middle-t"></span> <b id="leg-middle-amt" style="color:#0f6e56"></b></span>
+    <span class="lpill lp-late" id="leg-late"><span data-i18n="legLate">Late</span> <span id="leg-late-t"></span> <b id="leg-late-amt" style="color:#3c3489"></b></span>
+    <span class="lpill lp-latenight" id="leg-latenight"><span data-i18n="legLateNight">Late+Night</span> <span id="leg-night-t"></span> <b id="leg-night-amt" style="color:#26215c"></b></span>
     <span class="lpill lp-holiday" id="leg-holiday"><span data-i18n="legHoliday">Public holiday</span> <b id="leg-hol-amt" style="color:#854f0b"></b></span>
     <span class="lpill lp-leave" data-i18n="legLeave">Urlaub</span>
     <span class="lpill lp-sick" data-i18n="legSick">Sick</span>
@@ -1406,6 +1411,19 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
         <label style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setWBFRate">Housing subsidy contribution — WBF (% of gross)
           <span class="tip" data-i18n-title="tipWBFRate" title="Wohnbauförderungsbeitrag — a state-level SV contribution. Lower Austria (NÖ): 0.5%. Vienna: 0.5%. Other states may differ. Check your payslip.">ℹ</span></label>
         <input type="number" id="wbf-rate" value="0.5" step="0.1" min="0" max="1" onchange="saveSettings();renderAll()">
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:#888;margin-bottom:3px" data-i18n="setShiftTimes">Shift times for the quick buttons, quick entry and legend</div>
+      <div class="st-row"><div class="st-lab"><label for="st-early-s" data-i18n="shEarly">Early</label><span class="st-def" id="st-early-d"></span></div><input type="time" id="st-early-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-early-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-middle-s" data-i18n="shMiddle">Middle</label><span class="st-def" id="st-middle-d"></span></div><input type="time" id="st-middle-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-middle-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-late-s" data-i18n="shLate">Late</label><span class="st-def" id="st-late-d"></span></div><input type="time" id="st-late-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-late-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-night-s" data-i18n="shNight">Night</label><span class="st-def" id="st-night-d"></span></div><input type="time" id="st-night-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-night-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-long-s" data-i18n="shLong">Long</label><span class="st-def" id="st-long-d"></span></div><input type="time" id="st-long-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-long-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-on1-s" data-i18n="shOn1">On-call 1</label><span class="st-def" id="st-on1-d"></span></div><input type="time" id="st-on1-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-on1-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-on2-s" data-i18n="shOn2">On-call 2</label><span class="st-def" id="st-on2-d"></span></div><input type="time" id="st-on2-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-on2-e" onchange="saveSettings();renderAll()"></div>
+      <div class="st-row"><div class="st-lab"><label for="st-hol-s" data-i18n="shHol">Holiday</label><span class="st-def" id="st-hol-d"></span></div><input type="time" id="st-hol-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-hol-e" onchange="saveSettings();renderAll()"></div>
+        <button class="mbtn" type="button" style="margin-top:6px" onclick="resetShiftTimes()" data-i18n="btnResetTimes">Use sector defaults</button>
+        <div style="font-size:10px;color:#aaa;margin-top:3px;line-height:1.5" data-i18n="setShiftTimesHint">Set both start and end to override; leave empty to use your sector's default (shown in grey). Shifts you already entered keep their own times.</div>
       </div>
       <div style="margin-bottom:8px">
         <label for="work-pct" style="font-size:11px;color:#888;display:block;margin-bottom:3px" data-i18n="setWorkPct">Employment level (% of full time)</label>
@@ -2335,7 +2353,7 @@ function avRate(monthlyGross){
 var LAST_ERROR='';
 window.addEventListener('error',function(e){try{LAST_ERROR=_redactErr(e.message||'error')+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){} try{_boundary(e.message);}catch(x){}});
 window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+_redactErr((e.reason&&e.reason.message)||e.reason||'');}catch(x){}});
-var APP_VERSION='1.1.0';
+var APP_VERSION='1.1.1';
 var BUILD='__BUILD__'; // replaced by the deploy action with the commit hash; the committed file keeps the placeholder
 var RATES_VERIFIED='2026-10-30';
 // Rates live in the JSON block (id="rates-json") above; each year records status, sources and fields without a recorded source.
@@ -3592,6 +3610,7 @@ function getKVShifts(){
   var out={};
   for(var k in DEFAULT_SHIFT_TIMES) out[k]=DEFAULT_SHIFT_TIMES[k];
   if(tpl&&tpl.shifts) for(var k2 in tpl.shifts) out[k2]=tpl.shifts[k2];
+  ST_KEYS.forEach(function(r){var p=_stParse(_stGet(r[1]));if(p) out[r[0]]=p;});
   return out;
 }
 
@@ -3958,7 +3977,7 @@ function markDirty(isDirty){
   var dot=document.getElementById('dirty-dot');
   if(dot) dot.className='sync-dirty-dot'+(isDirty?' show':'');
 }
-function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,payDay:document.getElementById('pay-day').value,workPct:document.getElementById('work-pct').value,pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
+function _saveSettings(){try{localStorage.setItem('sp_settings',JSON.stringify({grade:document.getElementById('grade').value,thresh:document.getElementById('thresh').value,rufRate:document.getElementById('ruf-rate').value,callinMult:document.getElementById('callin-mult').value,rufWknd:document.getElementById('ruf-wknd').value,middleS:document.getElementById('middle-suppl').value,lateS:document.getElementById('late-suppl').value,hazard:document.getElementById('hazard-allow').value,szMonth1:document.getElementById('sz-month1').value,szMonth2:document.getElementById('sz-month2').value,urlaubDays:document.getElementById('urlaub-days').value,showEmployerCosts:document.getElementById('show-employer-costs').checked,brRate:document.getElementById('br-rate').value,rufSVBase:document.getElementById('ruf-sv-base').checked,salaryModel:document.getElementById('salary-model').value,wbfRate:document.getElementById('wbf-rate').value,payDay:document.getElementById('pay-day').value,workPct:document.getElementById('work-pct').value,stEarly:_stGet('early'),stMiddle:_stGet('middle'),stLate:_stGet('late'),stNight:_stGet('night'),stLong:_stGet('long'),stOn1:_stGet('on1'),stOn2:_stGet('on2'),stHol:_stGet('hol'),pendler:document.getElementById('tc-pendler').value,fambonus:document.getElementById('tc-fambonus').value,pendlerKm:document.getElementById('tc-pendler-km').value,kvPreset:document.getElementById('kv-preset').value,freeDays:getFreeDays()}));}catch(e){}}
 function saveSettings(){
   var prev=null,now=null;
   try{prev=localStorage.getItem('sp_settings');}catch(e){}
@@ -3996,6 +4015,7 @@ function loadData(){
       if(c.wbfRate!=null)document.getElementById('wbf-rate').value=c.wbfRate;
       if(c.payDay!=null)document.getElementById('pay-day').value=c.payDay;
       if(c.workPct!=null)document.getElementById('work-pct').value=c.workPct;
+      _stSet(c);
       if(c.pendler!=null)document.getElementById('tc-pendler').value=c.pendler;
       if(c.fambonus!=null)document.getElementById('tc-fambonus').value=c.fambonus;
       if(c.pendlerKm!=null)document.getElementById('tc-pendler-km').value=c.pendlerKm;
@@ -4198,7 +4218,7 @@ async function repoGetFile(pat,repo,branch){
 
 // ═══ WHAT IS BACKED UP ═══
 // Data + settings + templates/cards/corrections + display preferences. NEVER the GitHub token or the sync password.
-var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','payDay','workPct','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
+var SETTINGS_KEYS=['grade','thresh','rufRate','callinMult','rufWknd','middleS','lateS','hazard','szMonth1','szMonth2','urlaubDays','showEmployerCosts','brRate','rufSVBase','salaryModel','wbfRate','payDay','workPct','stEarly','stMiddle','stLate','stNight','stLong','stOn1','stOn2','stHol','pendler','fambonus','pendlerKm','kvPreset','freeDays'];
 function sanitizeSettings(c){
   if(!c||typeof c!=='object') return null;
   var out={};
@@ -5225,6 +5245,9 @@ function renderLegend(){
   txt('leg-middle-amt',L.middle);txt('leg-late-amt',L.late);
   txt('leg-night-amt',L.nightPct?L.nightMark+T.legNightOnly.replace('{p}',L.nightPct):'');
   txt('leg-hol-amt',L.holiday);
+  var ks=getKVShifts();
+  txt('leg-early-t',_shortRange(ks.early[0],ks.early[1]));txt('leg-middle-t',_shortRange(ks.middle[0],ks.middle[1]));txt('leg-late-t',_shortRange(ks.late[0],ks.late[1]));txt('leg-night-t',_shortRange(ks.late[0],ks.late[1]));
+  renderShiftTimeDefaults();
   ['leg-middle','leg-late','leg-latenight','leg-holiday'].forEach(function(id){var e=document.getElementById(id);if(e){if(L.approx)e.setAttribute('title',T.legTemplate);else e.removeAttribute('title');}});
 }
 // Round to cents, halves away from zero; the tiny epsilon makes 1.005 and 2.675 round the way decimal arithmetic does.
@@ -5308,6 +5331,34 @@ function _calKeyNav(e,k){
   _calRover(false);
   var c=document.querySelector('#cal-grid .day-cell[data-key="'+nk+'"]');if(c) c.focus();
   return true;
+}
+// ═══ SHIFT TIMES: the user can override the sector's default times (quick buttons, quick entry, legend) ═══
+var ST_KEYS=[['early','early','stEarly'],['middle','middle','stMiddle'],['late','late','stLate'],['night','night','stNight'],['long','long','stLong'],['oncall1','on1','stOn1'],['oncall2','on2','stOn2'],['holiday','hol','stHol']];
+function _stParse(v){var m=/^([01]\d|2[0-3]):([0-5]\d)-([01]\d|2[0-3]):([0-5]\d)$/.exec(String(v||''));return m?[m[1]+':'+m[2],m[3]+':'+m[4]]:null;}
+function _stGet(id){
+  var s=document.getElementById('st-'+id+'-s'),e=document.getElementById('st-'+id+'-e');
+  var v=(s&&e&&s.value&&e.value)?s.value+'-'+e.value:'';
+  return _stParse(v)?v:'';
+}
+function _stSet(c){
+  ST_KEYS.forEach(function(r){
+    var p=_stParse(c&&c[r[2]]),s=document.getElementById('st-'+r[1]+'-s'),e=document.getElementById('st-'+r[1]+'-e');
+    if(s) s.value=p?p[0]:'';if(e) e.value=p?p[1]:'';
+  });
+}
+function resetShiftTimes(){_stSet({});saveSettings();renderAll();}
+function _shortTime(t){return t.replace(/:00$/,'');}
+function _shortRange(a,b){return _shortTime(a)+'\u2013'+_shortTime(b);}
+// the sector's own times without the user's override
+function _kvBaseShifts(){
+  var kvEl=document.getElementById('kv-preset'),key=kvEl?kvEl.value:'',tpl=key?KV_TEMPLATES[key]:null,out={};
+  for(var k in DEFAULT_SHIFT_TIMES) out[k]=DEFAULT_SHIFT_TIMES[k];
+  if(tpl&&tpl.shifts) for(var k2 in tpl.shifts) out[k2]=tpl.shifts[k2];
+  return out;
+}
+function renderShiftTimeDefaults(){
+  var b=_kvBaseShifts();
+  ST_KEYS.forEach(function(r){var e=document.getElementById('st-'+r[1]+'-d');if(e&&b[r[0]])e.textContent='('+b[r[0]].join('\u2013')+')';});
 }
 function _showToast(msg,duration){
   var toast=document.createElement('div');
@@ -5823,6 +5874,9 @@ function applyQuick(){
 // ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
 // To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
 var CHANGELOG=[
+  {v:'1.1.1',d:'2026-11',items:[
+    ['Shift times are editable in Settings (early, middle, late, night, long, on-call, holiday): the quick buttons, quick entry and the legend use your times; leave empty for your sector\'s default. Shifts you already entered keep their times.','Dienstzeiten sind in den Einstellungen \u00e4nderbar (Fr\u00fch, Mittel, Sp\u00e4t, Nacht, Lang, Ruf, Feiertag): Schnelltasten, Schnelleingabe und Legende verwenden deine Zeiten; leer lassen f\u00fcr den Standard deiner Branche. Bereits eingetragene Dienste behalten ihre Zeiten.']
+  ]},
   {v:'1.1.0',d:'2026-11',items:[
     ['First-run wizard shows an instant net estimate for the chosen year (2027 marked provisional) and asks for your employment level (part-time).','Der Einrichtungsassistent zeigt eine Netto-Sofortsch\u00e4tzung f\u00fcr das gew\u00e4hlte Jahr (2027 als vorl\u00e4ufig markiert) und fragt nach dem Besch\u00e4ftigungsausma\u00df (Teilzeit).'],
     ['Net now follows payslip arithmetic: gross, SV and income tax are rounded to cents first. On four 2026 payslips of the validated sector the net matches to the cent.','Das Netto folgt der Rechenweise der Abrechnung: Brutto, SV und Lohnsteuer werden zuerst auf Cent gerundet. Bei vier Abrechnungen 2026 der gepr\u00fcften Branche stimmt das Netto auf den Cent.'],
@@ -6666,8 +6720,8 @@ var I18N={
     helpTip:'How it works', logTip:'What\u2019s new', helpTitle:'How it works', logTitle:'What\u2019s new',
     cardsEdit:'Edit cards', cardsDone:'Done',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
-    legEarly:'Early 07–15', legMiddle:'Middle 11:30–20', legLate:'Late 14–22:30',
-    legLateNight:'Late+Night 14–22:30', setWorkPct:'Employment level (% of full time)', setWorkPctHint:'100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).', wizQWork:'Employment level (% of full time)', wizQWorkHint:'100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.', accPartTime:'part-time {p}%: hourly basis is an assumption, not validated against a payslip', syncFormat:'The remote file uses an unsupported or unsafe encryption format.', syncBadRepo:'The repository must look like owner/repo-name.', syncBadBranch:'The branch name contains invalid characters.', syncPwShort:'The sync password needs at least 12 characters and more than a few repeated ones. It protects your encrypted backup if the repository is ever exposed.', syncPublicRepo:'This repository is public. Your encrypted backup would be visible to everyone and could be attacked offline. Make the repository private first.', syncPrivUnknown:'GitHub did not say whether this repository is private. Push anyway?', syncLegacy:'old encryption format; the next push upgrades it', syncChecking:'Checking repository\u2026', legNightOnly:'+{p}% only', legTemplate:'Template value, not validated against a payslip', legHoliday:'Public holiday',
+    legEarly:'Early', legMiddle:'Middle', legLate:'Late',
+    legLateNight:'Late+Night', setShiftTimes:'Shift times for the quick buttons, quick entry and legend', setShiftTimesHint:'Set both start and end to override; leave empty to use your sector\'s default (shown in grey). Shifts you already entered keep their own times.', btnResetTimes:'Use sector defaults', shEarly:'Early', shMiddle:'Middle', shLate:'Late', shNight:'Night', shLong:'Long', shOn1:'On-call 1', shOn2:'On-call 2', shHol:'Holiday', setWorkPct:'Employment level (% of full time)', setWorkPctHint:'100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).', wizQWork:'Employment level (% of full time)', wizQWorkHint:'100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.', accPartTime:'part-time {p}%: hourly basis is an assumption, not validated against a payslip', syncFormat:'The remote file uses an unsupported or unsafe encryption format.', syncBadRepo:'The repository must look like owner/repo-name.', syncBadBranch:'The branch name contains invalid characters.', syncPwShort:'The sync password needs at least 12 characters and more than a few repeated ones. It protects your encrypted backup if the repository is ever exposed.', syncPublicRepo:'This repository is public. Your encrypted backup would be visible to everyone and could be attacked offline. Make the repository private first.', syncPrivUnknown:'GitHub did not say whether this repository is private. Push anyway?', syncLegacy:'old encryption format; the next push upgrades it', syncChecking:'Checking repository\u2026', legNightOnly:'+{p}% only', legTemplate:'Template value, not validated against a payslip', legHoliday:'Public holiday',
     legLeave:'Urlaub', legOnCall:'On-call', legCallin:'Rufeinsatz', otLabel:'OT',
     filterShifts:'🔍 Filter shifts…',
     dowMon:'Mon',dowTue:'Tue',dowWed:'Wed',dowThu:'Thu',dowFri:'Fri',dowSat:'Sat',dowSun:'Sun',
@@ -6971,8 +7025,8 @@ var I18N={
     helpTip:'So funktioniert es', logTip:'Neuigkeiten', helpTitle:'So funktioniert es', logTitle:'Neuigkeiten',
     cardsEdit:'Karten bearbeiten', cardsDone:'Fertig',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
-    legEarly:'Früh 07–15', legMiddle:'Mittel 11:30–20', legLate:'Spät 14–22:30',
-    legLateNight:'Spät+Nacht 14–22:30', setWorkPct:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', setWorkPctHint:'100 = Vollzeit. Gib dein tats\u00e4chliches Bruttomonatsgehalt laut Gehaltsabrechnung ein; St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent (Annahme, nicht mit einer Teilzeit-Abrechnung gepr\u00fcft).', wizQWork:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', wizQWorkHint:'100 = Vollzeit. Teilzeit: gib oben dein tats\u00e4chliches Bruttogehalt laut Gehaltsabrechnung ein.', accPartTime:'Teilzeit {p} %: Stundenbasis ist eine Annahme, nicht mit einer Abrechnung gepr\u00fcft', syncFormat:'Die Datei im Repository hat ein nicht unterst\u00fctztes oder unsicheres Verschl\u00fcsselungsformat.', syncBadRepo:'Das Repository muss wie Besitzer/Repo-Name aussehen.', syncBadBranch:'Der Branch-Name enth\u00e4lt ung\u00fcltige Zeichen.', syncPwShort:'Das Sync-Passwort braucht mindestens 12 Zeichen und mehr als ein paar wiederholte. Es sch\u00fctzt dein verschl\u00fcsseltes Backup, falls das Repository je offenliegt.', syncPublicRepo:'Dieses Repository ist \u00f6ffentlich. Dein verschl\u00fcsseltes Backup w\u00e4re f\u00fcr alle sichtbar und k\u00f6nnte offline angegriffen werden. Mach das Repository zuerst privat.', syncPrivUnknown:'GitHub hat nicht gesagt, ob dieses Repository privat ist. Trotzdem hochladen?', syncLegacy:'altes Verschl\u00fcsselungsformat; der n\u00e4chste Push aktualisiert es', syncChecking:'Repository wird gepr\u00fcft\u2026', legNightOnly:'nur +{p}%', legTemplate:'Vorlagenwert, nicht mit einer Gehaltsabrechnung gepr\u00fcft', legHoliday:'Feiertag',
+    legEarly:'Früh', legMiddle:'Mittel', legLate:'Spät',
+    legLateNight:'Spät+Nacht', setShiftTimes:'Dienstzeiten f\u00fcr Schnelltasten, Schnelleingabe und Legende', setShiftTimesHint:'Start und Ende setzen, um die Standardzeit zu \u00fcberschreiben; leer lassen f\u00fcr den Standard deiner Branche (grau angezeigt). Bereits eingetragene Dienste behalten ihre eigenen Zeiten.', btnResetTimes:'Branchenstandard verwenden', shEarly:'Fr\u00fch', shMiddle:'Mittel', shLate:'Sp\u00e4t', shNight:'Nacht', shLong:'Lang', shOn1:'Ruf 1', shOn2:'Ruf 2', shHol:'Feiertag', setWorkPct:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', setWorkPctHint:'100 = Vollzeit. Gib dein tats\u00e4chliches Bruttomonatsgehalt laut Gehaltsabrechnung ein; St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent (Annahme, nicht mit einer Teilzeit-Abrechnung gepr\u00fcft).', wizQWork:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', wizQWorkHint:'100 = Vollzeit. Teilzeit: gib oben dein tats\u00e4chliches Bruttogehalt laut Gehaltsabrechnung ein.', accPartTime:'Teilzeit {p} %: Stundenbasis ist eine Annahme, nicht mit einer Abrechnung gepr\u00fcft', syncFormat:'Die Datei im Repository hat ein nicht unterst\u00fctztes oder unsicheres Verschl\u00fcsselungsformat.', syncBadRepo:'Das Repository muss wie Besitzer/Repo-Name aussehen.', syncBadBranch:'Der Branch-Name enth\u00e4lt ung\u00fcltige Zeichen.', syncPwShort:'Das Sync-Passwort braucht mindestens 12 Zeichen und mehr als ein paar wiederholte. Es sch\u00fctzt dein verschl\u00fcsseltes Backup, falls das Repository je offenliegt.', syncPublicRepo:'Dieses Repository ist \u00f6ffentlich. Dein verschl\u00fcsseltes Backup w\u00e4re f\u00fcr alle sichtbar und k\u00f6nnte offline angegriffen werden. Mach das Repository zuerst privat.', syncPrivUnknown:'GitHub hat nicht gesagt, ob dieses Repository privat ist. Trotzdem hochladen?', syncLegacy:'altes Verschl\u00fcsselungsformat; der n\u00e4chste Push aktualisiert es', syncChecking:'Repository wird gepr\u00fcft\u2026', legNightOnly:'nur +{p}%', legTemplate:'Vorlagenwert, nicht mit einer Gehaltsabrechnung gepr\u00fcft', legHoliday:'Feiertag',
     legLeave:'Urlaub', legOnCall:'Rufbereitschaft', legCallin:'Rufeinsatz', otLabel:'ÜStd',
     filterShifts:'🔍 Schichten filtern…',
     dowMon:'Mo',dowTue:'Di',dowWed:'Mi',dowThu:'Do',dowFri:'Fr',dowSat:'Sa',dowSun:'So',
