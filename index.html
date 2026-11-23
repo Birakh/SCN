@@ -133,6 +133,12 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[t
 .st-lab label{font-size:12px}
 .st-row input[type=time]{width:110px;min-height:36px;box-sizing:border-box}
 .st-def{font-size:10px;color:#aaa;white-space:nowrap}
+.legend{align-items:center}
+.lp-edit{border:1px dashed #888;background:transparent;color:inherit;cursor:pointer;font:inherit;font-size:11px;padding:6px 10px;min-height:32px}
+.st-flash{animation:stflash 1.6s ease}
+@keyframes stflash{0%{background:rgba(55,138,221,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.st-flash{animation:none;outline:2px solid #378add}}
+@media print{.lp-edit{display:none!important}}
 body.dark .rates-banner a,body.dark .cs-overlay a{color:#8ab4f8}
 .acc-badge>span,#kv-badge>span{white-space:normal;max-width:100%;line-height:1.4;border-radius:12px}
 .disc-note .dot::before{content:"\00b7";display:inline-block;margin:0 5px 0 2px;text-decoration:none}
@@ -769,6 +775,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
     <span class="lpill lp-sick" data-i18n="legSick">Sick</span>
     <span class="lpill lp-ruf" id="leg-ruf" data-i18n="legOnCall">On-call</span>
     <span class="lpill lp-callin" id="leg-callin" data-i18n="legCallin">Rufeinsatz</span>
+    <button type="button" class="lpill lp-edit" id="leg-edit" onclick="goToShiftTimes()" data-i18n="btnEditTimes">\u270e Edit times</button>
     <span style="font-size:10px;color:#aaa;margin-left:2px"><span data-i18n="otLabel">OT</span>: <span style="color:#ef9f27">●</span>&gt;48h <span style="color:#e24b4a">●</span>&gt;60h</span>
   </div>
   <div class="week-bar" id="week-bar"></div>
@@ -1412,7 +1419,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
           <span class="tip" data-i18n-title="tipWBFRate" title="Wohnbauförderungsbeitrag — a state-level SV contribution. Lower Austria (NÖ): 0.5%. Vienna: 0.5%. Other states may differ. Check your payslip.">ℹ</span></label>
         <input type="number" id="wbf-rate" value="0.5" step="0.1" min="0" max="1" onchange="saveSettings();renderAll()">
       </div>
-      <div style="margin-bottom:10px">
+      <div style="margin-bottom:10px" id="shift-times-box">
         <div style="font-size:11px;color:#888;margin-bottom:3px" data-i18n="setShiftTimes">Shift times for the quick buttons, quick entry and legend</div>
       <div class="st-row"><div class="st-lab"><label for="st-early-s" data-i18n="shEarly">Early</label><span class="st-def" id="st-early-d"></span></div><input type="time" id="st-early-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-early-e" onchange="saveSettings();renderAll()"></div>
       <div class="st-row"><div class="st-lab"><label for="st-middle-s" data-i18n="shMiddle">Middle</label><span class="st-def" id="st-middle-d"></span></div><input type="time" id="st-middle-s" onchange="saveSettings();renderAll()"><span>–</span><input type="time" id="st-middle-e" onchange="saveSettings();renderAll()"></div>
@@ -1911,7 +1918,7 @@ body.dark .kv-badge-none{background:rgba(255,255,255,.06);color:#666;border-colo
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
 <div class="modal">
   <div class="modal-title" id="modal-title" data-i18n="modalEditShift">Edit shift</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em" data-i18n="modalQuickPresets">Quick presets</span><a href="#" id="cards-edit-link" onclick="toggleCardEdit();return false;" style="font-size:11px" data-i18n="cardsEdit">Edit cards</a></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em" data-i18n="modalQuickPresets">Quick presets</span><span style="display:flex;gap:12px"><a href="#" id="times-edit-link" onclick="goToShiftTimes();return false;" style="font-size:11px" data-i18n="btnEditTimes">\u270e Edit times</a><a href="#" id="cards-edit-link" onclick="toggleCardEdit();return false;" style="font-size:11px" data-i18n="cardsEdit">Edit cards</a></span></div>
   <div class="presets-grid" id="modal-presets-grid"></div>
   <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px" data-i18n="modalManualEntry">Manual entry</div>
   <div class="mfield">
@@ -2353,7 +2360,7 @@ function avRate(monthlyGross){
 var LAST_ERROR='';
 window.addEventListener('error',function(e){try{LAST_ERROR=_redactErr(e.message||'error')+' @'+(e.lineno||'?')+':'+(e.colno||'?');}catch(x){} try{_boundary(e.message);}catch(x){}});
 window.addEventListener('unhandledrejection',function(e){try{LAST_ERROR='promise: '+_redactErr((e.reason&&e.reason.message)||e.reason||'');}catch(x){}});
-var APP_VERSION='1.1.1';
+var APP_VERSION='1.1.2';
 var BUILD='__BUILD__'; // replaced by the deploy action with the commit hash; the committed file keeps the placeholder
 var RATES_VERIFIED='2026-10-30';
 // Rates live in the JSON block (id="rates-json") above; each year records status, sources and fields without a recorded source.
@@ -5346,6 +5353,15 @@ function _stSet(c){
     if(s) s.value=p?p[0]:'';if(e) e.value=p?p[1]:'';
   });
 }
+// Quick route from the legend and the day dialog to the shift-time settings.
+function goToShiftTimes(){
+  var m=document.getElementById('modal');
+  if(m&&m.classList.contains('open')){closeModal(false);if(m.classList.contains('open')) return;}
+  showTab('settings',null);
+  var box=document.getElementById('shift-times-box'),first=document.getElementById('st-early-s');
+  if(box){box.scrollIntoView({behavior:'smooth',block:'start'});box.classList.remove('st-flash');void box.offsetWidth;box.classList.add('st-flash');setTimeout(function(){box.classList.remove('st-flash');},1800);}
+  if(first){try{first.focus({preventScroll:true});}catch(e){first.focus();}}
+}
 function resetShiftTimes(){_stSet({});saveSettings();renderAll();}
 function _shortTime(t){return t.replace(/:00$/,'');}
 function _shortRange(a,b){return _shortTime(a)+'\u2013'+_shortTime(b);}
@@ -5874,6 +5890,9 @@ function applyQuick(){
 // ═══ HOW IT WORKS (quick guide) + WHAT'S NEW (changelog) ═══
 // To release: bump APP_VERSION and PREPEND an entry to CHANGELOG (a test checks they match).
 var CHANGELOG=[
+  {v:'1.1.2',d:'2026-11',items:[
+    ['New \"Edit times\" button next to the legend and in the day dialog: it opens Settings at your shift times.','Neue Schaltfl\u00e4che \"Zeiten \u00e4ndern\" neben der Legende und im Tagesdialog: sie \u00f6ffnet die Einstellungen bei deinen Dienstzeiten.']
+  ]},
   {v:'1.1.1',d:'2026-11',items:[
     ['Shift times are editable in Settings (early, middle, late, night, long, on-call, holiday): the quick buttons, quick entry and the legend use your times; leave empty for your sector\'s default. Shifts you already entered keep their times.','Dienstzeiten sind in den Einstellungen \u00e4nderbar (Fr\u00fch, Mittel, Sp\u00e4t, Nacht, Lang, Ruf, Feiertag): Schnelltasten, Schnelleingabe und Legende verwenden deine Zeiten; leer lassen f\u00fcr den Standard deiner Branche. Bereits eingetragene Dienste behalten ihre Zeiten.']
   ]},
@@ -6721,7 +6740,7 @@ var I18N={
     cardsEdit:'Edit cards', cardsDone:'Done',
     today:'Today', print:'🖨 Print', icalBtn:'📅 iCal', copyPrevBtn:'📋 Copy prev',
     legEarly:'Early', legMiddle:'Middle', legLate:'Late',
-    legLateNight:'Late+Night', setShiftTimes:'Shift times for the quick buttons, quick entry and legend', setShiftTimesHint:'Set both start and end to override; leave empty to use your sector\'s default (shown in grey). Shifts you already entered keep their own times.', btnResetTimes:'Use sector defaults', shEarly:'Early', shMiddle:'Middle', shLate:'Late', shNight:'Night', shLong:'Long', shOn1:'On-call 1', shOn2:'On-call 2', shHol:'Holiday', setWorkPct:'Employment level (% of full time)', setWorkPctHint:'100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).', wizQWork:'Employment level (% of full time)', wizQWorkHint:'100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.', accPartTime:'part-time {p}%: hourly basis is an assumption, not validated against a payslip', syncFormat:'The remote file uses an unsupported or unsafe encryption format.', syncBadRepo:'The repository must look like owner/repo-name.', syncBadBranch:'The branch name contains invalid characters.', syncPwShort:'The sync password needs at least 12 characters and more than a few repeated ones. It protects your encrypted backup if the repository is ever exposed.', syncPublicRepo:'This repository is public. Your encrypted backup would be visible to everyone and could be attacked offline. Make the repository private first.', syncPrivUnknown:'GitHub did not say whether this repository is private. Push anyway?', syncLegacy:'old encryption format; the next push upgrades it', syncChecking:'Checking repository\u2026', legNightOnly:'+{p}% only', legTemplate:'Template value, not validated against a payslip', legHoliday:'Public holiday',
+    legLateNight:'Late+Night', setShiftTimes:'Shift times for the quick buttons, quick entry and legend', setShiftTimesHint:'Set both start and end to override; leave empty to use your sector\'s default (shown in grey). Shifts you already entered keep their own times.', btnResetTimes:'Use sector defaults', btnEditTimes:'\u270e Edit times', shEarly:'Early', shMiddle:'Middle', shLate:'Late', shNight:'Night', shLong:'Long', shOn1:'On-call 1', shOn2:'On-call 2', shHol:'Holiday', setWorkPct:'Employment level (% of full time)', setWorkPctHint:'100 = full time. Enter your actual monthly gross salary as printed on your payslip; hourly supplements are based on the full-time equivalent (assumption, not validated against a part-time payslip).', wizQWork:'Employment level (% of full time)', wizQWorkHint:'100 = full time. Part time: enter your actual gross salary above, as printed on your payslip.', accPartTime:'part-time {p}%: hourly basis is an assumption, not validated against a payslip', syncFormat:'The remote file uses an unsupported or unsafe encryption format.', syncBadRepo:'The repository must look like owner/repo-name.', syncBadBranch:'The branch name contains invalid characters.', syncPwShort:'The sync password needs at least 12 characters and more than a few repeated ones. It protects your encrypted backup if the repository is ever exposed.', syncPublicRepo:'This repository is public. Your encrypted backup would be visible to everyone and could be attacked offline. Make the repository private first.', syncPrivUnknown:'GitHub did not say whether this repository is private. Push anyway?', syncLegacy:'old encryption format; the next push upgrades it', syncChecking:'Checking repository\u2026', legNightOnly:'+{p}% only', legTemplate:'Template value, not validated against a payslip', legHoliday:'Public holiday',
     legLeave:'Urlaub', legOnCall:'On-call', legCallin:'Rufeinsatz', otLabel:'OT',
     filterShifts:'🔍 Filter shifts…',
     dowMon:'Mon',dowTue:'Tue',dowWed:'Wed',dowThu:'Thu',dowFri:'Fri',dowSat:'Sat',dowSun:'Sun',
@@ -7026,7 +7045,7 @@ var I18N={
     cardsEdit:'Karten bearbeiten', cardsDone:'Fertig',
     today:'Heute', print:'🖨 Drucken', icalBtn:'📅 iCal', copyPrevBtn:'📋 Vormonat kopieren',
     legEarly:'Früh', legMiddle:'Mittel', legLate:'Spät',
-    legLateNight:'Spät+Nacht', setShiftTimes:'Dienstzeiten f\u00fcr Schnelltasten, Schnelleingabe und Legende', setShiftTimesHint:'Start und Ende setzen, um die Standardzeit zu \u00fcberschreiben; leer lassen f\u00fcr den Standard deiner Branche (grau angezeigt). Bereits eingetragene Dienste behalten ihre eigenen Zeiten.', btnResetTimes:'Branchenstandard verwenden', shEarly:'Fr\u00fch', shMiddle:'Mittel', shLate:'Sp\u00e4t', shNight:'Nacht', shLong:'Lang', shOn1:'Ruf 1', shOn2:'Ruf 2', shHol:'Feiertag', setWorkPct:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', setWorkPctHint:'100 = Vollzeit. Gib dein tats\u00e4chliches Bruttomonatsgehalt laut Gehaltsabrechnung ein; St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent (Annahme, nicht mit einer Teilzeit-Abrechnung gepr\u00fcft).', wizQWork:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', wizQWorkHint:'100 = Vollzeit. Teilzeit: gib oben dein tats\u00e4chliches Bruttogehalt laut Gehaltsabrechnung ein.', accPartTime:'Teilzeit {p} %: Stundenbasis ist eine Annahme, nicht mit einer Abrechnung gepr\u00fcft', syncFormat:'Die Datei im Repository hat ein nicht unterst\u00fctztes oder unsicheres Verschl\u00fcsselungsformat.', syncBadRepo:'Das Repository muss wie Besitzer/Repo-Name aussehen.', syncBadBranch:'Der Branch-Name enth\u00e4lt ung\u00fcltige Zeichen.', syncPwShort:'Das Sync-Passwort braucht mindestens 12 Zeichen und mehr als ein paar wiederholte. Es sch\u00fctzt dein verschl\u00fcsseltes Backup, falls das Repository je offenliegt.', syncPublicRepo:'Dieses Repository ist \u00f6ffentlich. Dein verschl\u00fcsseltes Backup w\u00e4re f\u00fcr alle sichtbar und k\u00f6nnte offline angegriffen werden. Mach das Repository zuerst privat.', syncPrivUnknown:'GitHub hat nicht gesagt, ob dieses Repository privat ist. Trotzdem hochladen?', syncLegacy:'altes Verschl\u00fcsselungsformat; der n\u00e4chste Push aktualisiert es', syncChecking:'Repository wird gepr\u00fcft\u2026', legNightOnly:'nur +{p}%', legTemplate:'Vorlagenwert, nicht mit einer Gehaltsabrechnung gepr\u00fcft', legHoliday:'Feiertag',
+    legLateNight:'Spät+Nacht', setShiftTimes:'Dienstzeiten f\u00fcr Schnelltasten, Schnelleingabe und Legende', setShiftTimesHint:'Start und Ende setzen, um die Standardzeit zu \u00fcberschreiben; leer lassen f\u00fcr den Standard deiner Branche (grau angezeigt). Bereits eingetragene Dienste behalten ihre eigenen Zeiten.', btnResetTimes:'Branchenstandard verwenden', btnEditTimes:'\u270e Zeiten \u00e4ndern', shEarly:'Fr\u00fch', shMiddle:'Mittel', shLate:'Sp\u00e4t', shNight:'Nacht', shLong:'Lang', shOn1:'Ruf 1', shOn2:'Ruf 2', shHol:'Feiertag', setWorkPct:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', setWorkPctHint:'100 = Vollzeit. Gib dein tats\u00e4chliches Bruttomonatsgehalt laut Gehaltsabrechnung ein; St\u00fcndliche Zulagen basieren auf dem Vollzeit\u00e4quivalent (Annahme, nicht mit einer Teilzeit-Abrechnung gepr\u00fcft).', wizQWork:'Besch\u00e4ftigungsausma\u00df (% der Vollzeit)', wizQWorkHint:'100 = Vollzeit. Teilzeit: gib oben dein tats\u00e4chliches Bruttogehalt laut Gehaltsabrechnung ein.', accPartTime:'Teilzeit {p} %: Stundenbasis ist eine Annahme, nicht mit einer Abrechnung gepr\u00fcft', syncFormat:'Die Datei im Repository hat ein nicht unterst\u00fctztes oder unsicheres Verschl\u00fcsselungsformat.', syncBadRepo:'Das Repository muss wie Besitzer/Repo-Name aussehen.', syncBadBranch:'Der Branch-Name enth\u00e4lt ung\u00fcltige Zeichen.', syncPwShort:'Das Sync-Passwort braucht mindestens 12 Zeichen und mehr als ein paar wiederholte. Es sch\u00fctzt dein verschl\u00fcsseltes Backup, falls das Repository je offenliegt.', syncPublicRepo:'Dieses Repository ist \u00f6ffentlich. Dein verschl\u00fcsseltes Backup w\u00e4re f\u00fcr alle sichtbar und k\u00f6nnte offline angegriffen werden. Mach das Repository zuerst privat.', syncPrivUnknown:'GitHub hat nicht gesagt, ob dieses Repository privat ist. Trotzdem hochladen?', syncLegacy:'altes Verschl\u00fcsselungsformat; der n\u00e4chste Push aktualisiert es', syncChecking:'Repository wird gepr\u00fcft\u2026', legNightOnly:'nur +{p}%', legTemplate:'Vorlagenwert, nicht mit einer Gehaltsabrechnung gepr\u00fcft', legHoliday:'Feiertag',
     legLeave:'Urlaub', legOnCall:'Rufbereitschaft', legCallin:'Rufeinsatz', otLabel:'ÜStd',
     filterShifts:'🔍 Schichten filtern…',
     dowMon:'Mo',dowTue:'Di',dowWed:'Mi',dowThu:'Do',dowFri:'Fr',dowSat:'Sa',dowSun:'So',
